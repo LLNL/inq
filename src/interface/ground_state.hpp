@@ -27,7 +27,6 @@ struct {
 	}
 	
 	constexpr auto help() const {
-		
 		return R""""(
 
 The 'ground-state' command
@@ -36,60 +35,72 @@ The 'ground-state' command
 This command defines the options for ground-state self-consistency
 calculations. These are the available options:
 
-- `ground-state`
+- CLI:    `ground-state`
+  Python: `ground_state.show()`
 
   When no arguments are given, `ground-state` will just print the
   currently defined options (including default values).
 
-  Example: `inq ground-state`.
+  CLI example:    `inq ground-state`
+  Python example: `pinq.ground_state.show()`
 
 
-- `ground-state max-steps <value>`
+- CLI:    `ground-state max-steps <value>`
+  Python: `ground_state.max_steps(value)`
 
   Sets the maximum number of self-consistency steps that will be
   done. The default value is 200.
 
-  Example: 'inq ground-state max-steps 250'.
+  CLI example:    `inq ground-state max-steps 100`
+  Python example: `pinq.ground_state.max_steps(100)`
 
 
-- `ground-state tolerance <value>`
+- CLI:    `ground-state tolerance <value>`
+  Python: `ground_state.tolerance(value)`
 
   The tolerance used to consider that the self-consistency iteration
   is converged. The default value is 1e-6.
 
-  Example: `inq ground-state tolerance 1e-9`.
+  CLI example:    `inq ground-state tolerance 1e-9`
+  Python example: `pinq.ground_state.tolerance(1e-9)`
 
 
-- `ground-state mixing <value>`
+- CLI:    `ground-state mixing <value>`
+  Python: `ground_state.mixing(value)`
 
   Set the mixing factor for the self-consistency. The default value is 0.3.
 
-  Example: `inq ground-state mixing 0.1`.
+  CLI example:    `inq ground-state mixing 0.1`
+  Python example: `inq.ground_state.mixing(0.1)`
 
 
 )"""";
 	}
 
-	void operator()() const {
+	static void show() {
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options");
 		if(input::environment::global().comm().root()) std::cout << gs_opts;
 	}
 
-	void max_steps(int nsteps) const {
+	void operator()() const {
+		show();
+	}
+
+	static void max_steps(int nsteps) {
 		using namespace magnitude;
 
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").max_steps(nsteps);
 		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
 	}
 	
-	void tolerance(double tol) const {
+	static void tolerance(double tol) {
 		using namespace magnitude;
 
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").energy_tolerance(tol*1.0_Ha);
 		gs_opts.save(input::environment::global().comm(), ".inq/default_ground_state_options");
 	}
 	
-	void mixing(double factor) const {
+	static void mixing(double factor) {
 		using namespace magnitude;
 
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options").mixing(factor);
@@ -125,6 +136,21 @@ calculations. These are the available options:
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in 'ground-state' command");
 	}
+	
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+ 
+		auto sub = module.def_submodule("ground_state", help());
+		sub.def("show",      &show);
+		sub.def("max_steps", &max_steps);
+		sub.def("tolerance", &tolerance);
+		sub.def("mixing",    &mixing);
+		
+	}
+#endif
 	
 } const ground_state;
 

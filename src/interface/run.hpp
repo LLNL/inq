@@ -29,7 +29,6 @@ struct {
 	}
 	
 	constexpr auto help() const {
-		
 		return R""""(
 
 The 'run' command
@@ -44,24 +43,28 @@ this in parallel or through a queuing system.
 
 These are the options available:
 
-- `run ground-state`
+-  CLI:    `run ground-state`
+   Python: `run.ground_state()`
 
    Runs a ground-state calculation with fixed ions.
 
-   Example: `inq run ground-state`
+   CLI example:    `inq run ground-state`
+   Python example: `pinq.run.ground_state()`
 
 
-- `run real-time`
+-  CLI:    `run real-time`
+   Python: `run.real_time()`
 
    Runs a real-time simulation.
 
-   Example: `inq run real-time`
+   CLI example:    `inq run real-time`
+   Python example: `pinq.run.real_time()`
 
 
 )"""";
 	}
 
-	void ground_state() const{
+	static void ground_state() {
 		auto ions = systems::ions::load(".inq/default_ions");
 
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
@@ -82,7 +85,7 @@ These are the options available:
 		electrons.save(".inq/default_orbitals");
 	}
 
-	void real_time() const{
+	static void real_time() {
 		auto ions = systems::ions::load(".inq/default_ions");
 
 		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
@@ -122,7 +125,20 @@ These are the options available:
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'run' command");
 	}
-	
+
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+ 
+		auto sub = module.def_submodule(name(), help());
+		sub.def("ground_state", &ground_state);
+		sub.def("real_time",    &real_time);
+		
+	}
+#endif
+
 } const run;
 
 }

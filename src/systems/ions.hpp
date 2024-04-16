@@ -114,6 +114,34 @@ public:
 		throw std::runtime_error("error: unsupported or unknown format for file '" + filename + "'.");
 		return ions(*cell); //dummy return value to keep the compiler happy, this should never be reached
 	}
+
+#ifdef INQ_PYTHON_INTERFACE
+	static auto import_ase(pybind11::object atoms){
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+		using namespace inq::magnitude;
+
+		auto lattice = atoms.attr("get_cell")().attr("__array__")().cast<py::array_t<double>>();
+		auto lat = static_cast<double *>(lattice.request().ptr);
+		
+		auto lat0 = vector3(1.0_A*lat[0], 1.0_A*lat[1], 1.0_A*lat[2]);
+		auto lat1 = vector3(1.0_A*lat[3], 1.0_A*lat[4], 1.0_A*lat[5]);
+		auto lat2 = vector3(1.0_A*lat[6], 1.0_A*lat[7], 1.0_A*lat[8]);
+		
+		systems::ions ions(systems::cell::lattice(lat0, lat1, lat2));
+		
+		auto atomic_numbers = atoms.attr("get_atomic_numbers")().cast<py::array_t<int>>();
+		auto num = static_cast<int *>(atomic_numbers.request().ptr);
+		auto positions = atoms.attr("get_positions")().cast<py::array_t<double>>();
+		auto pos = static_cast<double *>(positions.request().ptr);
+		
+		for(int ii = 0; ii < atomic_numbers.size(); ii++){
+			ions.insert(num[ii], 1.0_A*vector3{pos[3*ii + 0], pos[3*ii + 1], pos[3*ii + 2]});
+		}
+		
+		return ions;
+	}
+#endif
 	
 	auto & atoms() const {
 		return atoms_;

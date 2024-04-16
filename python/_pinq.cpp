@@ -6,11 +6,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <inq/inq.hpp>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+
+#define INQ_PYTHON_INTERFACE
+#include <inq/inq.hpp>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -27,29 +28,6 @@ private:
 	ground_state::results results_;
 	std::optional<systems::electrons> electrons_;
 	
-	auto ase_atoms_to_inq_ions(py::object atoms){
-		
-		auto lattice = atoms.attr("get_cell")().attr("__array__")().cast<py::array_t<double>>();
-		auto lat = static_cast<double *>(lattice.request().ptr);
-		
-		auto lat0 = vector3(1.0_A*lat[0], 1.0_A*lat[1], 1.0_A*lat[2]);
-		auto lat1 = vector3(1.0_A*lat[3], 1.0_A*lat[4], 1.0_A*lat[5]);
-		auto lat2 = vector3(1.0_A*lat[6], 1.0_A*lat[7], 1.0_A*lat[8]);
-		
-		systems::ions ions(systems::cell::lattice(lat0, lat1, lat2));
-		
-		auto atomic_numbers = atoms.attr("get_atomic_numbers")().cast<py::array_t<int>>();
-		auto num = static_cast<int *>(atomic_numbers.request().ptr);
-		auto positions = atoms.attr("get_positions")().cast<py::array_t<double>>();
-		auto pos = static_cast<double *>(positions.request().ptr);
-		
-		for(int ii = 0; ii < atomic_numbers.size(); ii++){
-			ions.insert(num[ii], 1.0_A*vector3{pos[3*ii + 0], pos[3*ii + 1], pos[3*ii + 2]});
-		}
-		
-		return ions;
-	}
-
 public:
 	
 	calculator(py::args const &, py::kwargs const & kwargs){
@@ -140,20 +118,19 @@ public:
 	
 	void calculate(py::object atoms){
 		
-		auto ions = ase_atoms_to_inq_ions(atoms);
+		auto ions = systems::ions::import_ase(atoms);
 
 		electrons_.emplace(systems::electrons(ions, els_));
 		ground_state::initial_guess(ions, *electrons_);
 
 		results_ = ground_state::calculate(ions, *electrons_, theo_, options::ground_state{}.energy_tolerance(1e-9_Ha).calculate_forces());
-
 	}
 
 	///////////////////////////////////
 	
 	auto scf_step(py::object atoms, py::array_t<double> const & potential){
 		
-		auto ions = ase_atoms_to_inq_ions(atoms);
+		auto ions = systems::ions::import_ase(atoms);
 
 		if(not electrons_.has_value()){
 			electrons_.emplace(systems::electrons(ions, els_));
@@ -203,10 +180,13 @@ public:
 		results_.energy.calculate(ham, *electrons_);
 		
 		return get_density();
-		
 	}
 	
 };
+
+void clear() {
+	interface::clear();
+}
 
 PYBIND11_MODULE(_pinq, module) {
 
@@ -219,5 +199,14 @@ PYBIND11_MODULE(_pinq, module) {
 		.def("get_density",          &calculator::get_density)		
 		.def("calculate",            &calculator::calculate)
 		.def("scf_step",             &calculator::scf_step);
+
+	auto interface_module = module.def_submodule("interface");
+	interface::clear.python_interface(interface_module);
+	interface::cell.python_interface(interface_module);
+	interface::electrons.python_interface(interface_module);
+	interface::ground_state.python_interface(interface_module);	
+	interface::ions.python_interface(interface_module);
+	interface::kpoints.python_interface(interface_module);
+	interface::run.python_interface(interface_module);
 	
 }

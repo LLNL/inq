@@ -24,18 +24,6 @@ struct {
 	constexpr auto one_line() const {
 		return "Removes any inq information from the current directory";
 	}
-	
-	void operator()() const {
-		if(input::environment::global().comm().root()) std::filesystem::remove_all(".inq");
-		input::environment::global().comm().barrier();
-	}
-
-	template <typename ArgsType>
-	void command(ArgsType const & args, bool) const {
-		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
-		operator()();
-		actions::normal_exit();
-	}
 
 	constexpr auto help() const {
 		return R""""(
@@ -43,13 +31,38 @@ struct {
 The 'clear' command
 ===================
 
-Usage: inq clear
-
 The 'clear' command removes all inq information from the current
 directory. It doesn't take any arguments.
 
+CLI example:    `pinq clear`
+Python example: `pinq.clear()`
+
+
 )"""";
 	}
+	
+	static void clear() {
+		if(input::environment::global().comm().root()) std::filesystem::remove_all(".inq");
+		input::environment::global().comm().barrier();
+	}
+	
+	void operator()() const {
+		clear();
+	}
+
+	template <typename ArgsType>
+	void command(ArgsType const & args, bool) const {
+		if(args.size() != 0) actions::error(input::environment::global().comm(), "The 'clear' command doesn't take arguments");
+		clear();
+		actions::normal_exit();
+	}
+
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		module.def("clear", &clear, help());
+	}
+#endif
 	
 }	const clear;
 

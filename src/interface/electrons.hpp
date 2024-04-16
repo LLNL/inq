@@ -37,33 +37,56 @@ This command defines the electrons that are in the system and how they
 are going to be represented through several values that can be set by
 the user.
 
-- `electrons`
+- CLI:    `electrons`
+  Python: `electrons.show()`
 
-  When no arguments are given, `electrons` will just print the
-  currently defined options (including default values).
+  When no arguments are given (or the `show` function in Python),
+  `electrons` will just print the currently defined options (including
+  default values).
 
-  Example: `inq electrons`.
+  CLI example:    `inq electrons`
+  Python example: `pinq.electrons.show()`
 
-
-- `electrons cutoff <value> <units>`
+- CLI:    `electrons cutoff <value> <units>`
+  Python: `electrons.cutoff(value, units)`
 
   Sets the energy cutoff for the simulation grid. A higher cutoff
   implies a more precise, but more costly, simulation. The value must
   be followed by its units, check `inq help units` for details on what
   units are available.
 
-  Example: `inq electrons cutoff 30.0 Ry`.
+  CLI example:    `inq electrons cutoff 30.0 Ry`
+  Python example: `pinq.electrons.cutoff(30.0, "Ry)`
 
 
-- `electrons spin <value>`
+- CLI:    `electrons spacing <value> <units>`
+  Python: `electrons.spacing(value, units)`
 
-  Sets the spin configuration used in the simulation. The valid values
-  are 'unpolarized' (the default), 'polarized' and 'non-collinear'.
+  As an alternative to the cutoff, you can sets the spacing for the
+  simulation grid. A lower spacing implies a more precise, but more
+  costly, simulation. The value must be followed by its length units,
+  check `inq help units` for details on what units are available.
 
-  Example: `inq electrons spin polarized`.
+  CLI example:    `inq electrons spacing 0.23 A`
+  Python example: `pinq.electrons.spacing(0.23, "A")`
 
 
-- `electrons extra-electrons <value>`
+- CLI:    `electrons spin <value>`
+  Python: `electrons.spin_unpolarized()`
+          `electrons.spin_polarized()`
+          `electrons.spin_non_collinear()`
+
+  Sets the spin configuration used in the simulation. In the command
+  line interface this is selected by an argument whose values can be
+  'unpolarized' (the default), 'polarized' and 'non-collinear'. For
+  Python there are different functions for each value.
+
+  CLI example:    `inq electrons spin polarized`
+  Python example: `pinq.electrons.spin_polarized()`
+
+
+- CLI:    `electrons extra-electrons <value>`
+  Python: `electrons.extra_electrons(value)`
 
   Inq determines the number of electrons from the ions present in the
   system. Using this variable you can add or remove electrons from the
@@ -76,10 +99,11 @@ the user.
   there is no concept of 'where' you put it. This will be determined
   by the ground-state optimization.
 
-  Example: `inq electrons extra-electrons -0.5`.
+  CLI example:    `inq electrons extra-electrons -0.5`
+  Python example: `pinq.electrons.extra_electrons(-0.5)`
 
-
-- `electrons extra-states <value>`
+- CLI example:    `electrons extra-states <value>`
+  Python example: `electrons.extra_states(value)`
 
   Inq automatically selects a number of states (orbitals, bands) that is
   enough to represent all the electrons in the system. In many cases
@@ -89,10 +113,12 @@ the user.
   Extra-states are necessary when setting an electronic temperature
   and to improve ground-state convergence.
 
-  Example: `inq electrons extra-states 2`.
+  CLI example:    `inq electrons extra-states 2`.
+  Python example: `pinq.electrons.extra_states(2)`.
 
 
-- `temperature <value> <units>`
+- CLI:    `electrons temperature <value> <units>`
+  Python: `electrons.temperature(value, units)`
 
   This command sets the temperature of the electrons in the
   ground-state optimization. The value must be positive and the units
@@ -102,58 +128,63 @@ the user.
   Note that when you add a temperature you also need to specify
   extra-states.
 
-  Example: `inq electrons temperature 273.15 Kelvin`.
+  CLI example:    `inq electrons temperature 273.15 Kelvin`
+  Pyhton example: `pinq.electrons.temperature(273.15, "Kelvin")`
 
 
 )"""";
 	}
 
-	void operator()() const {
+	static void show() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options");
 		if(input::environment::global().comm().root()) std::cout << el_opts;
 	}
+	
+	void operator()() const {
+		show();
+	}
 
-	void extra_states(int nstates) const{
+	static void extra_states(int nstates) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_states(nstates);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void extra_electrons(double nelectrons) const{
+	static void extra_electrons(double nelectrons) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").extra_electrons(nelectrons);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
-	void cutoff(quantity<magnitude::energy> ecut) const{
+	static void cutoff(quantity<magnitude::energy> ecut) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").cutoff(ecut);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spacing(quantity<magnitude::length> const & val) const{
+	static void spacing(quantity<magnitude::length> const & val) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spacing(val);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
-	void fourier_pseudo() const {
+	static void fourier_pseudo() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").fourier_pseudo();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_unpolarized() const {
+	static void spin_unpolarized() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_unpolarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_polarized() const {
+	static void spin_polarized() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_polarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void spin_non_collinear() const {
+	static void spin_non_collinear() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_non_collinear();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 
-	void temperature(quantity<magnitude::energy> temp) const{
+	static void temperature(quantity<magnitude::energy> temp) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").temperature(temp);
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
@@ -241,6 +272,36 @@ the user.
 
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'electrons' command");
 	}
+	
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule(name(), help());
+		
+		sub.def("show", &show);
+		sub.def("extra_states", &extra_states, "num_extra_states"_a);
+		sub.def("extra_electrons", &extra_electrons, "num_extra_electrons"_a);
+		sub.def("spin_unpolarized", &spin_unpolarized);
+		sub.def("spin_polarized", &spin_polarized);
+		sub.def("spin_non_collinear", &spin_non_collinear);
+		
+		sub.def("cutoff", [](double ecut, std::string const & units) {
+			cutoff(magnitude::energy::parse(ecut, units));
+		}, "cutoff_energy"_a, "units"_a);
+
+		sub.def("spacing", [](double spac, std::string const & units) {
+			spacing(magnitude::length::parse(spac, units));
+		}, "grid_spacing"_a, "units"_a);
+
+		sub.def("temperature", [](double temp, std::string const & units) {
+			temperature(magnitude::energy::parse(temp, units));
+		}, "electronic_temperature"_a, "units"_a);
+		
+	}
+#endif
 	
 } const electrons;
 
