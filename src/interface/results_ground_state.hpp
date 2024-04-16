@@ -42,134 +42,174 @@ units.
 
 These are the available subcommands:
 
-- `results ground-state`
+- CLI:    `results ground-state`
+  Python: `results.ground_state.show()`
 
-  When no arguments are given, print the values calculated.
+  When no arguments are given (or the show function is used), print
+  the values calculated.
 
-  Example: `inq results ground-state`.
+  CLI example:    `inq results ground-state`.
+  Python example: `pinq.results.ground_state.show()`
 
 
-- `results ground-state iterations`
+- CLI:    `results ground-state iterations`
+  Python: `results.ground_state.iterations()`
 
   Print the number of self-consistency iterations done.
 
-  Example: `inq results ground-state iterations`
+  CLI example:    `inq results ground-state iterations`
+  Python example: `pinq.results.ground_state.iterations()`
 
-- `results ground-state magnetization [index]`
+- CLI:    `results ground-state magnetization [index]`
+  Python: `results.ground_state.magnetization()`
 
-  Print the magnetization. If no additional arguments are given, print
-  the whole vector. Optionally you can add an index argument to print
-  a specific component of the vector. The index can be given as a
-  numerical value between _1_ and _3_, or as the letters _x_, _y_ or
-  _z_.
+  Query the magnetization. In Python or if no additional arguments are
+  given, print the whole 3D vector. For the CLI, optionally you can
+  add an index argument to print a specific component of the
+  vector. The index can be given as the letters _x_, _y_ or _z_.
 
   Note that for spin unpolarized systems the magnetization is always
   zero. For spin polarized the magnetization is assumed on the _z_
   direction.
 
-  Example: `inq results ground-state magnetization z`
+  CLI example:    `inq results ground-state magnetization z`
+  Python example: `pinq.results.ground_state.magnetization()`
 
 
-- `results ground-state dipole [index]`
+- CLI:    `results ground-state dipole [index]`
+  Python: `results.ground_state.dipole()`
 
-  Print the dipole of the system in atomic units. The vector is
-  printed if no additional arguments are given. You can also add an
-  index argument to print a specific component. The index can be given
-  as a numerical value between _1_ and _3_, or as the letters _x_, _y_
-  or _z_.
+  Return the dipole of the system in atomic units. The whole vector is
+  given if no additional arguments are included. In the CLI, you can
+  also add an index argument to print a specific component. The index
+  can be given as the letters _x_, _y_ or _z_.
 
   Note that the dipole is only calculated for the non-periodic
   directions. For the periodic directions is set to zero since the
   dipole is not properly defined.
 
-  Example: `inq results ground-state magnetization z`
+  CLI example:    `inq results ground-state magnetization z`
+  Python example: `pinq.results.ground_state.magnetization()`
+
+- CLI:    `results forces [iatom] [index]`
+  Python: `results.forces()`
+
+  Return the forces over the atoms in the system in atomic units. In
+  Python this is an array. In the CLI, if no arguments are given, all
+  the forces are printed. Alternatively is possible to pass an atom
+  index (that starts from 0), or both an atom and direction index
+  (_x_, _y_, or _z_).
+
+  CLI example:    `inq results forces 7 z`
+  Python example: `pinq.results.forces()`
 
 
-- `results ground-state energy`
+- CLI:    `results ground-state energy`
+  Python: `results.ground_state.energy.show()`
 
-  When no arguments are given, `energy` will print all the energy values available.
+  When no arguments are given (or show() in Python), `energy` will
+  print all the energy values available.
 
-  Example: `inq results ground-state energy`.
+  CLI example:    `inq results ground-state energy`
+  Python example: `pinq.results.ground_state.energy.show()`
 
 
-- `results ground-state energy total`
+- CLI:    `results ground-state energy total`
+  Python: `results.ground_state.energy.total()`
 
   Returns the total energy of the calculation. This includes the ionic
   contribution.
 
-  Example: `inq results ground-state energy total`.
+  CLI example:    `inq results ground-state energy total`.
+  Python example: `pinq.results.ground_state.energy.total()`
 
-
-- `results ground-state energy kinetic`
+- CLI:    `results ground-state energy kinetic`
+  Python: `results.ground_state.energy.kinetic()`
 
   The electronic kinetic energy.
 
-  Example: `inq results ground-state energy kinetic`.
+  CLI example:    `inq results ground-state energy kinetic`
+  Python example: `pinq.results.ground_state.energy.kinetic()`
 
 
-- `results ground-state energy eigenvalues`
+- CLI:    `results ground-state energy eigenvalues`
+  Python: `results.ground_state.energy.eigenvalues()`
 
   The sum of the eigenvalues, weighed by the occupations.
 
-  Example: `inq results ground-state energy eigenvalues`.
+  CLI example:    `inq results ground-state energy eigenvalues`
+  Python example: `pinq.results.ground_state.energy.eigenvalues()`
 
-
-- `results ground-state energy Hartree`
+- CLI:    `results ground-state energy Hartree`
+  Python: `results.ground_state.energy.hartree()`
 
   The classical electrostatic interaction energy between electrons.
 
-  Example: `inq results ground-state energy Hartree`.
+  CLI example:    `inq results ground-state energy Hartree`
+  Python example: `pinq.results.ground_state.energy.hartree()`
 
 
-- `results ground-state energy external`
+- CLI:    `results ground-state energy external`
+  Python: `results.ground_state.energy.external()`
 
   The energy of the interaction of the electrons with the local
   potential generated by the ions. This doesn't include the non-local
   pseudopotential part.
 
-  Example: `inq results ground-state energy external`.
+  CLI example:    `inq results ground-state energy external`.
+  Python example: `pinq.results.ground_state.energy.external()`
 
 
-- `results ground-state energy non-local`
+- CLI:    `results ground-state energy non-local`
+  Python: `results.ground_state.energy.non_local()`
 
   The energy of the interaction of the electrons with the non-local
   part of the ionic pseudo-potentials.
 
-  Example: `inq results ground-state energy non-local`.
+  CLI example:    `inq results ground-state energy non-local`
+  Python example: `pinq.results.ground_state.energy.non_local()`
 
 
-- `results ground-state energy xc`
+- CLI:    `results ground-state energy xc`
+  Python: `results.ground_state.energy.xc()`
 
   The exchange and correlation energy from DFT semi-local
   functionals. It doesn't include the contribution from Hartree-Fock
   exchange (see `energy exact_exchange`).
 
-  Example: `inq results ground-state energy xc`.
+  CLI example:    `inq results ground-state energy xc`
+  Python example: `pinq.results.ground_state.energy.xc()`
 
 
-- `results ground-state energy nvxc`
+- CLI:    `results ground-state energy nvxc`
+  Python: `results.ground_state.energy.nvxc()`
 
   The energy of the interaction of the exchange and correlation
   potential and the density. This is different from the exchange and
   correlation energy.
 
-  Example: `inq results ground-state energy nvxc`.
+  CLI example:    `inq results ground-state energy nvxc`
+  Python example: `pinq.results.ground_state.energy.nvxc()`
 
 
-- `results ground-state energy exact-exchange`
+- CLI:    `results ground-state energy exact-exchange`
+  Python: `results.ground_state.energy.exact_exchange()`
 
   The Hartree-Fock exact-exchange energy. This is calculated for
   Hartree-Fock and hybrid functionals.
 
-  Example: `inq results ground-state energy exact-exchange`.
+  CLI example:    `inq results ground-state energy exact-exchange`
+  Python example: `pinq.results.ground_state.energy.exact_exchange()`
 
 
-- `results ground-state energy ion`
+- CLI:    `results ground-state energy ion`
+  Python: `results.ground_state.energy.ion()`
 
   The ion-ion interaction energy. This value is calculated taking into
   account the periodicity of the system.
 
-  Example: `inq results ground-state energy ion`.
+  CLI example:    `inq results ground-state energy ion`.
+  Python example: `pinq.results.ground_state.energy.ion()`
 
 
 )"""";
