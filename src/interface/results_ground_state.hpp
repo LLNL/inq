@@ -174,69 +174,72 @@ These are the available subcommands:
 
 )"""";
 	}
-
-	void operator()() const {
+	static void show() {
 		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
+	
+	void operator()() const {
+		show();
+	}
 
-	auto iterations() const {
+	static auto iterations() {
 		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.total_iter;
 	}
 
-	auto magnetization() const {
+	static auto magnetization() {
 		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.magnetization;
 	}
 
-	auto dipole() const {
+	static auto dipole() {
 		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		return res.dipole;
 	}
 	
-	void energy() const {
+	static void energy() {
 		auto ener = ground_state::results::load(".inq/default_results_ground_state").energy;
 		if(input::environment::global().comm().root()) std::cout << ener;
 	}
 	
-  double energy_total() const{
+  static double energy_total() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.total();
   }
 	
-  double energy_kinetic() const{
+  static double energy_kinetic() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.kinetic();
   }
 
-  double energy_eigenvalues() const{
+  static double energy_eigenvalues() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.eigenvalues();
   }
 
-  double energy_external() const{
+  static double energy_external() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.external();
   }
   
-  double energy_non_local() const{
+  static double energy_non_local() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.non_local();
   }
   
-  double energy_hartree() const{
+  static double energy_hartree() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.hartree();
   }
   
-  double energy_xc() const{
+  static double energy_xc() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.xc();
   }
 
-  double energy_nvxc() const{
+  static double energy_nvxc() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.nvxc();
   }
 
-  double energy_exact_exchange() const{
+  static double energy_exact_exchange() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.exact_exchange();
   }
   
-  double energy_ion() const{
+  static double energy_ion() {
     return ground_state::results::load(".inq/default_results_ground_state").energy.ion();
   }
 
@@ -369,6 +372,39 @@ These are the available subcommands:
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results ground-state' command");    
 	}
+	
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule("ground_state", help());
+
+		sub.def("show",          &show);
+		sub.def("iterations",    &iterations);
+		sub.def("magnetization", []() {
+			return static_cast<std::vector<double>>(magnetization());			
+		});
+		sub.def("dipole", []() {
+			return static_cast<std::vector<double>>(dipole());			
+		});
+
+		auto sub_en = sub.def_submodule("energy");
+		sub_en.def("show",           &energy);
+		sub_en.def("total",          &energy_total);
+		sub_en.def("kinetic",        &energy_kinetic);
+		sub_en.def("eigenvalues",    &energy_eigenvalues);
+		sub_en.def("hartree",        &energy_hartree);
+		sub_en.def("external",       &energy_external);
+		sub_en.def("non_local",      &energy_non_local);
+		sub_en.def("xc",             &energy_xc);
+		sub_en.def("nvxc",           &energy_nvxc);
+		sub_en.def("exact_exchange", &energy_exact_exchange);
+		sub_en.def("ion",            &energy_ion);
+		
+	}
+#endif
 	
 } const results_ground_state;
 
