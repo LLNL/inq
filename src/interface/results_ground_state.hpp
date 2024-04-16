@@ -243,7 +243,7 @@ These are the available subcommands:
     return ground_state::results::load(".inq/default_results_ground_state").energy.ion();
   }
 
-	auto forces() const {
+	static auto forces() {
     return ground_state::results::load(".inq/default_results_ground_state").forces;
 	}
 
@@ -388,6 +388,23 @@ These are the available subcommands:
 		});
 		sub.def("dipole", []() {
 			return static_cast<std::vector<double>>(dipole());			
+		});
+		
+		sub.def("forces", []() {
+
+			auto forces_multi = forces();
+			
+			py::array_t<double, py::array::c_style> forces_array({forces_multi.size(), 3l});
+			
+			auto arr = forces_array.mutable_unchecked();
+			
+			for (py::ssize_t iatom = 0; iatom < arr.shape(0); iatom++) {
+				for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+					arr(iatom, idir) = forces_multi[iatom][idir];
+				}
+			}
+		
+			return forces_array;
 		});
 
 		auto sub_en = sub.def_submodule("energy");
