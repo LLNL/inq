@@ -30,35 +30,50 @@ struct {
 The 'real-time' command
 ==================
 
-This command defines the options for real-time self-consistency
-calculations. These are the available options:
+This command defines the options for real-time electron dynamics
+simulations. These are the available options:
 
-- `real-time`
+- SHOW
+  CLI: `real-time`
+  Python: `real_time.show()`
 
-  When no arguments are given, `real-time` will just print the
-  currently defined options (including default values).
+  When no arguments are given (or "show" in python), `real-time` will
+  just print the currently defined options (including default values).
 
-  Example: `inq real-time`.
+  CLI example:    `inq real-time`
+  Python example: `pinq.real_time.show()`
 
 
-- `real-time time-step <value> units`
+- TIME STEP
+  CLI:    `real-time time-step <value> <units>`
+  Python: `real_time.time_step(value, units)`
 
   Sets the time step for the real-time integration. In most cases you
   want to pick the largest value that gives you a stable
-  propagation. The default value is 0.01 atu.
+  propagation. Note you need to pass the units, you can use "atu" (or
+  "atomictimeunits"), "as" or "fs" among others. The default value is
+  0.01 atu.
 
-  Example: 'inq real-time time-step 0.1 atu'.
-
-
-- `real-time num-steps <value>`
-
-  The number of time-steps in the time propagation. The default value
-  is 100.
-
-  Example: `inq real-time num-steps 10000`.
+  CLI example: `inq real-time time-step 0.1 atu`
+  Python example: `pinq.real_time.time_step(0.1, "atu")`
 
 
-- `real-time ions <value>`
+- NUMBER OF STEPS
+  CLI:    `real-time num-steps <value>`
+  Python: `real_time.num_steps(value)`
+
+  The number of time-steps to do in the time propagation. The default
+  value is 100.
+
+  CLI example:    `inq real-time num-steps 10000`
+  Python example: `pinq.real_time.num-steps(10000)`
+
+
+- ION DYNAMICS
+  CLI:    `real-time ions <value>`
+  Python: `real_time.ions.static()`
+          `real_time.ions.impulsive()`
+          `real_time.ions.ehrenfest()`
 
   This value decides how the ions will move during the
   time-propagation. The options are: `static`, `impulsive` and
@@ -75,55 +90,90 @@ calculations. These are the available options:
   Note that when ions move, inq has to recalculate the atomic
   potential at each step, so the propagation will be more costly.
 
-  Example: `inq real-time ions ehrenfest`.
+  CLI example:    `inq real-time ions ehrenfest`
+  Python example: `pinq.real_time.ions.ehrenfest()`
+
+
+- OBSERVABLES
+  CLI:    `real-time observables <value>`
+  Python: `real_time.observables.dipole()`
+          `real_time.observables.current()`
+
+  This value decides what observables will be calculated the
+  time-propagation. Right now the options are are: `dipole` and
+  `current` The total energy is also always calculated.
+
+  Several calls to this function will add more observables.
+ 
+  Note that the calculated values will be stored internally by
+  INQ. They can be queried after the simulation is complete with the
+  `results real-time` command.
+
+  CLI example:    `inq real-time observables current`
+  Python example: `pinq.real_time.observables.current()`
+
+
+- CLEAR OBSERVABLES
+  CLI:    `real-time observables clear`
+  Python: `real_time.observables.clear()`
+
+  This option removes all the observables that have been previously
+  requested.
+
+  CLI example:    `inq real-time observables clear`
+  Python example: `pinq.real_time.observables.clear()`
 
 
 )"""";
 	}
 
-	void operator()() const {
+	static void show() {
 		auto opts = options::real_time::load(".inq/default_real_time_options");
 		if(input::environment::global().comm().root()) std::cout << opts;
 	}
+	
+	void operator()() const {
+		show();
+	}
 
-	void time_step(quantity<magnitude::time> dt) const {
+	static void time_step(quantity<magnitude::time> dt) {
 		using namespace magnitude;
 
 		auto opts = options::real_time::load(".inq/default_real_time_options").dt(dt);
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 	
-	void num_steps(long nsteps) const {
+	static void num_steps(long nsteps) {
 		auto opts = options::real_time::load(".inq/default_real_time_options").num_steps(nsteps);
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
-	void ions_static() const {
+	static void ions_static() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").static_ions();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
-	void ions_impulsive() const {
+	static void ions_impulsive() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").impulsive();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 	
-	void ions_ehrenfest() const {
+	static void ions_ehrenfest() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").ehrenfest();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
-	void observables_dipole() const {
+	static void observables_dipole() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").observables_dipole();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
-	void observables_current() const {
+	static void observables_current() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").observables_current();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
-	void observables_clear() const {
+	static void observables_clear() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").observables_clear();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
@@ -199,6 +249,35 @@ calculations. These are the available options:
 						
 		actions::error(input::environment::global().comm(), "Invalid syntax in 'real-time' command");
 	}
+	
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule("real_time", help());
+		
+		sub.def("show", &show);
+		
+		sub.def("time_step", [](double dt, std::string const & units){
+			time_step(magnitude::time::parse(dt, units));
+		}, "dt"_a, "units"_a);
+		
+		sub.def("num_steps", &num_steps);
+
+		auto sub_ions = sub.def_submodule("ions");
+		sub_ions.def("static",    &ions_static);
+		sub_ions.def("impulsive", &ions_impulsive);	
+		sub_ions.def("ehrenfest", &ions_ehrenfest);
+
+		auto sub_observables = sub.def_submodule("observables");
+		sub_observables.def("dipole",    &observables_dipole);
+		sub_observables.def("current", &observables_current);	
+		sub_observables.def("clear", &observables_clear);
+
+	}
+#endif
 	
 } const real_time;
 

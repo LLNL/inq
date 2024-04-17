@@ -274,6 +274,14 @@ public:
 		return {static_cast<NewType>(vec_[0]), static_cast<NewType>(vec_[1]), static_cast<NewType>(vec_[2])};
 	}
 
+	explicit operator std::vector<Type>() const {
+		std::vector<Type> stdvec(3);
+		stdvec[0] = vec_[0];
+		stdvec[1] = vec_[1];
+		stdvec[2] = vec_[2];
+		return stdvec;
+	}
+
 };
 
 template<std::size_t Index, class T>
@@ -636,6 +644,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vecf[0] == Approx(-12.0f));
 		CHECK(vecf[1] == Approx(-66.0f));
 		CHECK(vecf[2] == Approx( 77.0f));
+
+		auto stdvec = static_cast<std::vector<double>>(vec);
+
+		CHECK(stdvec.size() == 3);
+		CHECK(stdvec[0] == Approx(-12.0));
+		CHECK(stdvec[1] == Approx(-66.0));
+		CHECK(stdvec[2] == Approx( 77.0));
+		
 	}
 
 }

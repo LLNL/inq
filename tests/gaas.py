@@ -22,3 +22,6 @@ pinq.ground_state.tolerance(1e-9)
 pinq.ground_state.show()
 
 pinq.run.ground_state()
+
+pinq.results.ground_state.show()
+pinq.results.ground_state.energy.show()
