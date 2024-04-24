@@ -261,8 +261,8 @@ These are the uses for the command:
 		auto sub = module.def_submodule(name(), help());
 
 		sub.def("status", &status);
-
-		sub.def("clear", &clear);
+		sub.def("clear",  &clear);
+		sub.def("remove", &remove);
 
 		sub.def("insert", [](std::string const & symbol, std::vector<double> const & coords, std::string const & units) {
 			auto c0 = magnitude::length::parse(coords[0], units);
