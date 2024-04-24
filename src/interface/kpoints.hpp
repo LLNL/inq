@@ -40,12 +40,12 @@ grid.
 These are the options available:
 
 -  CLI: `kpoints`
-   Python: `kpoints.show()`
+   Python: `kpoints.status()`
 
    Prints a list of the current kpoints in the simulation.
 
    CLI example:    `inq kpoints`
-   Python example: `pinq.kpoints.show()`
+   Python example: `pinq.kpoints.status()`
 
 
 -  CLI:    `kpoints gamma`
@@ -101,13 +101,13 @@ These are the options available:
 )"""";
 	}
 
-  static void show() {
+  static void status() {
 		auto bz = ions::brillouin::load(".inq/default_brillouin");
 		if(input::environment::global().comm().root()) std::cout << bz;
 	}
 
 	void operator()() const {
-		show();
+		status();
 	}
 
   static void gamma() {
@@ -191,7 +191,7 @@ These are the options available:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
-		sub.def("show",         &show);
+		sub.def("status",         &status);
 		sub.def("gamma",        &gamma);
 		sub.def("grid",         &grid, "nx"_a, "ny"_a, "nz"_a);
 		sub.def("shifted_grid", &shifted_grid, "nx"_a, "ny"_a, "nz"_a);

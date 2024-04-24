@@ -38,14 +38,14 @@ are going to be represented through several values that can be set by
 the user.
 
 - CLI:    `electrons`
-  Python: `electrons.show()`
+  Python: `electrons.status()`
 
-  When no arguments are given (or the `show` function in Python),
+  When no arguments are given (or the `status` function in Python),
   `electrons` will just print the currently defined options (including
   default values).
 
   CLI example:    `inq electrons`
-  Python example: `pinq.electrons.show()`
+  Python example: `pinq.electrons.status()`
 
 - CLI:    `electrons cutoff <value> <units>`
   Python: `electrons.cutoff(value, units)`
@@ -135,13 +135,13 @@ the user.
 )"""";
 	}
 
-	static void show() {
+	static void status() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options");
 		if(input::environment::global().comm().root()) std::cout << el_opts;
 	}
 	
 	void operator()() const {
-		show();
+		status();
 	}
 
 	static void extra_states(int nstates) {
@@ -281,7 +281,7 @@ the user.
 
 		auto sub = module.def_submodule(name(), help());
 		
-		sub.def("show", &show);
+		sub.def("status", &status);
 		sub.def("extra_states", &extra_states, "num_extra_states"_a);
 		sub.def("extra_electrons", &extra_electrons, "num_extra_electrons"_a);
 		sub.def("spin_unpolarized", &spin_unpolarized);

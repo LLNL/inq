@@ -35,13 +35,13 @@ simulations. These are the available options:
 
 - SHOW
   CLI: `real-time`
-  Python: `real_time.show()`
+  Python: `real_time.status()`
 
-  When no arguments are given (or "show" in python), `real-time` will
+  When no arguments are given (or "status" in python), `real-time` will
   just print the currently defined options (including default values).
 
   CLI example:    `inq real-time`
-  Python example: `pinq.real_time.show()`
+  Python example: `pinq.real_time.status()`
 
 
 - TIME STEP
@@ -127,13 +127,13 @@ simulations. These are the available options:
 )"""";
 	}
 
-	static void show() {
+	static void status() {
 		auto opts = options::real_time::load(".inq/default_real_time_options");
 		if(input::environment::global().comm().root()) std::cout << opts;
 	}
 	
 	void operator()() const {
-		show();
+		status();
 	}
 
 	static void time_step(quantity<magnitude::time> dt) {
@@ -258,7 +258,7 @@ simulations. These are the available options:
 
 		auto sub = module.def_submodule("real_time", help());
 		
-		sub.def("show", &show);
+		sub.def("status", &status);
 		
 		sub.def("time_step", [](double dt, std::string const & units){
 			time_step(magnitude::time::parse(dt, units));
