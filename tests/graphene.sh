@@ -9,9 +9,11 @@ a=`inq util calc "sqrt(3)*$dcc"`
 inq clear
 inq cell   $a 0 0  -$a/2 "(sqrt(3)/2)*$a" 0   0 0 5.2917721 Angstrom 2D
 
+inq ions insert H 0 0    0 Angstrom #unnecessary, but just to test remove
 inq ions insert C 0 0    0 Angstrom
 inq ions insert C 0 $dcc 0 Angstrom
- 
+inq ions remove 0 #test remove
+
 inq electrons extra states 2
 inq electrons spacing $a/15 Angstrom
 
