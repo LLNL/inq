@@ -221,7 +221,7 @@ public:
 	friend OStream & operator<<(OStream & out, ions const & self){
 		out << "Ions (" << self.size() << " total):" << std::endl;
 		for(int iatom = 0; iatom < self.size(); iatom++){
-			out << "  " << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
+			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
 		}
 		out << std::endl;
 		return out;
