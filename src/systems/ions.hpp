@@ -208,6 +208,7 @@ public:
 	}
 
 	void remove(long index) {
+		if(index < 0 or index >= size()) throw std::runtime_error("Error: invalid index in systems::ions::remove");
 		atoms_.erase(atoms_.begin() + index);
 		positions_.erase(positions_.begin() + index);
 		velocities_.erase(velocities_.begin() + index);

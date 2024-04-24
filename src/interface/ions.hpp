@@ -145,6 +145,7 @@ These are the uses for the command:
 
 	static void remove(long index) {
 		auto ions = systems::ions::load(".inq/default_ions");
+		if(index < 0 or index >= ions.size()) actions::error(input::environment::global().comm(), "Invalid ion index in the 'ions remove' command.");
 		ions.remove(index);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
@@ -223,7 +224,7 @@ These are the uses for the command:
 		if(args[0] == "remove"){
 
 			if(args.size() != 2) actions::error(input::environment::global().comm(), "Wrong arguments for ions remove.\nUse: inq ions remove <index>");
-
+			
 			remove(str_to<long>(args[1]));
 			if(not quiet) operator()();
 			actions::normal_exit();
