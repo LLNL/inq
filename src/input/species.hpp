@@ -39,11 +39,6 @@ public:
 		pseudo::element(atomic_number){
 	}
 	
-	species(const species &) = default;	
-	species(species &&) = default;
-	species & operator=(const species &) = delete;	
-	species & operator=(species &&) = delete;
-	
 	auto symbol(const std::string & arg_symbol) const{
 		species rspec = *this;
 		rspec.symbol_ = arg_symbol;
