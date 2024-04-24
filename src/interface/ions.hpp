@@ -143,6 +143,12 @@ These are the uses for the command:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	static void remove(long index) {
+		auto ions = systems::ions::load(".inq/default_ions");
+		ions.remove(index);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+
 	static void clear() {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.clear();
@@ -214,6 +220,15 @@ These are the uses for the command:
 			actions::normal_exit();
 		}
 
+		if(args[0] == "remove"){
+
+			if(args.size() != 2) actions::error(input::environment::global().comm(), "Wrong arguments for ions remove.\nUse: inq ions remove <index>");
+
+			remove(str_to<long>(args[1]));
+			if(not quiet) operator()();
+			actions::normal_exit();
+		}
+		
 		if(args.size() == 2 and args[0] == "file"){
 			file(args[1]);
 			if(not quiet) {
