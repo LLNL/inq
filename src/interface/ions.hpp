@@ -44,13 +44,13 @@ first declare the cell for system (see `inq help cell` or
 These are the uses for the command:
 
 - CLI:    `ions`
-  Python: `ions.show()`
+  Python: `ions.status()`
 
-  Without any arguments (or show() in python), `ions` prints a list of
+  Without any arguments (or status() in python), `ions` prints a list of
   the ions currently in the system.
 
   CLI example:    `inq ions`
-  Python example: `pinq.ions.show()`
+  Python example: `pinq.ions.status()`
 
 
 - CLI:    `ions clear`
@@ -122,13 +122,13 @@ These are the uses for the command:
 )"""";
 	}
 
-	static void show() {
+	static void status() {
 		auto ions = systems::ions::load(".inq/default_ions");		
 		if(input::environment::global().comm().root()) std::cout << ions;
 	}
 
 	void operator()() const {
-		show();
+		status();
 	}
 
 	static void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) {
@@ -245,7 +245,7 @@ These are the uses for the command:
 
 		auto sub = module.def_submodule(name(), help());
 
-		sub.def("show", &show);
+		sub.def("status", &status);
 
 		sub.def("clear", &clear);
 

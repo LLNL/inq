@@ -53,13 +53,13 @@ it from a file (using the `inq ion file` command).
 The following are the accepted forms of the cell command:
 
 - CLI:    cell
-  Python: pinq.cell.show()
+  Python: pinq.cell.status()
 
-  Without any arguments (or the show function in python), `cell`
+  Without any arguments (or the status function in python), `cell`
   prints the cell currently defined in the system.
 
   CLI examples:   `inq cell`
-  Python example: `pinq.cell.show()`
+  Python example: `pinq.cell.status()`
 
 
 - CLI:    inq cell cubic <a> <units> [periodicity]
@@ -104,13 +104,13 @@ The following are the accepted forms of the cell command:
 )"""";
 	}
 	
-	static void show() {
+	static void status() {
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		if(input::environment::global().comm().root()) std::cout << cell;
 	}
 
 	void operator()() const {
-		show();
+		status();
 	}
 	
 	static void cubic(quantity<magnitude::length> const aa, int periodicity = 3) {
@@ -163,7 +163,7 @@ public:
 		using utils::str_to;
 		
 		if(args.size() == 0) {
-			show();
+			status();
 			actions::normal_exit();
 		}
 		
@@ -176,7 +176,7 @@ public:
 			if(args.size() == 4) per = parse_periodicity(args[3]);
 			
 			cubic(aa, per);
-			if(not quiet) show();
+			if(not quiet) status();
 			actions::normal_exit();
 		}
 		
@@ -194,7 +194,7 @@ public:
 			if(args.size() == 6) per = parse_periodicity(args[5]);
 			
 			orthorhombic(aa, bb, cc, per);
-			if(not quiet) show();
+			if(not quiet) status();
 			actions::normal_exit();
 		}
 		
@@ -230,7 +230,7 @@ public:
 			
 			operator()(aa0, aa1, aa2, bb0, bb1, bb2, cc0, cc1, cc2, per);
 			
-			if(not quiet) show();
+			if(not quiet) status();
 			actions::normal_exit();
 		}
 
@@ -250,7 +250,7 @@ public:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
-		sub.def("show", &show);
+		sub.def("status", &status);
 
 		sub.def("cubic", [](double const & lattice_parameter, std::string const & units, pybind11::object const & per) {
 			cubic(magnitude::length::parse(lattice_parameter, units), parse_periodicity(per));

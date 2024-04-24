@@ -27,6 +27,6 @@ import pinq
 pinq.clear()
 
 pinq.ions.from_ase(atoms)
-pinq.cell.show()
-pinq.ions.show()
+pinq.cell.status()
+pinq.ions.status()
 

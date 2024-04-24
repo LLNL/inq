@@ -36,13 +36,13 @@ This command defines the options for ground-state self-consistency
 calculations. These are the available options:
 
 - CLI:    `ground-state`
-  Python: `ground_state.show()`
+  Python: `ground_state.status()`
 
   When no arguments are given, `ground-state` will just print the
   currently defined options (including default values).
 
   CLI example:    `inq ground-state`
-  Python example: `pinq.ground_state.show()`
+  Python example: `pinq.ground_state.status()`
 
 
 - CLI:    `ground-state max-steps <value>`
@@ -77,13 +77,13 @@ calculations. These are the available options:
 )"""";
 	}
 
-	static void show() {
+	static void status() {
 		auto gs_opts = options::ground_state::load(".inq/default_ground_state_options");
 		if(input::environment::global().comm().root()) std::cout << gs_opts;
 	}
 
 	void operator()() const {
-		show();
+		status();
 	}
 
 	static void max_steps(int nsteps) {
@@ -144,7 +144,7 @@ calculations. These are the available options:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule("ground_state", help());
-		sub.def("show",      &show);
+		sub.def("status",      &status);
 		sub.def("max_steps", &max_steps);
 		sub.def("tolerance", &tolerance);
 		sub.def("mixing",    &mixing);

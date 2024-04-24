@@ -28,7 +28,6 @@ struct {
 	constexpr auto help() const {
 		
 		return R""""(
-
 The 'results ground-state' command
 ==================
 
@@ -43,13 +42,13 @@ units.
 These are the available subcommands:
 
 - CLI:    `results ground-state`
-  Python: `results.ground_state.show()`
+  Python: `results.ground_state.status()`
 
-  When no arguments are given (or the show function is used), print
+  When no arguments are given (or the status function is used), print
   the values calculated.
 
   CLI example:    `inq results ground-state`.
-  Python example: `pinq.results.ground_state.show()`
+  Python example: `pinq.results.ground_state.status()`
 
 
 - CLI:    `results ground-state iterations`
@@ -105,13 +104,13 @@ These are the available subcommands:
 
 
 - CLI:    `results ground-state energy`
-  Python: `results.ground_state.energy.show()`
+  Python: `results.ground_state.energy.status()`
 
-  When no arguments are given (or show() in Python), `energy` will
+  When no arguments are given (or status() in Python), `energy` will
   print all the energy values available.
 
   CLI example:    `inq results ground-state energy`
-  Python example: `pinq.results.ground_state.energy.show()`
+  Python example: `pinq.results.ground_state.energy.status()`
 
 
 - CLI:    `results ground-state energy total`
@@ -214,13 +213,13 @@ These are the available subcommands:
 
 )"""";
 	}
-	static void show() {
+	static void status() {
 		auto res = ground_state::results::load(".inq/default_results_ground_state");
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
 	
 	void operator()() const {
-		show();
+		status();
 	}
 
 	static auto iterations() {
@@ -421,7 +420,7 @@ These are the available subcommands:
 
 		auto sub = module.def_submodule("ground_state", help());
 
-		sub.def("show",          &show);
+		sub.def("status",          &status);
 		sub.def("iterations",    &iterations);
 		sub.def("magnetization", []() {
 			return static_cast<std::vector<double>>(magnetization());			
@@ -448,7 +447,7 @@ These are the available subcommands:
 		});
 
 		auto sub_en = sub.def_submodule("energy");
-		sub_en.def("show",           &energy);
+		sub_en.def("status",         &energy);
 		sub_en.def("total",          &energy_total);
 		sub_en.def("kinetic",        &energy_kinetic);
 		sub_en.def("eigenvalues",    &energy_eigenvalues);
