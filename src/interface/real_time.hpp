@@ -34,18 +34,18 @@ This command defines the options for real-time electron dynamics
 simulations. These are the available options:
 
 - SHOW
-  CLI: `real-time`
+  Shell:  `real-time`
   Python: `real_time.status()`
 
   When no arguments are given (or "status" in python), `real-time` will
   just print the currently defined options (including default values).
 
-  CLI example:    `inq real-time`
+  Shell example:  `inq real-time`
   Python example: `pinq.real_time.status()`
 
 
 - TIME STEP
-  CLI:    `real-time time-step <value> <units>`
+  Shell:  `real-time time-step <value> <units>`
   Python: `real_time.time_step(value, units)`
 
   Sets the time step for the real-time integration. In most cases you
@@ -54,23 +54,23 @@ simulations. These are the available options:
   "atomictimeunits"), "as" or "fs" among others. The default value is
   0.01 atu.
 
-  CLI example: `inq real-time time-step 0.1 atu`
+  Shell example:  `inq real-time time-step 0.1 atu`
   Python example: `pinq.real_time.time_step(0.1, "atu")`
 
 
 - NUMBER OF STEPS
-  CLI:    `real-time num-steps <value>`
+  Shell:  `real-time num-steps <value>`
   Python: `real_time.num_steps(value)`
 
   The number of time-steps to do in the time propagation. The default
   value is 100.
 
-  CLI example:    `inq real-time num-steps 10000`
+  Shell example:  `inq real-time num-steps 10000`
   Python example: `pinq.real_time.num-steps(10000)`
 
 
 - ION DYNAMICS
-  CLI:    `real-time ions <value>`
+  Shell:  `real-time ions <value>`
   Python: `real_time.ions.static()`
           `real_time.ions.impulsive()`
           `real_time.ions.ehrenfest()`
@@ -90,12 +90,12 @@ simulations. These are the available options:
   Note that when ions move, inq has to recalculate the atomic
   potential at each step, so the propagation will be more costly.
 
-  CLI example:    `inq real-time ions ehrenfest`
+  Shell example:  `inq real-time ions ehrenfest`
   Python example: `pinq.real_time.ions.ehrenfest()`
 
 
 - OBSERVABLES
-  CLI:    `real-time observables <value>`
+  Shell:  `real-time observables <value>`
   Python: `real_time.observables.dipole()`
           `real_time.observables.current()`
 
@@ -109,18 +109,18 @@ simulations. These are the available options:
   INQ. They can be queried after the simulation is complete with the
   `results real-time` command.
 
-  CLI example:    `inq real-time observables current`
+  Shell example:  `inq real-time observables current`
   Python example: `pinq.real_time.observables.current()`
 
 
 - CLEAR OBSERVABLES
-  CLI:    `real-time observables clear`
+  Shell:  `real-time observables clear`
   Python: `real_time.observables.clear()`
 
   This option removes all the observables that have been previously
   requested.
 
-  CLI example:    `inq real-time observables clear`
+  Shell example:  `inq real-time observables clear`
   Python example: `pinq.real_time.observables.clear()`
 
 

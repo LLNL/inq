@@ -43,21 +43,21 @@ this in parallel or through a queuing system.
 
 These are the options available:
 
--  CLI:    `run ground-state`
+-  Shell:  `run ground-state`
    Python: `run.ground_state()`
 
    Runs a ground-state calculation with fixed ions.
 
-   CLI example:    `inq run ground-state`
+   Shell example:  `inq run ground-state`
    Python example: `pinq.run.ground_state()`
 
 
--  CLI:    `run real-time`
+-  Shell:  `run real-time`
    Python: `run.real_time()`
 
    Runs a real-time simulation.
 
-   CLI example:    `inq run real-time`
+   Shell example:  `inq run real-time`
    Python example: `pinq.run.real_time()`
 
 
