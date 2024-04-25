@@ -83,6 +83,16 @@ These are the uses for the command:
   Python example: `pinq.ions.insert_fractional("Si", [0.25, 0.25, 0.25])`
 
 
+- CLI:    `ions remove <index>`
+  Python: `ions.remove(index)`
+
+  Removes the ion given by _index_. Note that the ions indices start
+  from 0, not 1.
+
+  CLI example:    `inq ions remove 3`
+  Python example: `pinq.ions.remove(3)`
+
+
 - CLI:    `ions file <filename>`
   Python: `ions.file(filename)`
 
@@ -140,6 +150,13 @@ These are the uses for the command:
 	static void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos) {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert_fractional(sp, pos);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+
+	static void remove(long index) {
+		auto ions = systems::ions::load(".inq/default_ions");
+		if(index < 0 or index >= ions.size()) actions::error(input::environment::global().comm(), "Invalid ion index in the 'ions remove' command.");
+		ions.remove(index);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
@@ -214,6 +231,15 @@ These are the uses for the command:
 			actions::normal_exit();
 		}
 
+		if(args[0] == "remove"){
+
+			if(args.size() != 2) actions::error(input::environment::global().comm(), "Wrong arguments for ions remove.\nUse: inq ions remove <index>");
+			
+			remove(str_to<long>(args[1]));
+			if(not quiet) operator()();
+			actions::normal_exit();
+		}
+		
 		if(args.size() == 2 and args[0] == "file"){
 			file(args[1]);
 			if(not quiet) {
@@ -246,8 +272,8 @@ These are the uses for the command:
 		auto sub = module.def_submodule(name(), help());
 
 		sub.def("status", &status);
-
-		sub.def("clear", &clear);
+		sub.def("clear",  &clear);
+		sub.def("remove", &remove);
 
 		sub.def("insert", [](std::string const & symbol, std::vector<double> const & coords, std::string const & units) {
 			auto c0 = magnitude::length::parse(coords[0], units);

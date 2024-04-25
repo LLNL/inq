@@ -9,6 +9,8 @@ pinq.cell.status()
 
 pinq.ions.insert_fractional("Ga", [0.00, 0.00, 0.00])
 pinq.ions.insert_fractional("As", [0.25, 0.25, 0.25])
+pinq.ions.insert_fractional("As", [0.25, 0.25, 0.25])
+pinq.ions.remove(1);
 pinq.ions.status()
 
 pinq.electrons.cutoff(30.0, "Hartree")

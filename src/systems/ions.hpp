@@ -206,6 +206,13 @@ public:
 	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
+
+	void remove(long index) {
+		if(index < 0 or index >= size()) throw std::runtime_error("Error: invalid index in systems::ions::remove");
+		atoms_.erase(atoms_.begin() + index);
+		positions_.erase(positions_.begin() + index);
+		velocities_.erase(velocities_.begin() + index);
+	}
 	
 	int size() const {
 		return (long) positions_.size();
@@ -215,7 +222,7 @@ public:
 	friend OStream & operator<<(OStream & out, ions const & self){
 		out << "Ions (" << self.size() << " total):" << std::endl;
 		for(int iatom = 0; iatom < self.size(); iatom++){
-			out << "  " << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
+			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
 		}
 		out << std::endl;
 		return out;
@@ -742,7 +749,61 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[11][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[11][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[11][2] == -14.0257697619_a);
+
+		ions.remove(1);
+		ions.remove(6);
+
+		CHECK(ions.size() == 10);
+				
+		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[0][2] == 9.6727962369_a);
 		
+		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.positions()[1][0] ==  -4.0734958074_a);
+		CHECK(ions.positions()[1][1] ==   2.3518339010_a);
+		CHECK(ions.positions()[1][2] == -18.3787432869_a);
+		
+		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.positions()[2][0] ==  -4.0734958074_a);
+		CHECK(ions.positions()[2][1] ==   2.3518339010_a);
+		CHECK(ions.positions()[2][2] ==   4.3529735250_a);
+		
+		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.positions()[3][0] ==   4.0734958074_a);
+		CHECK(ions.positions()[3][1] ==  -2.3518339010_a);
+		CHECK(ions.positions()[3][2] ==  -4.3529735250_a);
+		
+		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.positions()[4][0] ==   4.0734958074_a);
+		CHECK(ions.positions()[4][1] ==  -2.3518339010_a);
+		CHECK(ions.positions()[4][2] ==  18.3787432869_a);
+
+		CHECK(ions.atoms()[5] == "P");
+		CHECK(ions.positions()[5][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[5][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[5][2] == -21.0386546428_a);
+
+		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.positions()[6][0] ==  4.0734958074_a);
+		CHECK(ions.positions()[6][1] == -2.3518339010_a);
+		CHECK(ions.positions()[6][2] ==  7.0128848809_a);
+
+		CHECK(ions.atoms()[7] == "I");
+		CHECK(ions.positions()[7][0] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[7][1] == Approx(0.0).margin(1e-12));
+		CHECK(ions.positions()[7][2] == Approx(0.0).margin(1e-12));
+
+		CHECK(ions.atoms()[8] == "I");
+		CHECK(ions.positions()[8][0] == -4.0734958074_a);
+		CHECK(ions.positions()[8][1] ==  2.3518339010_a);
+		CHECK(ions.positions()[8][2] == 14.0257697619_a);
+
+		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.positions()[9][0] ==   4.0734958074_a);
+		CHECK(ions.positions()[9][1] ==  -2.3518339010_a);
+		CHECK(ions.positions()[9][2] == -14.0257697619_a);
 	}
 	
 	SECTION("CIF - Ca2PI not symmetrized"){
@@ -821,7 +882,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[11][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[11][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[11][2] == -14.0257697619_a);
-		
+
 	}
 	
 	SECTION("CIF - Na"){
@@ -917,6 +978,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.positions()[3][0] == 3.8229159501_a);
 		CHECK(ions.positions()[3][1] == 0.0_a);
 		CHECK(ions.positions()[3][2] == 3.8229159501_a);
+
 	}
 
 	SECTION("POSCAR - Ni"){
