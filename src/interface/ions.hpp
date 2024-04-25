@@ -83,6 +83,16 @@ These are the uses for the command:
   Python example: `pinq.ions.insert_fractional("Si", [0.25, 0.25, 0.25])`
 
 
+- CLI:    `ions remove <index>`
+  Python: `ions.remove(index)`
+
+  Removes the ion given by _index_. Note that the ions indices start
+  from 0, not 1.
+
+  CLI example:    `inq ions remove 3`
+  Python example: `pinq.ions.remove(3)`
+
+
 - CLI:    `ions file <filename>`
   Python: `ions.file(filename)`
 
