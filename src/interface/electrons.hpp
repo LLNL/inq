@@ -37,17 +37,17 @@ This command defines the electrons that are in the system and how they
 are going to be represented through several values that can be set by
 the user.
 
-- CLI:    `electrons`
+- Shell:  `electrons`
   Python: `electrons.status()`
 
   When no arguments are given (or the `status` function in Python),
   `electrons` will just print the currently defined options (including
   default values).
 
-  CLI example:    `inq electrons`
+  Shell example:  `inq electrons`
   Python example: `pinq.electrons.status()`
 
-- CLI:    `electrons cutoff <value> <units>`
+- Shell:  `electrons cutoff <value> <units>`
   Python: `electrons.cutoff(value, units)`
 
   Sets the energy cutoff for the simulation grid. A higher cutoff
@@ -55,11 +55,11 @@ the user.
   be followed by its units, check `inq help units` for details on what
   units are available.
 
-  CLI example:    `inq electrons cutoff 30.0 Ry`
+  Shell example:  `inq electrons cutoff 30.0 Ry`
   Python example: `pinq.electrons.cutoff(30.0, "Ry)`
 
 
-- CLI:    `electrons spacing <value> <units>`
+- Shell:  `electrons spacing <value> <units>`
   Python: `electrons.spacing(value, units)`
 
   As an alternative to the cutoff, you can sets the spacing for the
@@ -67,11 +67,11 @@ the user.
   costly, simulation. The value must be followed by its length units,
   check `inq help units` for details on what units are available.
 
-  CLI example:    `inq electrons spacing 0.23 A`
+  Shell example:  `inq electrons spacing 0.23 A`
   Python example: `pinq.electrons.spacing(0.23, "A")`
 
 
-- CLI:    `electrons spin <value>`
+- Shell:  `electrons spin <value>`
   Python: `electrons.spin_unpolarized()`
           `electrons.spin_polarized()`
           `electrons.spin_non_collinear()`
@@ -81,11 +81,11 @@ the user.
   'unpolarized' (the default), 'polarized' and 'non-collinear'. For
   Python there are different functions for each value.
 
-  CLI example:    `inq electrons spin polarized`
+  Shell example:  `inq electrons spin polarized`
   Python example: `pinq.electrons.spin_polarized()`
 
 
-- CLI:    `electrons extra-electrons <value>`
+- Shell:  `electrons extra-electrons <value>`
   Python: `electrons.extra_electrons(value)`
 
   Inq determines the number of electrons from the ions present in the
@@ -99,10 +99,10 @@ the user.
   there is no concept of 'where' you put it. This will be determined
   by the ground-state optimization.
 
-  CLI example:    `inq electrons extra-electrons -0.5`
+  Shell example:  `inq electrons extra-electrons -0.5`
   Python example: `pinq.electrons.extra_electrons(-0.5)`
 
-- CLI example:    `electrons extra-states <value>`
+- Shell example:  `electrons extra-states <value>`
   Python example: `electrons.extra_states(value)`
 
   Inq automatically selects a number of states (orbitals, bands) that is
@@ -113,11 +113,11 @@ the user.
   Extra-states are necessary when setting an electronic temperature
   and to improve ground-state convergence.
 
-  CLI example:    `inq electrons extra-states 2`.
+  Shell example:  `inq electrons extra-states 2`.
   Python example: `pinq.electrons.extra_states(2)`.
 
 
-- CLI:    `electrons temperature <value> <units>`
+- Shell:  `electrons temperature <value> <units>`
   Python: `electrons.temperature(value, units)`
 
   This command sets the temperature of the electrons in the
@@ -128,7 +128,7 @@ the user.
   Note that when you add a temperature you also need to specify
   extra-states.
 
-  CLI example:    `inq electrons temperature 273.15 Kelvin`
+  Shell example:  `inq electrons temperature 273.15 Kelvin`
   Pyhton example: `pinq.electrons.temperature(273.15, "Kelvin")`
 
 

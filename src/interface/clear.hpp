@@ -34,7 +34,7 @@ The 'clear' command
 The 'clear' command removes all inq information from the current
 directory. It doesn't take any arguments.
 
-CLI example:    `pinq clear`
+Shell example:  `pinq clear`
 Python example: `pinq.clear()`
 
 

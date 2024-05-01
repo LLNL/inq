@@ -35,42 +35,42 @@ The 'ground-state' command
 This command defines the options for ground-state self-consistency
 calculations. These are the available options:
 
-- CLI:    `ground-state`
+- Shell:  `ground-state`
   Python: `ground_state.status()`
 
   When no arguments are given, `ground-state` will just print the
   currently defined options (including default values).
 
-  CLI example:    `inq ground-state`
+  Shell example:  `inq ground-state`
   Python example: `pinq.ground_state.status()`
 
 
-- CLI:    `ground-state max-steps <value>`
+- Shell:  `ground-state max-steps <value>`
   Python: `ground_state.max_steps(value)`
 
   Sets the maximum number of self-consistency steps that will be
   done. The default value is 200.
 
-  CLI example:    `inq ground-state max-steps 100`
+  Shell example:  `inq ground-state max-steps 100`
   Python example: `pinq.ground_state.max_steps(100)`
 
 
-- CLI:    `ground-state tolerance <value>`
+- Shell:  `ground-state tolerance <value>`
   Python: `ground_state.tolerance(value)`
 
   The tolerance used to consider that the self-consistency iteration
   is converged. The default value is 1e-6.
 
-  CLI example:    `inq ground-state tolerance 1e-9`
+  Shell example:  `inq ground-state tolerance 1e-9`
   Python example: `pinq.ground_state.tolerance(1e-9)`
 
 
-- CLI:    `ground-state mixing <value>`
+- Shell:  `ground-state mixing <value>`
   Python: `ground_state.mixing(value)`
 
   Set the mixing factor for the self-consistency. The default value is 0.3.
 
-  CLI example:    `inq ground-state mixing 0.1`
+  Shell example:  `inq ground-state mixing 0.1`
   Python example: `inq.ground_state.mixing(0.1)`
 
 

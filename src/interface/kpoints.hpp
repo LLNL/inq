@@ -39,63 +39,63 @@ grid.
 
 These are the options available:
 
--  CLI: `kpoints`
+-  Shell:  `kpoints`
    Python: `kpoints.status()`
 
    Prints a list of the current kpoints in the simulation.
 
-   CLI example:    `inq kpoints`
+   Shell example:  `inq kpoints`
    Python example: `pinq.kpoints.status()`
 
 
--  CLI:    `kpoints gamma`
+-  Shell:  `kpoints gamma`
    Python: `kpoints.gamma()`
 
    Tells the system to only use the 0 0 0 point. This is the default.
 
-   CLI example:    `inq kpoints gamma`
+   Shell example:  `inq kpoints gamma`
    Python example: `pinq.kpoints.gamma()`
 
 
--  CLI:    `kpoints grid <nx> <ny> <nz>`
+-  Shell:  `kpoints grid <nx> <ny> <nz>`
    Python: `kpoints.grid(nx, ny, nz)`
 
    Define a uniform grid to sample the Brillouin zone with sizes _nx_,
    _ny_ and _nz_. This generates a non-shifted grid that will include
    gamma.
 
-   CLI example:    `inq kpoints grid 8 8 8`
+   Shell example:  `inq kpoints grid 8 8 8`
    Pyhton example: `pinq.kpoints.grid(8, 8, 8)`
 
 
--  CLI:    `kpoints shifted grid <nx> <ny> <nz>`
+-  Shell:  `kpoints shifted grid <nx> <ny> <nz>`
    Python: `kpoints.shifted_grid(nx, ny, nz)`
 
    Define a shifted uniform grid to sample the Brillouin zone with sizes _nx_,
    _ny_ and _nz_. This grid doesn't include gamma.
 
-   CLI examples:    `inq kpoints shifted grid 4 4 4`
-   Python examples: `pinq.kpoints.shifted_grid(4, 4, 4)`
+   Shell example:  `inq kpoints shifted grid 4 4 4`
+   Python example: `pinq.kpoints.shifted_grid(4, 4, 4)`
 
 
--  CLI:    `kpoints insert <kx> <ky> <kz> <w>`
+-  Shell:  `kpoints insert <kx> <ky> <kz> <w>`
    Python: `kpoints.insert(kx, ky, kz, w)`
 
    Add a kpoint to the grid with coordinates _kx_, _ky_, _kz_, and
    weight _w_. The kpoint must be given in covariant coordinates in the
    range [-0.5, 0.5).
 
-   CLI examples:    `inq kpoints insert 0.25 0.25 0.25 1.0`
-   Python examples: `pinq.kpoints.insert(0.25, 0.25, 0.25, 1.0)`
+   Shell example:  `inq kpoints insert 0.25 0.25 0.25 1.0`
+   Python example: `pinq.kpoints.insert(0.25, 0.25, 0.25, 1.0)`
 
 
--  CLI:    `kpoints clear`
+-  Shell:  `kpoints clear`
    Python: `kpoints.clear()`
 
    Removes all the kpoints defined in the grid.
 
-   CLI examples:    `inq kpoints clear`
-   Python examples: `pinq.kpoints.clear()`
+   Shell example:  `inq kpoints clear`
+   Python example: `pinq.kpoints.clear()`
 
 
 )"""";

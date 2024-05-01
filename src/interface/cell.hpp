@@ -52,52 +52,52 @@ it from a file (using the `inq ion file` command).
 
 The following are the accepted forms of the cell command:
 
-- CLI:    cell
+- Shell:  cell
   Python: pinq.cell.status()
 
   Without any arguments (or the status function in python), `cell`
   prints the cell currently defined in the system.
 
-  CLI examples:   `inq cell`
+  Shell example:  `inq cell`
   Python example: `pinq.cell.status()`
 
 
-- CLI:    inq cell cubic <a> <units> [periodicity]
+- Shell:  inq cell cubic <a> <units> [periodicity]
   Python: pinq.cell.cubic(a, units, periodicity = 3)
 
   Defines a cubic cell of side <a>.
 
-  CLI example:     `inq cell cubic 5.0 A finite`
+  Shell example:   `inq cell cubic 5.0 A finite`
   Python example:  `pinq.cell.cubic(5.0, "A", "finite")`
 
 
-- CLI:    inq cell orthorhombic <a> <b> <c> <units> [periodicity]
+- Shell:  inq cell orthorhombic <a> <b> <c> <units> [periodicity]
   Python: pinq.cell.orthorhombic(a, b, c, units, periodicity = 3)
 
   Defines a orthorhombic cell of sides a, b and c.
 
-  CLI example:    `inq cell orthorhombic 10.0 10.0 12.0 bohr`
+  Shell example:  `inq cell orthorhombic 10.0 10.0 12.0 bohr`
   Python example: `pinq.cell.orthorhombic(10.0, 10.0, 12.0, "bohr")`
 
 
-- CLI:    inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
+- Shell:  inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  <units> [periodicity]
   Python: inq.cell.lattice([a1, a2, a3], [b1, b2, b3], [c1, c2, c3], units, periodicity)
 
   Creates a general cell defined by the lattice vectors a, b, and c
   (given by components). The units are applied to all the vector
   components.
 
-  CLI example:     `inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d`
+  Shell example:   `inq cell  4.6478 0 0  -2.3239 4.02512 0  0 0 10.0 b 2d`
   Python example:  `pinq.cell.lattice([4.6478, 0, 0], [-2.3239, 4.02512, 0], [0, 0, 10.0], "b", "2d")`
 
 
-- CLI:    inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
+- Shell:  inq cell  <a1> <a2> <a3>  <b1> <b2> <b3>  <c1> <c2> <c3>  scale <s> <units> [periodicity]
   Python: inq.cell.lattice([a1, a2, a3], [b1, b2, b3], [c1, c2, c3], scale, units, periodicity)
 
   Like the previous case, creates a general cell defined by the lattice vectors a, b, and c
   (given by components). However in this case a general scale factor is applied to all the vectors.
 
-  CLI example:    `inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom`
+  Shell example:  `inq cell  0.0 0.5 0.5  0.5 0.0 0.5  0.5 0.5 0.0  scale 3.57 angstrom`
   Python example: `pinq.cell.lattice([0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0], 3.57, "angstrom")`
   
 

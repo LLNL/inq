@@ -43,57 +43,57 @@ first declare the cell for system (see `inq help cell` or
 
 These are the uses for the command:
 
-- CLI:    `ions`
+- Shell:  `ions`
   Python: `ions.status()`
 
   Without any arguments (or status() in python), `ions` prints a list of
   the ions currently in the system.
 
-  CLI example:    `inq ions`
+  Shell example:  `inq ions`
   Python example: `pinq.ions.status()`
 
 
-- CLI:    `ions clear`
+- Shell:  `ions clear`
   Python: `ions.clear()`
 
   Removes any ions present in the system. Does not change the cell.
 
-  CLI example:    `inq ions clear`
+  Shell example:  `inq ions clear`
   Python example: `pinq.ions.clear()`
 
 
-- CLI:    `ions insert <symbol> <x> <y> <z> <units>`
+- Shell:  `ions insert <symbol> <x> <y> <z> <units>`
   Python: `ions.insert(symbol, [x, y, z], units)`
 
   Add an ion of type _symbol_ at coordinates _x_, _y_, and _z_. The
   units for the coordinates must be specified (check `inq help units`
   for details).
 
-  CLI example:    `inq ions insert He  0.0 0. 0.0 2.0 angstrom'
+  Shell example:  `inq ions insert He  0.0 0. 0.0 2.0 angstrom'
   Python example: `pinq.ions.insert("He", [0.0, 0.0, 2.0], "Angstrom")`
 
 
-- CLI:    `ions insert fractional <symbol> <x> <y> <z>`
+- Shell:  `ions insert fractional <symbol> <x> <y> <z>`
   Python: `ions.insert_fractional(symbol, [x, y, z])`
 
   Insert an ion of type _symbol_ at fractional coordinates _x_, _y_,
   and _z_.
 
-  CLI example:    `inq ions insert fractional Si 0.25 0.25 0.25`
+  Shell example:  `inq ions insert fractional Si 0.25 0.25 0.25`
   Python example: `pinq.ions.insert_fractional("Si", [0.25, 0.25, 0.25])`
 
 
-- CLI:    `ions remove <index>`
+- Shell:  `ions remove <index>`
   Python: `ions.remove(index)`
 
   Removes the ion given by _index_. Note that the ions indices start
   from 0, not 1.
 
-  CLI example:    `inq ions remove 3`
+  Shell example:  `inq ions remove 3`
   Python example: `pinq.ions.remove(3)`
 
 
-- CLI:    `ions file <filename>`
+- Shell:  `ions file <filename>`
   Python: `ions.file(filename)`
 
   Read a coordinate file given by <filename>. The supported formats
@@ -101,11 +101,11 @@ These are the uses for the command:
   cell information will be read. For XYZ only the atomic positions are
   read, so the cell must be defined before reading the file.
 
-  CLI example:    `inq ions file diamond.cif`
+  Shell example:  `inq ions file diamond.cif`
   Python example: `pinq.ions.file("diamond.cif")`
 
 
-- CLI:    `ions file <filename> radius <r> <units>`
+- Shell:  `ions file <filename> radius <r> <units>`
   Python: `ions.file(filename, radius, units)`
 
   Reads a coordinate file from <filename> and define a cell around the ions. The cell
@@ -117,11 +117,11 @@ These are the uses for the command:
 
   Note: right now this functionality is only implemented for XYZ files.
 
-  CLI example:    `inq ions file glucose.xyz radius 2.0 A`
+  Shell example:  `inq ions file glucose.xyz radius 2.0 A`
   Python example: `pinq.ions.file("glucose.xyz", 2.0, "A")`
 
 - Python: `ions.from_ase(atoms)`
-- CLI:    (not available)
+- Shell:  (not available)
 
   Imports the cell and ions from an Atomic Simulation Environment
   (ASE) object. This is only available for the Python interface.
