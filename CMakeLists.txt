@@ -153,8 +153,9 @@ if(ENABLE_HEFFTE)
   target_link_libraries(inq INTERFACE Heffte::Heffte)
 endif()
 
-find_package(BLAS REQUIRED)
-target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi/adaptors/blas)
+# find_package(BLAS REQUIRED)
+# target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
 
 # ESSL doesn't implement dgelss_, needed in the code, may need to override set(BLA_VENDOR Generic)
 find_package(LAPACK REQUIRED)
