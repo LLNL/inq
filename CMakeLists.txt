@@ -153,8 +153,16 @@ if(ENABLE_HEFFTE)
   target_link_libraries(inq INTERFACE Heffte::Heffte)
 endif()
 
-find_package(BLAS REQUIRED)
-target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
+# Multi
+#set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/boost/include)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi/include/boost/multi/adaptors/blas)
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
+
+target_link_libraries(inq INTERFACE multi)
+
+# find_package(BLAS REQUIRED)
+# target_link_libraries(inq INTERFACE ${BLAS_LIBRARIES})
 
 # ESSL doesn't implement dgelss_, needed in the code, may need to override set(BLA_VENDOR Generic)
 find_package(LAPACK REQUIRED)
@@ -179,11 +187,6 @@ set(Libxc_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/libxc/src/ ${PROJECT_
 
 target_include_directories(inq INTERFACE ${Libxc_INCLUDE_DIRS})
 target_link_libraries(inq INTERFACE ${Libxc_LIBRARIES} xc)
-
-# Multi
-#set(multi_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/multi/include)
-add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/multi)
-target_link_libraries(inq INTERFACE multi)
 
 # MPI3
 # set(bmpi3_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/mpi3/include)
