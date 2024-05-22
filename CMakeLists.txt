@@ -282,6 +282,8 @@ target_compile_definitions(inq INTERFACE "BOOST_PP_VARIADICS=1")  # NVCC needs B
 ########################
 
 find_package(Python COMPONENTS Interpreter Development)
+set(PYBIND11_PYTHON_VERSION ${Python_VERSION})  # Force Pybind11 into the same version as Python package https://stackoverflow.com/a/62838072/225186
+
 add_subdirectory(python)
 	
 #######################
