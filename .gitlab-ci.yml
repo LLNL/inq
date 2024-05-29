@@ -819,5 +819,33 @@ hip-mpich-build:
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
     - make -j2
-    
+
+
+#########################################################################################################################
+# ARM GCC MPICH DEBUG
+#########################################################################################################################
+
+arm-gcc-mpich-debug-build:
+    image: debian:testing
+    stage: build
+    needs: []
+    tags:
+      - arm
+    script:
+      - apt update -qq
+      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
+      - apt autoremove -y -qq
+      - mkdir build
+      - cd build
+      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - make -j4
+      - find -name \*.o | xargs rm -v
+      - cd ../
+      - time tar -Ipixz -cvf arm-gcc-mpich-debug.tar.xz build/
+      - du -sh build/*
+      - ls -lh arm-gcc-mpich-debug.tar.xz
+    artifacts:
+      paths:
+      - arm-gcc-mpich-debug-build.tar.xz
+
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
