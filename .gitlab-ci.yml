@@ -825,9 +825,9 @@ hip-mpich-build:
 # ARM GCC MPICH DEBUG
 #########################################################################################################################
 
-arm-gcc-mpich-debug-build:
+arm-gcc-mpich-debug:
     image: npneq/debian_inq_deps:bookworm_arm64
-    stage: build
+    stage: test
     needs: []
     tags:
       - arm
@@ -836,13 +836,15 @@ arm-gcc-mpich-debug-build:
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
       - make -j4
-      - find -name \*.o | xargs rm -v
-      - cd ../
-      - time tar -Ipixz -cvf arm-gcc-mpich-debug.tar.xz build/
-      - du -sh build/*
-      - ls -lh arm-gcc-mpich-debug.tar.xz
+      - make install
+      - ctest -j4 --output-on-failure --timeout 3600
+#      - find -name \*.o | xargs rm -v
+#      - cd ../
+#      - time tar -Ipixz -cvf arm-gcc-mpich-debug.tar.xz build/
+#      - du -sh build/*
+#      - ls -lh arm-gcc-mpich-debug.tar.xz
     artifacts:
       paths:
-      - arm-gcc-mpich-debug.tar.xz
+#      - arm-gcc-mpich-debug.tar.xz
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
