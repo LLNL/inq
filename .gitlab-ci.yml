@@ -826,15 +826,12 @@ hip-mpich-build:
 #########################################################################################################################
 
 arm-gcc-mpich-debug-build:
-    image: debian:testing
+    image: npneq/debian_inq_deps:bookworm_arm64
     stage: build
     needs: []
     tags:
       - arm
     script:
-      - apt update -qq
-      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
-      - apt autoremove -y -qq
       - mkdir build
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
@@ -846,6 +843,6 @@ arm-gcc-mpich-debug-build:
       - ls -lh arm-gcc-mpich-debug.tar.xz
     artifacts:
       paths:
-      - arm-gcc-mpich-debug-build.tar.xz
+      - arm-gcc-mpich-debug.tar.xz
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
