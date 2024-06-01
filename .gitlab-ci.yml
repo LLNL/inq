@@ -838,13 +838,8 @@ arm-gcc-mpich-debug:
       - make -j4
       - make install
       - ctest -j4 --output-on-failure --timeout 3600
-#      - find -name \*.o | xargs rm -v
-#      - cd ../
-#      - time tar -Ipixz -cvf arm-gcc-mpich-debug.tar.xz build/
-#      - du -sh build/*
-#      - ls -lh arm-gcc-mpich-debug.tar.xz
-    artifacts:
-      paths:
-#      - arm-gcc-mpich-debug.tar.xz
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
