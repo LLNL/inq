@@ -46,7 +46,7 @@ public:
 					
 					vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
             
-					if(norm(reppos - position) <= range*range) replicas_.push_back(reppos);
+					if(norm(reppos - position) <= range*range + 0.1) replicas_.push_back(reppos);
 				}
 			}
 		}
