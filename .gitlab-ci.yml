@@ -819,5 +819,27 @@ hip-mpich-build:
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
     - make -j2
-    
+
+
+#########################################################################################################################
+# ARM GCC MPICH DEBUG
+#########################################################################################################################
+
+arm-gcc-mpich-debug:
+    image: npneq/debian_inq_deps:bookworm_arm64
+    stage: test
+    needs: []
+    tags:
+      - arm
+    script:
+      - mkdir build
+      - cd build
+      - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
+      - make -j4
+      - make install
+      - ctest -j4 --output-on-failure --timeout 3600
+      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
