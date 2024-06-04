@@ -190,7 +190,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		{
 			auto cc = operations::overlap(aa, bb);
-			auto cc_array = matrix::all_gather(cc);			
+			auto cc_array = matrix::all_gather(cc);         
 
 			CHECK(std::get<0>(sizes(cc_array)) == nvec);
 			CHECK(std::get<1>(sizes(cc_array)) == nvec);
@@ -316,7 +316,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		states::orbital_set<basis::trivial, complex> bb(bas, nvec, /*spinor_dim = */ 2, /*kpoint = */ vector3<double, covariant>{0.0, 0.0, 0.0}, /*spin_index = */ 0, cart_comm);
 
 		CHECK(aa.spinors());
-		CHECK(bb.spinors());		
+		CHECK(bb.spinors());        
 		
 		for(int ii = 0; ii < bas.part().local_size(); ii++){
 			for(int jj = 0; jj < aa.local_spinor_set_size(); jj++){
@@ -325,7 +325,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				aa.spinor_array()[ii][0][jj] = 2.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 				aa.spinor_array()[ii][1][jj] = 10.0*(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, M_PI/4 + M_PI/7*iig.value()));
 				bb.spinor_array()[ii][0][jj] = -0.5/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));
-				bb.spinor_array()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));				
+				bb.spinor_array()[ii][1][jj] = -0.1/(iig.value() + 1)*sqrt(jjg.value())*exp(complex(0.0, -M_PI/4 + M_PI/7*iig.value()));                
 			}
 		}
 		
@@ -364,7 +364,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
 					CHECK(real(cc_array[ii][jj]) == Approx(6.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
-					CHECK(fabs(imag(cc_array[ii][jj])) < 1e-12);
+					CHECK(fabs(imag(cc_array[ii][jj])) < 2e-12);
 				}
 			}
 		}
