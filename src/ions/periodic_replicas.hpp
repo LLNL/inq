@@ -45,8 +45,9 @@ public:
 					if(ix == 0 and iy == 0 and iz == 0) continue;
 					
 					vector3<double> reppos = position + ix*cell[0] + iy*cell[1] + iz*cell[2];
-            
-					if(norm(reppos - position) <= range*range + 0.1) replicas_.push_back(reppos);
+
+					//we need to implement a more strict check here for performance
+					replicas_.push_back(reppos);
 				}
 			}
 		}
