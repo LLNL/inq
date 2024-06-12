@@ -65,20 +65,18 @@ public:
 		std::getline(poscar_file, species_line);
 		std::getline(poscar_file, species_line);
 
-		species_line.erase(species_line.begin(), std::find_if(species_line.begin(), species_line.end(), [](auto c) {
-			return !std::isspace(c);
-		}));
-
-		std::istringstream iss(species_line);
+		std::istringstream iss(species_line + " ");
 
 		std::string species_name;
-		while (std::getline(iss, species_name, ' ')){
+		while(iss) {
+			iss >> species_name;
+			if(iss.eof()) break;
 			species.push_back(species_name);
 			input::species sp(species.back());
 			if(not sp.valid()) throw std::runtime_error("Cannot read the species from POSCAR file \'" + poscar_file_name +
 																									"\'. Make sure your file contains the optional \'Species names\' line (see\n https://www.vasp.at/wiki/index.php/POSCAR for details).");
 		}
-
+		
 		std::vector<int> species_num(species.size());
 
 		for(unsigned ispecies = 0; ispecies < species.size(); ispecies++) poscar_file >> species_num[ispecies];
@@ -262,6 +260,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(vasp_file.positions()[4][0] == 0.0_a);
 		CHECK(vasp_file.positions()[4][1] == 0.0_a);
 		CHECK(vasp_file.positions()[4][2] == 13.3414664399_a);
+		
+	}
+
+	SECTION("POSCAR with spaces in species"){
+		
+		parse::poscar vasp_file(config::path::unit_tests_data() + "co.POSCAR");
+		CHECK(vasp_file.size() == 128);
 		
 	}
 
