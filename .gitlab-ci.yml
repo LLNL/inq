@@ -2,6 +2,10 @@
 
 image: npneq/debian_inq_deps:bookworm
 
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+
 default:
   artifacts:
     expire_in: 2 days
