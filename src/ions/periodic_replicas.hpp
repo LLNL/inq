@@ -36,7 +36,7 @@ public:
 		
 		vector3<int> neigh_max{0, 0, 0};
 		//we should use floor here, but since we check later, round is more reliable
-		for(int idir = 0; idir < cell.periodicity(); idir++) neigh_max[idir] = round(range/sqrt(norm(cell[idir])));
+		for(int idir = 0; idir < cell.periodicity(); idir++) neigh_max[idir] = 1 + lround(range/sqrt(norm(cell[idir])));
 		
 		for(int ix = -neigh_max[0]; ix <= neigh_max[0]; ix++){
 			for(int iy = -neigh_max[1]; iy <= neigh_max[1]; iy++){
