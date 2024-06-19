@@ -373,7 +373,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(size == 257);
     
   }
-  
+  	
+  SECTION("Non-cubic grid"){
+
+		auto radius = 5.71;
+		
+		basis::real_space rs(systems::cell::lattice({7.57325_b, 0.0_b, 0.0_b}, {-3.78662_b, 6.55862_b, 0.0_b}, {5.78917e-16_b, 1.00271e-15_b, 9.45443_b}), /*spacing = */ 0.405578, comm);
+    basis::spherical_grid sphere(rs, {3.78659, -2.18619, 1.65434}, radius);		
+
+		auto size = sphere.size();
+		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
+
+		CHECK(size == 13758);
+		
+		auto theo_vol = 4.0/3.0*M_PI*pow(radius, 3);
+		CHECK(size*rs.volume_element()/theo_vol == 0.9978228533_a);
+
+	}
 }
 #endif
 

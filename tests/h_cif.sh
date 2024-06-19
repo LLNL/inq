@@ -10,6 +10,7 @@ inq ions file `inq util test-data`/H.cif
 inq electrons cutoff 30 hartree
 inq theory pbe
 inq ground-state tolerance 1e-8
+inq ground-state mixing 0.1
 
 inq run ground-state
 
