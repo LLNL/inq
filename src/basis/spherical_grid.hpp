@@ -59,7 +59,7 @@ namespace basis {
 		void initialize(const basis & parent_grid, const vector3<double> & center_point, const double radius){
 			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
 			
-			ions::periodic_replicas rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
+			ions::periodic_replicas const rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
 
 			vector3<int> local_sizes = parent_grid.local_sizes();
 			
@@ -80,20 +80,20 @@ namespace basis {
 				vector3<int> lo, hi;
 				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 
-				auto cubesize = hi - lo;
+				auto cube_size = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);			
 
-				auto upper_local = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);			
+				if(cube_size == 0) continue;
 
-				if(upper_local == 0) continue;
+				auto cube_dims = hi - lo;
 				
 				//OPTIMIZATION: this iteration should be done only over the local points
-				auto buffer = points_({upper_count, upper_count + upper_local}).partitioned(cubesize[0]*cubesize[1]).partitioned(cubesize[0]);
+				auto buffer = points_({upper_count, upper_count + cube_size}).partitioned(cube_dims[0]*cube_dims[1]).partitioned(cube_dims[0]);
 																																										
-				assert(std::get<0>(sizes(buffer)) == cubesize[0]);
-				assert(std::get<1>(sizes(buffer)) == cubesize[1]);
-				assert(std::get<2>(sizes(buffer)) == cubesize[2]);
+				assert(std::get<0>(sizes(buffer)) == cube_dims[0]);
+				assert(std::get<1>(sizes(buffer)) == cube_dims[1]);
+				assert(std::get<2>(sizes(buffer)) == cube_dims[2]);
 
-				gpu::run((hi[2] - lo[2]), (hi[1] - lo[1]), (hi[0] - lo[0]),
+				gpu::run(cube_dims[2], cube_dims[1], cube_dims[0],
 								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
 									 
 									 (&buf[ix][iy][iz])->coords_ = local_sizes;
@@ -123,9 +123,10 @@ namespace basis {
 									 (&buf[ix][iy][iz])->relative_pos_ = static_cast<vector3<float, contravariant>>(point_op.metric().to_contravariant(rpoint - re));
 								 });
 				
-				upper_count += upper_local;
+				upper_count += cube_size;
 			}
 
+			assert(upper_count == points_.size());
 
 			{
 				CALI_CXX_MARK_SCOPE("spherical_grid::compact");				
