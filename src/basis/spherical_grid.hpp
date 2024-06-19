@@ -265,10 +265,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	auto ll = 10.0;
 	basis::real_space pw(systems::cell::cubic(ll*1.0_b), /*spacing = */ 0.49672941, comm);
-  
+  auto radius = 2.0;
+	auto theo_vol = 4.0/3.0*M_PI*pow(radius, 3);
+	
   SECTION("Point 0 0 0"){
     
-    basis::spherical_grid sphere(pw, {0.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {0.0, 0.0, 0.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -294,7 +296,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Point -l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, {-ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {-ll/2.0, 0.0, 0.0}, radius);
 		
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -326,7 +328,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Point l/2 0 0"){
     
-    basis::spherical_grid sphere(pw, {ll/2.0, 0.0, 0.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, 0.0, 0.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -336,7 +338,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Point -l/2 -l/2 -l/2"){
     
-    basis::spherical_grid sphere(pw, {-ll/2.0, -ll/2.0, -ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {-ll/2.0, -ll/2.0, -ll/2.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -346,7 +348,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
@@ -356,22 +358,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   SECTION("Point l/2 l/2 l/2"){
     
-    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/2.0, ll/2.0, ll/2.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
-    
+		CHECK(size*pw.volume_element()/theo_vol == 0.9586598525_a);
   }
 
   SECTION("Point l/4 l/4 l/4"){
     
-    basis::spherical_grid sphere(pw, {ll/4.0, ll/4.0, ll/4.0}, 2.0);
+    basis::spherical_grid sphere(pw, {ll/4.0, ll/4.0, ll/4.0}, radius);
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
     CHECK(size == 257);
-    
+		CHECK(size*pw.volume_element()/theo_vol == 0.9586598525_a);
+		
   }
   	
   SECTION("Non-cubic grid"){
