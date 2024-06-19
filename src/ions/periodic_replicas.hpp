@@ -58,7 +58,7 @@ public:
 		return replicas_[i];
 	}
 
-	auto size(){
+	auto size() const {
 		return replicas_.size();
 	}
     
