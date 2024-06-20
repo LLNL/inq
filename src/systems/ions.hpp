@@ -65,15 +65,11 @@ public:
 	static ions parse(std::string filename, std::optional<quantity<magnitude::length>> radius = {}, std::optional<inq::systems::cell> cell = {}) {
 
 		using namespace inq::magnitude;
-		
-		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
-		std::string filename_wo_path = utils::lowercase(filename.substr(filename.find_last_of("/") + 1));
 
 		assert(not (cell.has_value() and radius.has_value()));
 		if(radius.has_value() and radius->in_atomic_units() <= 0.0) throw std::runtime_error("error: a non-positive radius was given when parsing file '" + filename + "'.");
-
 		
-		if(extension == "cif") {
+		if(parse::cif::detect(filename)) {
 			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");
 			
 			parse::cif file(filename);
@@ -82,7 +78,7 @@ public:
 			return parsed;
 		}
 
-		if(extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar") {
+		if(parse::poscar::detect(filename)) {
 			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");			
 			
 			parse::poscar file(filename);
@@ -91,7 +87,7 @@ public:
 			return parsed;
 		}
 
-		if(extension == "xyz") {
+		if(parse::xyz::detect(filename)) {
 			if(not cell.has_value() and not radius.has_value()) throw std::runtime_error("error: the radius or cell argument needs to be provided for parsing XYZ file '" + filename + "'.");
 
 			auto file = parse::xyz(filename);
