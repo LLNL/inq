@@ -27,6 +27,12 @@ class xyz {
 	std::vector<vector3<double>> positions_;
 
 	public:
+
+	static auto detect(std::string const & filename){
+		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
+
+		return extension == "xyz";
+	}
 	
 	xyz(const std::string & xyz_file_name, quantity<magnitude::length> unit = magnitude::operator""_angstrom(1.0)){
 		

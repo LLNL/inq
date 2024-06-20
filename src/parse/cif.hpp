@@ -33,6 +33,12 @@ class cif {
   }
   
 public:
+
+	static auto detect(std::string const & filename){
+		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
+
+		return extension == "cif";
+	}
 	
 	cif(const std::string & cif_file_name):
 		lattice_vectors_(3)
