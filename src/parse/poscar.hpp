@@ -32,6 +32,13 @@ class poscar {
 	std::vector<vector3<double>> positions_;
 	
 public:
+
+	static auto detect(std::string const & filename){
+		std::string extension = utils::lowercase(filename.substr(filename.find_last_of(".") + 1));
+		std::string filename_wo_path = utils::lowercase(filename.substr(filename.find_last_of("/") + 1));
+
+		return extension == "poscar" or extension == "vasp" or filename_wo_path == "poscar" or extension == "contcar" or filename_wo_path == "contcar";
+	}
 	
 	poscar(const std::string & poscar_file_name):
 		lattice_vectors_(3)
