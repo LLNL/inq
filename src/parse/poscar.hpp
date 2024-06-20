@@ -21,6 +21,7 @@
 #include <pseudopod/element.hpp>
 #include <input/species.hpp>
 #include <magnitude/length.hpp>
+#include <magnitude/time.hpp>
 
 namespace inq {
 namespace parse {
@@ -124,7 +125,30 @@ public:
 		}
 
 		velocities_.resize(positions_.size(), {0.0, 0.0, 0.0});
+
+		std::string vel_header;
+		std::getline(poscar_file, vel_header);
+
+		if(poscar_file.eof()) return;
 		
+		if(vel_header[0] == 'l' or vel_header[0] == 'L') { 	//skip the lattice velocities if present
+			for(int ii = 0; ii < 8; ii++) std::getline(poscar_file, vel_header);
+		}
+
+		if(poscar_file.eof()) return;
+ 
+		if(vel_header.size() == 0 or vel_header[0] == ' ' or vel_header[0] == 'C' or vel_header[0] == 'c' or vel_header[0] == 'K' or vel_header[0] == 'k') {
+
+			for(unsigned iatom = 0; iatom < velocities_.size(); iatom++){
+				vector3<double> vel;
+				poscar_file >> vel;
+				velocities_[iatom] = vel*in_atomic_units(1.0_A)/in_atomic_units(1.0_fs);
+				std::getline(poscar_file, tail);
+			}
+			
+		} else {
+			throw std::runtime_error("Cannot read the velocities in 'Direct mode' from POSCAR file '" + poscar_file_name + "' (the timestep is unknown). Use Cartesian.");
+		}
 	}
 	
 	auto size() const {
@@ -280,8 +304,44 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("POSCAR with spaces in species"){
 		
 		parse::poscar vasp_file(config::path::unit_tests_data() + "co.POSCAR");
-		CHECK(vasp_file.size() == 128);
+
+		CHECK(vasp_file.lattice()[0][0] == 22.753846_a);
+		CHECK(vasp_file.lattice()[0][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[0][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[1][1] == 22.753846_a);
+		CHECK(vasp_file.lattice()[1][2] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][0] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][1] == 0.0_a);
+		CHECK(vasp_file.lattice()[2][2] == 22.753846_a);
 		
+		CHECK(vasp_file.size() == 128);
+
+		CHECK(vasp_file.atoms()[0]   == "C");
+		CHECK(vasp_file.atoms()[10]  == "C");
+		CHECK(vasp_file.atoms()[20]  == "C");
+		CHECK(vasp_file.atoms()[30]  == "C");
+		CHECK(vasp_file.atoms()[40]  == "C");
+		CHECK(vasp_file.atoms()[50]  == "C");
+		CHECK(vasp_file.atoms()[60]  == "C");
+		CHECK(vasp_file.atoms()[63]  == "C");
+		CHECK(vasp_file.atoms()[64]  == "O");
+		CHECK(vasp_file.atoms()[70]  == "O");
+		CHECK(vasp_file.atoms()[80]  == "O");
+		CHECK(vasp_file.atoms()[90]  == "O");
+		CHECK(vasp_file.atoms()[100] == "O");
+		CHECK(vasp_file.atoms()[110] == "O");
+		CHECK(vasp_file.atoms()[120] == "O");
+		CHECK(vasp_file.atoms()[127] == "O");
+		
+		CHECK(vasp_file.positions()[1][0] == 17.2379607321_a);
+		CHECK(vasp_file.positions()[1][1] == 13.7235682342_a);
+		CHECK(vasp_file.positions()[1][2] == 1.4562639292_a);
+
+		CHECK(vasp_file.velocities()[1][0] ==  0.00044201619_a);
+		CHECK(vasp_file.velocities()[1][1] ==  0.00014473032_a);
+		CHECK(vasp_file.velocities()[1][2] == -0.00017120384_a);
+
 	}
 
 }
