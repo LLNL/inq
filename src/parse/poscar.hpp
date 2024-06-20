@@ -30,6 +30,7 @@ class poscar {
 	std::vector<vector3<double>> lattice_vectors_;
 	std::vector<input::species> atoms_;
 	std::vector<vector3<double>> positions_;
+	std::vector<vector3<double>> velocities_;
 	
 public:
 
@@ -121,6 +122,8 @@ public:
 				}
 			}
 		}
+
+		velocities_.resize(positions_.size(), {0.0, 0.0, 0.0});
 		
 	}
 	
@@ -138,6 +141,10 @@ public:
 
 	auto & positions() const {
 		return positions_;
+	}
+
+	auto & velocities() const {
+		return velocities_;
 	}
 
 	auto cell() const {

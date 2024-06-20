@@ -83,7 +83,7 @@ public:
 			
 			parse::poscar file(filename);
 			ions parsed(file.cell());
-			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
+			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii], file.velocities()[ii]);
 			return parsed;
 		}
 
