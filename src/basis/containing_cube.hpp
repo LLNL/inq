@@ -17,8 +17,7 @@ namespace inq {
 namespace basis {
 
 //returns the cube that contains the sphere, this makes the initialization O(1) instead of O(N)
-template <class BasisType, typename PosType>
-void containing_cube(const BasisType & grid, PosType const & pos, double radius, vector3<int> & lo, vector3<int> & hi){
+void containing_cube(basis::real_space const & grid, vector3<double> const & pos, double radius, vector3<int> & lo, vector3<int> & hi){
 
 	for(int idir = 0; idir < 3; idir++){
 		auto rec = grid.cell().reciprocal(idir);
@@ -28,8 +27,8 @@ void containing_cube(const BasisType & grid, PosType const & pos, double radius,
 		auto dlo = grid.cell().metric().to_contravariant(lointer)[idir];
 		auto dhi = grid.cell().metric().to_contravariant(hiinter)[idir];
 
-		lo[idir] = floor(dlo/grid.contravariant_spacing()[idir]);
-		hi[idir] = ceil(dhi/grid.contravariant_spacing()[idir]) + 1;
+		lo[idir] = lround(floor(dlo/grid.contravariant_spacing()[idir]));
+		hi[idir] = lround(ceil(dhi/grid.contravariant_spacing()[idir])) + 1;
 
 		#if defined(__cpp_lib_clamp) and  (__cpp_lib_clamp >= 201603L)
 		lo[idir] = std::clamp(lo[idir], grid.symmetric_range_begin(idir), grid.symmetric_range_end(idir));
