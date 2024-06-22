@@ -97,6 +97,14 @@ int main(int argc, char* argv[]) {
 		interface::actions::normal_exit();
 	}
 
+	{
+		auto history_file = std::ofstream(".inq_history", std::ofstream::app);
+		for(int iarg = 0; iarg < argc; iarg++) {
+			history_file << argv[iarg] << ' ';
+		}
+		history_file << std::endl;
+	}
+	
 	auto quiet = false;
 	auto debug = false;
 	
