@@ -83,7 +83,7 @@ public:
 			
 			parse::poscar file(filename);
 			ions parsed(file.cell());
-			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii]);
+			for(int ii = 0; ii < file.size(); ii++) parsed.add_atom(file.atoms()[ii], file.positions()[ii], file.velocities()[ii]);
 			return parsed;
 		}
 
@@ -216,9 +216,20 @@ public:
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, ions const & self){
+
+		auto print_vel = false;
+		for(int iatom = 0; iatom < self.size(); iatom++){
+			if(norm(self.velocities_[iatom]) > 1e-9) {
+				print_vel = true;
+				break;
+			}
+		}
+		
 		out << "Ions (" << self.size() << " total):" << std::endl;
 		for(int iatom = 0; iatom < self.size(); iatom++){
-			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
+			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom];
+			if(print_vel) out << "\t\t-\t" << self.velocities_[iatom];
+			out << '\n';
 		}
 		out << std::endl;
 		return out;
@@ -1099,5 +1110,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 	}
 
+	SECTION("POSCAR - CO 64"){
+		
+		auto ions = systems::ions::parse(config::path::unit_tests_data() + "co.POSCAR");
+
+		CHECK(ions.cell().lattice(0)[0] == 22.753846_a);
+		CHECK(ions.cell().lattice(0)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(0)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(1)[1] == 22.753846_a);
+		CHECK(ions.cell().lattice(1)[2] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[0] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[1] == 0.0_a);
+		CHECK(ions.cell().lattice(2)[2] == 22.753846_a);
+		
+		CHECK(ions.size() == 128);
+
+		CHECK(ions.atoms()[0]   == "C");
+		CHECK(ions.atoms()[10]  == "C");
+		CHECK(ions.atoms()[20]  == "C");
+		CHECK(ions.atoms()[30]  == "C");
+		CHECK(ions.atoms()[40]  == "C");
+		CHECK(ions.atoms()[50]  == "C");
+		CHECK(ions.atoms()[60]  == "C");
+		CHECK(ions.atoms()[63]  == "C");
+		CHECK(ions.atoms()[64]  == "O");
+		CHECK(ions.atoms()[70]  == "O");
+		CHECK(ions.atoms()[80]  == "O");
+		CHECK(ions.atoms()[90]  == "O");
+		CHECK(ions.atoms()[100] == "O");
+		CHECK(ions.atoms()[110] == "O");
+		CHECK(ions.atoms()[120] == "O");
+		CHECK(ions.atoms()[127] == "O");
+		
+		CHECK(ions.positions()[1][0] == 17.2379607321_a);
+		CHECK(ions.positions()[1][1] == 13.7235682342_a);
+		CHECK(ions.positions()[1][2] == 1.4562639292_a);
+
+		CHECK(ions.velocities()[1][0] ==  0.00044201619_a);
+		CHECK(ions.velocities()[1][1] ==  0.00014473032_a);
+		CHECK(ions.velocities()[1][2] == -0.00017120384_a);
+
+		CHECK(ions.velocities()[127][0] == 0.000149239_a);
+		CHECK(ions.velocities()[127][1] == 0.000643727_a);
+		CHECK(ions.velocities()[127][2] == 0.00015515_a);
+		
+	}
+	
 }
 #endif
