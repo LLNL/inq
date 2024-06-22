@@ -216,9 +216,20 @@ public:
 	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, ions const & self){
+
+		auto print_vel = false;
+		for(int iatom = 0; iatom < self.size(); iatom++){
+			if(norm(self.velocities_[iatom]) > 1e-9) {
+				print_vel = true;
+				break;
+			}
+		}
+		
 		out << "Ions (" << self.size() << " total):" << std::endl;
 		for(int iatom = 0; iatom < self.size(); iatom++){
-			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom] << '\n';
+			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom];
+			if(print_vel) out << "\t\t-\t" << self.velocities_[iatom];
+			out << '\n';
 		}
 		out << std::endl;
 		return out;
