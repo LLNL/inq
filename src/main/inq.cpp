@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
  
 	std::unordered_map<std::string, std::string> aliases = {
 		{ "calculator"s,               "calc"s                     },
+		{ "clean"s,                    "clear"s                    },
 		{ "exactexchange"s,            "exact-exchange"s           },
 		{ "extraelectrons"s,           "extra-electrons"s          },
 		{ "extrastates"s,              "extra-states"s             },
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::clear)
 		+ interface::item(interface::electrons)
 		+ interface::item(interface::ground_state)
+		+ interface::item(interface::history)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
 		+ interface::item(interface::perturbations)		
@@ -97,6 +99,20 @@ int main(int argc, char* argv[]) {
 		interface::actions::normal_exit();
 	}
 
+	{
+		auto history_file = std::ofstream(".inq_history", std::ofstream::app);
+		for(int iarg = 0; iarg < argc; iarg++) {
+			auto arg = std::string(argv[iarg]);
+			auto & npos = std::string::npos;
+			if(arg.find(' ') != npos or arg.find('(') != npos or arg.find(')') != npos){
+				arg = '\"' + arg + '\"';
+			}
+			if(iarg > 0) history_file << ' ';
+			history_file << arg;
+		}
+		history_file << std::endl;
+	}
+	
 	auto quiet = false;
 	auto debug = false;
 	

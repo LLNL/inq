@@ -28,6 +28,7 @@
 #include <interface/clear.hpp>
 #include <interface/electrons.hpp>
 #include <interface/ground_state.hpp>
+#include <interface/history.hpp>
 #include <interface/ions.hpp>
 #include <interface/kpoints.hpp>
 #include <interface/perturbations.hpp>
