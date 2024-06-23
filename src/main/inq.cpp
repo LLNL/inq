@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
  
 	std::unordered_map<std::string, std::string> aliases = {
 		{ "calculator"s,               "calc"s                     },
+		{ "clean"s,                    "clear"s                    },
 		{ "exactexchange"s,            "exact-exchange"s           },
 		{ "extraelectrons"s,           "extra-electrons"s          },
 		{ "extrastates"s,              "extra-states"s             },
