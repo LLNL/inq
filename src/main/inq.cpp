@@ -107,7 +107,8 @@ int main(int argc, char* argv[]) {
 			if(arg.find(' ') != npos or arg.find('(') != npos or arg.find(')') != npos){
 				arg = '\"' + arg + '\"';
 			}
-			history_file << arg << ' ';
+			if(iarg > 0) history_file << ' ';
+			history_file << arg;
 		}
 		history_file << std::endl;
 	}
