@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::clear)
 		+ interface::item(interface::electrons)
 		+ interface::item(interface::ground_state)
+		+ interface::item(interface::history)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
 		+ interface::item(interface::perturbations)		
