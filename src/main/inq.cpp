@@ -100,7 +100,12 @@ int main(int argc, char* argv[]) {
 	{
 		auto history_file = std::ofstream(".inq_history", std::ofstream::app);
 		for(int iarg = 0; iarg < argc; iarg++) {
-			history_file << argv[iarg] << ' ';
+			auto arg = std::string(argv[iarg]);
+			auto & npos = std::string::npos;
+			if(arg.find(' ') != npos or arg.find('(') != npos or arg.find(')') != npos){
+				arg = '\"' + arg + '\"';
+			}
+			history_file << arg << ' ';
 		}
 		history_file << std::endl;
 	}
