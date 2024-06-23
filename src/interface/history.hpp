@@ -9,9 +9,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <input/environment.hpp>
-#include <systems/ions.hpp>
-
 namespace inq {
 namespace interface {
 
@@ -78,13 +75,26 @@ These are the available subcommands:
 		}
 
     if(args.size() == 1 and args[0] == "script") {
-      std::ifstream hist_file(".inq_history");
+
       std::cout << "#!/bin/bash\n\n"
                 << "set -e #make the script fail if a command fails\n"
                 << "set -x #output commands to the terminal\n\n"
                 << "inq clear\n";
 
-      if(hist_file.is_open()) std::cout << hist_file.rdbuf();
+      std::ifstream hist_file(".inq_history");
+
+      std::list<std::string> file_lines;
+      while(hist_file) {
+        std::string line;
+        std::getline(hist_file, line);
+
+        if(utils::lowercase(line).rfind("inq history", 0) == 0) continue;
+				
+        file_lines.push_back(line);
+      }
+
+      for(auto & line : file_lines) std::cout << line << '\n';
+      
       actions::normal_exit();
     }
     
