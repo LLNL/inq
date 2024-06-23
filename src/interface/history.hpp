@@ -76,6 +76,10 @@ These are the available subcommands:
 
     if(args.size() == 1 and args[0] == "script") {
 
+			auto starts_with = [](auto str, auto substr) {
+				return utils::lowercase(str).rfind(substr, 0) == 0;
+			};
+			
       std::cout << "#!/bin/bash\n\n"
                 << "set -e #make the script fail if a command fails\n"
                 << "set -x #output commands to the terminal\n\n"
@@ -88,12 +92,17 @@ These are the available subcommands:
         std::string line;
         std::getline(hist_file, line);
 
-        if(utils::lowercase(line).rfind("inq history", 0) == 0) continue;
+        if(starts_with(line, "inq history")) continue;
 				
         file_lines.push_back(line);
       }
 
-      for(auto & line : file_lines) std::cout << line << '\n';
+			auto rit = file_lines.rbegin();
+			for(; rit != file_lines.rend(); ++rit){
+				if(starts_with(*rit, "inq clear") or starts_with(*rit, "inq clean")) break;
+			}
+			
+      for(auto it = rit.base(); it != file_lines.end(); ++it) std::cout << *it << '\n';
       
       actions::normal_exit();
     }
