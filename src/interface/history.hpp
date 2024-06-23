@@ -44,6 +44,21 @@ These are the available subcommands:
 
   Shell example: `inq history`
 
+- `history clear`
+
+  Clears the list of saved commands.
+
+  Shell example: `inq history clear`
+
+- `history script`
+
+  Prints a bash script containing the list of commands that reproduce
+  the calculation in the current directory. The recommended script
+  headers are included. Any command issues before `inq clear` will not
+  be included.
+
+  Shell example: `inq history script > my_calculation.sh`
+
 
 )"""";
 	}
@@ -54,8 +69,25 @@ These are the available subcommands:
     if(args.size() == 0) {
       std::ifstream hist_file(".inq_history");
       if(hist_file.is_open()) std::cout << hist_file.rdbuf();
+      actions::normal_exit();
     }                   
 
+		if(args.size() == 1 and args[0] == "clear") {
+      std::ofstream hist_file(".inq_history");
+			actions::normal_exit();
+		}
+
+    if(args.size() == 1 and args[0] == "script") {
+      std::ifstream hist_file(".inq_history");
+      std::cout << "#!/bin/bash\n\n"
+                << "set -e #make the script fail if a command fails\n"
+                << "set -x #output commands to the terminal\n\n"
+                << "inq clear\n";
+
+      if(hist_file.is_open()) std::cout << hist_file.rdbuf();
+      actions::normal_exit();
+    }
+    
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'history' command");
 	}
 	
