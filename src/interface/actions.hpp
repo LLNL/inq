@@ -10,12 +10,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <inq_config.h>
+#include <interface/history_file.hpp>
 
 namespace inq {
 namespace interface {
 namespace actions {
 
 void normal_exit() {
+	history_file.write();
   exit(0);
 }
 
