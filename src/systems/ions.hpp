@@ -117,6 +117,16 @@ public:
 		using namespace pybind11::literals;
 		using namespace inq::magnitude;
 
+		auto pypbc = atoms.attr("get_pbc")().cast<py::array_t<bool>>();
+		auto pbc = static_cast<bool *>(pypbc.request().ptr);
+			
+		auto per = -1;
+		if(pbc[0] == false and pbc[1] == false and pbc[2] == false) per = 0;
+		if(pbc[0] == true  and pbc[1] == false and pbc[2] == false) per = 1;
+		if(pbc[0] == true  and pbc[1] == true  and pbc[2] == false) per = 2;
+		if(pbc[0] == true  and pbc[1] == true  and pbc[2] == true ) per = 3;
+		if(per == -1) throw std::runtime_error("INQ: does not support some partial periodicities from ASE");
+		
 		auto lattice = atoms.attr("get_cell")().attr("__array__")().cast<py::array_t<double>>();
 		auto lat = static_cast<double *>(lattice.request().ptr);
 		
@@ -124,7 +134,7 @@ public:
 		auto lat1 = vector3(1.0_A*lat[3], 1.0_A*lat[4], 1.0_A*lat[5]);
 		auto lat2 = vector3(1.0_A*lat[6], 1.0_A*lat[7], 1.0_A*lat[8]);
 		
-		systems::ions ions(systems::cell::lattice(lat0, lat1, lat2));
+		systems::ions ions(systems::cell(in_atomic_units(lat0), in_atomic_units(lat1), in_atomic_units(lat2), per));
 		
 		auto atomic_numbers = atoms.attr("get_atomic_numbers")().cast<py::array_t<int>>();
 		auto num = static_cast<int *>(atomic_numbers.request().ptr);
