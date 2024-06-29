@@ -99,19 +99,7 @@ int main(int argc, char* argv[]) {
 		interface::actions::normal_exit();
 	}
 
-	{
-		auto history_file = std::ofstream(".inq_history", std::ofstream::app);
-		for(int iarg = 0; iarg < argc; iarg++) {
-			auto arg = std::string(argv[iarg]);
-			auto & npos = std::string::npos;
-			if(arg.find(' ') != npos or arg.find('(') != npos or arg.find(')') != npos){
-				arg = '\"' + arg + '\"';
-			}
-			if(iarg > 0) history_file << ' ';
-			history_file << arg;
-		}
-		history_file << std::endl;
-	}
+	interface::history_file.add_entry(argc, argv);
 	
 	auto quiet = false;
 	auto debug = false;
