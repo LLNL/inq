@@ -11,10 +11,12 @@ from ase.io import write
 import _pinq
 
 atoms = Atoms('H2', positions=[[0, 0, 0], [0.0, 0, 0.7]], cell = [3.0, 3.0, 4.0])
+atoms.set_pbc(True)
 
 atoms.calc = _pinq.calculator(ecut = 80.0, xc = 'LDA')
 atoms.calc.calculate(atoms)
 energy = atoms.get_potential_energy()
+
 
 print("Energy = ", energy);
 
