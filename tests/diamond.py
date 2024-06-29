@@ -13,6 +13,7 @@ atoms = Atoms('C2', positions = [[0.0, 0.0, 0.0], [0.25, 0.25, 0.25]])
 atoms.set_cell([[0.0, alat/2.0, alat/2.0],
                 [alat/2.0, 0.0, alat/2.0],
                 [alat/2.0, alat/2.0, 0.0]], scale_atoms=True)
+atoms.set_pbc(True)
 
 atoms.calc = PinqCalculator(ecut = 70.0, extra_bands = 1)
 atoms.calc.calculate(atoms)
@@ -26,7 +27,9 @@ import pinq
 
 pinq.clear()
 
+atoms.set_pbc([True, True, False])
 pinq.ions.from_ase(atoms)
 pinq.cell.status()
 pinq.ions.status()
+
 
