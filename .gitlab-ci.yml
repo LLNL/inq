@@ -73,18 +73,20 @@ config-no-cuda:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes
 
-config-no-nccl:
-    stage: config-check
-    needs: []
-    script:
-      - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
-      - apt purge -y -qq clang clang-14
-      - apt autoremove -y -qq
-      - nvcc -V
-      - mkdir build
-      - cd build
-      -  eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES
+# DISABLED SINCE PACKAGE INSTALLATION FAILS (XA, Jun 24)
+#
+#config-no-nccl:
+#    stage: config-check
+#    needs: []
+#    script:
+#      - apt update -qq
+#      - apt install --no-install-recommends -y -qq nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+#      - apt purge -y -qq clang clang-14
+#      - apt autoremove -y -qq
+#      - nvcc -V
+#      - mkdir build
+#      - cd build
+#      -  eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES
 
 #########################################################################################################################
 # GCC OMPI COVERAGE
@@ -92,6 +94,7 @@ config-no-nccl:
 
 gcc-ompi-coverage:
     stage: build
+    needs: []
     script:
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
@@ -135,6 +138,7 @@ gcc-ompi-coverage-4proc:
 
 gcc-mpich:
     stage: build
+    needs: []    
     script:
       - c++ --version
       - mpichversion
@@ -229,6 +233,7 @@ gcc-mpich-5proc:
 
 gcc-ompi-debug:
     stage: build
+    needs: []    
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -293,6 +298,7 @@ gcc-ompi-debug-5proc:
       
 gcc-ompi-fast:
     stage: build
+    needs: []    
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -357,6 +363,7 @@ gcc-ompi-fast-5proc:
 
 clang-ompi-debug:
     stage: build
+    needs: []    
     script:
       - clang++ --version
       - mkdir build
@@ -423,6 +430,7 @@ clang-ompi-debug-5proc:
 
 clang-ompi-fast:
     stage: build
+    needs: []    
     script:
       - clang++ --version
       - mkdir build && cd build
@@ -730,6 +738,7 @@ gcc-mpich-template:
     variables:
       GIT_STRATEGY: none
     stage: template
+    needs: []    
     script:
       - mkdir inq_template_dir
       - cd inq_template_dir
@@ -782,6 +791,7 @@ clang-ompi-template:
     variables:
       GIT_STRATEGY: none
     stage: template
+    needs: []    
     script:
       - time apt update -qq
       - time apt install --no-install-recommends -y -qq wget
@@ -807,6 +817,7 @@ clang-ompi-template:
 
 hip-mpich-build:
   stage: build
+  needs: []  
   image: rocm/dev-ubuntu-22.04
   script:
     - apt-get -qq update
