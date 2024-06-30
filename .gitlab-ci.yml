@@ -73,18 +73,20 @@ config-no-cuda:
       - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wpedantic -pedantic-errors  -Wextra -Wno-cast-function-type -Wno-error=cast-function-type -Wno-unused-parameter -Wno-error=unused-parameter"
       - eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes
 
-config-no-nccl:
-    stage: config-check
-    needs: []
-    script:
-      - apt update -qq
-      - apt install --no-install-recommends -y -qq nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
-      - apt purge -y -qq clang clang-14
-      - apt autoremove -y -qq
-      - nvcc -V
-      - mkdir build
-      - cd build
-      -  eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES
+# DISABLED SINCE PACKAGE INSTALLATION FAILS (XA, Jun 24)
+#
+#config-no-nccl:
+#    stage: config-check
+#    needs: []
+#    script:
+#      - apt update -qq
+#      - apt install --no-install-recommends -y -qq nvidia-cuda-dev nvidia-cuda-toolkit libthrust-dev
+#      - apt purge -y -qq clang clang-14
+#      - apt autoremove -y -qq
+#      - nvcc -V
+#      - mkdir build
+#      - cd build
+#      -  eval ! cmake ../ --install-prefix=$HOME -DENABLE_CUDA=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="70" -DMPI_EXECUTABLE_SUFFIX=.mpich -DENABLE_NCCL=YES
 
 #########################################################################################################################
 # GCC OMPI COVERAGE
