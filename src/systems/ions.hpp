@@ -15,6 +15,7 @@
 
 #include <systems/cell.hpp>
 #include <input/species.hpp>
+#include <ionic/species_set.hpp>
 #include <gpu/array.hpp>
 #include <parse/cif.hpp>
 #include <parse/poscar.hpp>
@@ -34,16 +35,18 @@ public:
 
 private:
 
-	inq::systems::cell cell_;
+	systems::cell cell_;
 	std::vector<input::species> atoms_;
 	positions_type positions_;
-	velocities_type velocities_;	
+	velocities_type velocities_;
+	ionic::species_set all_species_;
 
 	template <typename PositionType>
 	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
 		atoms_.push_back(element);
 		positions_.push_back(in_atomic_units(position));
 		velocities_.push_back(vel);
+		all_species_.insert(element);
 	}
 
 public:
