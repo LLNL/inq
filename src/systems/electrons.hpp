@@ -136,7 +136,7 @@ public:
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const options::electrons & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
 		atomic_pot_(ions.species_list(), basis::real_space::gcutoff(ions.cell(), conf.spacing_value()), conf),
-		states_(conf.spin_val(), atomic_pot_.num_electrons(ions.atoms()) + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
+		states_(conf.spin_val(), atomic_pot_.num_electrons(ions.symbols()) + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size(), states_.num_states())),
 		kpin_comm_(kpin_subcomm(full_comm_)),
 		kpin_states_comm_(kpin_states_subcomm(full_comm_)),

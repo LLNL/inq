@@ -47,7 +47,7 @@ vector3<double> dipole(systems::ions const & ions, const hamiltonian::atomic_pot
 	vector3<double> dip = {0.0, 0.0, 0.0};
 
 	for(int iatom = 0; iatom < ions.size(); iatom++){
-		auto zval = atomic_pot.pseudo_for_element(ions.atoms()[iatom]).valence_charge();
+		auto zval = atomic_pot.pseudo_for_element(ions.species(iatom)).valence_charge();
 		dip += proton_charge*zval*ions.positions()[iatom];
 	}
 

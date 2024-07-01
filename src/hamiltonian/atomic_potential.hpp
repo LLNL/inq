@@ -381,7 +381,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 		
 		CHECK(pot.num_species() == 2);
-		CHECK(pot.num_electrons(ions.atoms()) == 30.0_a);
+		CHECK(pot.num_electrons(ions.symbols()) == 30.0_a);
 		
 		rs.info(std::cout);
 		

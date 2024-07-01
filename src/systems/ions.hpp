@@ -152,7 +152,7 @@ public:
 	}
 #endif
 	
-	auto & atoms() const {
+	auto & symbols() const {
 		return atoms_;
 	}
 
