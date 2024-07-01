@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__IONS__INTERACTION
-#define INQ__IONS__INTERACTION
+#ifndef INQ__IONIC__INTERACTION
+#define INQ__IONIC__INTERACTION
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -12,7 +12,7 @@
 #include <inq_config.h>
 #include <math/vector3.hpp>
 #include <cmath>
-#include <ions/periodic_replicas.hpp>
+#include <ionic/periodic_replicas.hpp>
 #include <multi/array.hpp>
 #include <limits>
 #include <complex>
@@ -21,7 +21,7 @@
 #include <utils/profiling.hpp>
 
 namespace inq {
-namespace ions {
+namespace ionic {
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -356,8 +356,8 @@ auto interaction_forces(const cell_type & cell, const geometry_type & geo, const
 }
 #endif
 
-#ifdef INQ_IONS_INTERACTION_UNIT_TEST
-#undef INQ_IONS_INTERACTION_UNIT_TEST
+#ifdef INQ_IONIC_INTERACTION_UNIT_TEST
+#undef INQ_IONIC_INTERACTION_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -389,7 +389,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(4);
     
-    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(4, cell, charge, positions, sep, energy, forces);
     
     CHECK(energy == -9.99517178_a); //this number comes from Octopus
     
@@ -410,7 +410,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
     CHECK(energy == -10.73490075_a); //this number comes from Octopus
 
@@ -429,7 +429,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(1);
 
-    ions::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
+    ionic::interaction_energy(1, cell, &charge, &position, sep, energy, forces);
 
     CHECK(energy == -78.31680646_a); //this number comes from Octopus
     
@@ -452,7 +452,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == 12.05415072_a); 
@@ -483,7 +483,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == 5.02018926_a); 
@@ -514,7 +514,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == 5.02018926_a); 
@@ -606,7 +606,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(64);
 
-    ions::interaction_energy(64, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(64, cell, charge, positions, sep, energy, forces);
 
     CHECK(energy == -253.0283966274_a); 
 
@@ -631,7 +631,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(3);
 
-    ions::interaction_energy(3, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(3, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == 6.98512326_a); 
@@ -670,7 +670,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(4);
 
-    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(4, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == -39.9332202862_a); 
@@ -710,7 +710,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(4);
 
-    ions::interaction_energy(4, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(4, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == -45.1682138928_a); 
@@ -747,7 +747,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == -1.0617337162_a);
@@ -776,7 +776,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     double energy;
     std::vector<vector3<double>> forces(2);
 
-    ions::interaction_energy(2, cell, charge, positions, sep, energy, forces);
+    ionic::interaction_energy(2, cell, charge, positions, sep, energy, forces);
 
 		//these numbers come from Octopus
     CHECK(energy == -19.8137164427_a);

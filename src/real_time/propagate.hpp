@@ -15,7 +15,7 @@
 #include <observables/dipole.hpp>
 #include <options/real_time.hpp>
 #include <perturbations/none.hpp>
-#include <ions/propagator.hpp>
+#include <ionic/propagator.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
 #include <real_time/etrs.hpp>
@@ -27,13 +27,13 @@
 namespace inq {
 namespace real_time {
 
-template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::fixed, typename Perturbation = perturbations::none>
+template <typename ProcessFunction, typename IonSubPropagator = ionic::propagator::fixed, typename Perturbation = perturbations::none>
 void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunction func, const options::theory & inter, const options::real_time & opts, Perturbation const & pert = {}){
 		CALI_CXX_MARK_FUNCTION;
 		
 		auto console = electrons.logger();
 
-		ions::propagator::runtime ion_propagator{opts.ion_dynamics_value()};
+		ionic::propagator::runtime ion_propagator{opts.ion_dynamics_value()};
 	
 		const double dt = opts.dt();
 		const int numsteps = opts.num_steps();
@@ -61,7 +61,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		ham.exchange().update(electrons);
 
 		energy.calculate(ham, electrons);
-		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
+		energy.ion(ionic::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
 		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
 		if(ion_propagator.needs_force()) forces = hamiltonian::calculate_forces(ions, electrons, ham);

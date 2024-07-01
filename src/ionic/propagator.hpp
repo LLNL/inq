@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__IONS__PROPAGATOR
-#define INQ__IONS__PROPAGATOR
+#ifndef INQ__IONIC__PROPAGATOR
+#define INQ__IONIC__PROPAGATOR
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -14,7 +14,7 @@
 #include <variant>
 
 namespace inq {
-namespace ions {
+namespace ionic {
 namespace propagator {
 
 struct fixed {
@@ -98,13 +98,13 @@ public:
 	runtime(options::real_time::ion_dynamics arg_dynamics) {
 		switch (arg_dynamics) {
     case options::real_time::ion_dynamics::STATIC:
-			var_ = ions::propagator::fixed{};
+			var_ = ionic::propagator::fixed{};
 			break;
     case options::real_time::ion_dynamics::IMPULSIVE:
-			var_ = ions::propagator::impulsive{};
+			var_ = ionic::propagator::impulsive{};
 			break;
     case options::real_time::ion_dynamics::EHRENFEST:
-			var_ = ions::propagator::molecular_dynamics{};
+			var_ = ionic::propagator::molecular_dynamics{};
 			break;
 		}
 	}
@@ -135,8 +135,8 @@ public:
 }
 #endif
 
-#ifdef INQ_IONS_PROPAGATOR_UNIT_TEST
-#undef INQ_IONS_PROPAGATOR_UNIT_TEST
+#ifdef INQ_IONIC_PROPAGATOR_UNIT_TEST
+#undef INQ_IONIC_PROPAGATOR_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 

@@ -67,9 +67,9 @@ These are the options available:
 	static void ground_state() {
 		auto ions = systems::ions::load(".inq/default_ions");
 
-		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 
-		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+		try { bz = ionic::brillouin::load(".inq/default_brillouin"); }
 		catch(...) {
 			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 		}
@@ -88,9 +88,9 @@ These are the options available:
 	static void real_time() {
 		auto ions = systems::ions::load(".inq/default_ions");
 
-		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 
-		try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+		try { bz = ionic::brillouin::load(".inq/default_brillouin"); }
 		catch(...) {
 			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 		}

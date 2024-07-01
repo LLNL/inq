@@ -13,7 +13,7 @@
 #include <systems/ions.hpp>
 
 namespace inq {
-namespace ions {
+namespace ionic {
 
 class brillouin {
 
@@ -169,8 +169,8 @@ public:
 }
 #endif
 
-#ifdef INQ_IONS_BRILLOUIN_UNIT_TEST
-#undef INQ_IONS_BRILLOUIN_UNIT_TEST
+#ifdef INQ_IONIC_BRILLOUIN_UNIT_TEST
+#undef INQ_IONIC_BRILLOUIN_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -192,7 +192,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		ions.insert_fractional("C", {0.0 , 0.0 , 0.0 });
 		ions.insert_fractional("C", {0.25, 0.25, 0.25});
 
-		auto bz1 = ions::brillouin(ions, input::kpoints::gamma());
+		auto bz1 = ionic::brillouin(ions, input::kpoints::gamma());
 
 		CHECK(bz1.size() == 1);
 		CHECK(bz1.kpoint(0)[0] == 0.0_a);
@@ -212,7 +212,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		bz1.clear();
 		CHECK(bz1.size() == 0);
 				
-		auto bz2 = ions::brillouin(ions, input::kpoints::grid({1, 2, 3}));
+		auto bz2 = ionic::brillouin(ions, input::kpoints::grid({1, 2, 3}));
 
 		CHECK(bz2.size() == 6);
 
@@ -240,7 +240,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz2.kpoint(5)[1]/(2*M_PI) == -0.5_a);
 		CHECK(bz2.kpoint(5)[2]/(2*M_PI) == -0.3333333333_a);
 
-		auto bz3 = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}, true));
+		auto bz3 = ionic::brillouin(ions, input::kpoints::grid({2, 2, 2}, true));
 
 		CHECK(bz3.size() == 8);
 
@@ -277,7 +277,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz3.kpoint(7)[2]/(2*M_PI) == -0.25_a);
 
 		bz3.save(comm, "save_brillouin_3");
-		auto read_bz3 = ions::brillouin::load("save_brillouin_3");
+		auto read_bz3 = ionic::brillouin::load("save_brillouin_3");
 
 		CHECK(read_bz3.size() == 8);
 
@@ -319,7 +319,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		kpts.insert({0.1, 0.2,  0.3}, 2.0);
 		kpts.insert({1.0, -0.01, 0.0}, 0.0);
 		
-		auto bz4 = ions::brillouin(ions, kpts);
+		auto bz4 = ionic::brillouin(ions, kpts);
 
 		CHECK(bz4.size() == 3);
 
@@ -340,7 +340,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(bz4.kpoint_weight(2) ==  0.0_a);
 
 		bz4.save(comm, "save_brillouin_4");
-		auto read_bz4 = ions::brillouin::load("save_brillouin_4");
+		auto read_bz4 = ionic::brillouin::load("save_brillouin_4");
 
 		CHECK(read_bz4.size() == 3);
 

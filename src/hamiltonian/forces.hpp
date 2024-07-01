@@ -59,7 +59,7 @@ gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, syst
 		electrons.full_comm().all_reduce_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 	}
 	
-	auto ionic_forces = inq::ions::interaction_forces(ions.cell(), ions, electrons.atomic_pot());
+	auto ionic_forces = ionic::interaction_forces(ions.cell(), ions, electrons.atomic_pot());
 
 	gpu::array<vector3<double>, 1> forces_local(ions.size(), {0.0, 0.0, 0.0});
 

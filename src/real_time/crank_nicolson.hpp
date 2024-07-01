@@ -60,7 +60,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	if(not ion_propagator.static_ions()) {
 		sc.update_ionic_fields(electrons.states_comm(), ions, electrons.atomic_pot());
 		ham.update_projectors(electrons.states_basis(), electrons.atomic_pot(), ions);
-		energy.ion(inq::ions::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
+		energy.ion(ionic::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 	}
 
 	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;

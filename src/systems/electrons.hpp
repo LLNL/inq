@@ -17,8 +17,8 @@
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
-#include <ions/brillouin.hpp>
-#include <ions/interaction.hpp>
+#include <ionic/brillouin.hpp>
+#include <ionic/interaction.hpp>
 #include <observables/density.hpp>
 #include <operations/randomize.hpp>
 #include <operations/integral.hpp>
@@ -57,7 +57,7 @@ public:
 
 private:
 	
-	inq::ions::brillouin brillouin_zone_;
+	inq::ionic::brillouin brillouin_zone_;
 	hamiltonian::atomic_potential atomic_pot_;
 	states::ks_states states_;
 	mutable parallel::cartesian_communicator<3> full_comm_;

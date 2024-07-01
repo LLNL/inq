@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__IONS__PERIODIC_REPLICAS
-#define INQ__IONS__PERIODIC_REPLICAS
+#ifndef INQ__IONIC__PERIODIC_REPLICAS
+#define INQ__IONIC__PERIODIC_REPLICAS
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -17,7 +17,7 @@
 #include <cmath>
 
 namespace inq {
-namespace ions {
+namespace ionic {
 
 class periodic_replicas{
 
@@ -72,8 +72,8 @@ private:
 }
 #endif
 
-#ifdef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
-#undef INQ_IONS_PERIODIC_REPLICAS_UNIT_TEST
+#ifdef INQ_IONIC_PERIODIC_REPLICAS_UNIT_TEST
+#undef INQ_IONIC_PERIODIC_REPLICAS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -88,7 +88,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     systems::cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 10.0, 0.0), vector3<double>(0.0, 0.0, 10.0));
 
     SECTION("Cubic cell 0"){
-      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 9.5);
+      ionic::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 9.5);
       
       CHECK(rep.size() == 1);
       
@@ -99,7 +99,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
     
     SECTION("Cubic cell 1"){
-      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 10.0);
+      ionic::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 10.0);
       
       CHECK(rep.size() == 7);
 
@@ -134,7 +134,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
     
     SECTION("Cubic cell 2"){
-      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 11.0);
+      ionic::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 11.0);
       
       CHECK(rep.size() == 7);
 
@@ -169,20 +169,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
 
     SECTION("Cubic cell 3"){
-      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 15.0);
+      ionic::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 15.0);
       
       CHECK(rep.size() == 19);
     }
 
     SECTION("Cubic cell 4"){
-      ions::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 18.0);
+      ionic::periodic_replicas rep(cell, vector3<double>(5.0, 5.0, 5.0), 18.0);
       
       CHECK(rep.size() == 27);
     }
     
     SECTION("Cubic cell 5"){
 			
-      ions::periodic_replicas rep(cell, vector3<double>(35.0, -205.0, 2035.0), 10.0);
+      ionic::periodic_replicas rep(cell, vector3<double>(35.0, -205.0, 2035.0), 10.0);
       
       CHECK(rep.size() == 7);
 
@@ -225,7 +225,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(cell2.periodicity() == 2);
 			
-			ions::periodic_replicas rep(cell2, vector3<double>(5.0, 5.0, 5.0), 11.0);
+			ionic::periodic_replicas rep(cell2, vector3<double>(5.0, 5.0, 5.0), 11.0);
       
       CHECK(rep.size() == 5);
 
@@ -258,7 +258,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(cell0.periodicity() == 0);
 		
-		ions::periodic_replicas rep(cell0, vector3<double>(5.0, 5.0, 5.0), 11.0);
+		ionic::periodic_replicas rep(cell0, vector3<double>(5.0, 5.0, 5.0), 11.0);
     
 		CHECK(rep.size() == 1);
 		

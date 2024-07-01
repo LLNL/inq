@@ -10,7 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <input/environment.hpp>
-#include <ions/brillouin.hpp>
+#include <ionic/brillouin.hpp>
 
 namespace inq {
 namespace interface {
@@ -102,7 +102,7 @@ These are the options available:
 	}
 
   static void status() {
-		auto bz = ions::brillouin::load(".inq/default_brillouin");
+		auto bz = ionic::brillouin::load(".inq/default_brillouin");
 		if(input::environment::global().comm().root()) std::cout << bz;
 	}
 
@@ -111,30 +111,30 @@ These are the options available:
 	}
 
   static void gamma() {
-		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
 
   static void grid(int nx, int ny, int nz) {
-		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}));
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}));
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
 
   static void shifted_grid(int nx, int ny, int nz) {
-		auto bz = ions::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}, true));
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::grid({nx, ny, nz}, true));
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 	}
 
   static void insert(double const & kx, double const & ky, double const & kz, double const & weight) {
-    auto bz = ions::brillouin{};
-    try { bz = ions::brillouin::load(".inq/default_brillouin"); }
+    auto bz = ionic::brillouin{};
+    try { bz = ionic::brillouin::load(".inq/default_brillouin"); }
     catch(...){  }
     bz.insert({kx, ky, kz}, weight);
 		bz.save(input::environment::global().comm(), ".inq/default_brillouin");
   }
 
   static void clear() {
-    auto bz = ions::brillouin{};
+    auto bz = ionic::brillouin{};
     bz.save(input::environment::global().comm(), ".inq/default_brillouin");
   }
   

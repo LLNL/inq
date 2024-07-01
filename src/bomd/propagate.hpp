@@ -9,7 +9,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <ground_state/calculate.hpp>
-#include <ions/propagator.hpp>
+#include <ionic/propagator.hpp>
 #include <options/real_time.hpp>
 #include <real_time/viewables.hpp>
 #include <systems/electrons.hpp>
@@ -21,7 +21,7 @@
 namespace inq {
 namespace bomd {
 
-template <typename ProcessFunction, typename IonSubPropagator = ions::propagator::molecular_dynamics>
+template <typename ProcessFunction, typename IonSubPropagator = ionic::propagator::molecular_dynamics>
 void propagate(systems::ions & ions, systems::electrons & electrons,  ProcessFunction func, const options::theory & inter, const options::real_time & opts, IonSubPropagator const& ion_propagator = {}){
 		CALI_CXX_MARK_FUNCTION;
 
