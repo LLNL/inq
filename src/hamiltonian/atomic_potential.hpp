@@ -69,18 +69,18 @@ namespace hamiltonian {
 			has_nlcc_ = false;
 			nelectrons_ = 0.0;
 
-			for(auto species = species_list.cbegin(); species != species_list.cend(); ++species) {
-				if(!pseudo_set_.has(*species)) throw std::runtime_error("inq error: pseudopotential for element " + (*species).symbol() + " not found.");
+			for(auto const & species : species_list) {
+				if(!pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
 				
-				auto map_ref = pseudopotential_list_.find((*species).symbol());
+				auto map_ref = pseudopotential_list_.find(species.symbol());
 				
 				if(map_ref == pseudopotential_list_.end()){
 					
-					auto file_path = pseudo_set_.file_path(*species);
-					if((*species).has_file()) file_path = (*species).file_path();
+					auto file_path = pseudo_set_.file_path(species);
+					if(species.has_file()) file_path = species.file_path();
 
 					//sorry for this, emplace has a super ugly syntax
-					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple((*species).symbol()), std::make_tuple(file_path, sep_, gcutoff, (*species).filter_pseudo()));
+					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(species.symbol()), std::make_tuple(file_path, sep_, gcutoff, species.filter_pseudo()));
 					map_ref = insert.first;
 					
 				}
