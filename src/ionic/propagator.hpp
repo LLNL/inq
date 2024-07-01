@@ -72,7 +72,7 @@ struct molecular_dynamics{
 	template <typename TypeIons, typename TypeForces>
 	auto acceleration(TypeIons& ions, TypeForces forces) const {
 
-		for(int iatom = 0; iatom < ions.size(); iatom++) forces[iatom] /= ions.atoms()[iatom].mass();
+		for(int iatom = 0; iatom < ions.size(); iatom++) forces[iatom] /= ions.species(iatom).mass();
 		return forces;
 
 	}

@@ -62,10 +62,10 @@ public:
 			
 		for(int iatom = 0; iatom < ions.size(); iatom++){
 			if(non_local_in_fourier_){
-				auto insert = projectors_fourier_map_.emplace(ions.atoms()[iatom].symbol(), projector_fourier(basis, pot.pseudo_for_element(ions.atoms()[iatom])));
+				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, pot.pseudo_for_element(ions.species(iatom))));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.positions()[iatom]));
 			} else {
-				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(ions.atoms()[iatom]), ions.positions()[iatom], iatom);
+				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(ions.species(iatom)), ions.positions()[iatom], iatom);
 				if(projectors.back().empty()) projectors.pop_back(); 
 			}
 		}
@@ -263,7 +263,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 	
 	states::ks_states st(states::spin_config::UNPOLARIZED, 11.0);
 

@@ -135,8 +135,8 @@ public:
 	template <typename KptsType = input::kpoints::list>	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const options::electrons & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
-		atomic_pot_(ions.size(), ions.atoms(), basis::real_space::gcutoff(ions.cell(), conf.spacing_value()), conf),
-		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
+		atomic_pot_(ions.species_list(), basis::real_space::gcutoff(ions.cell(), conf.spacing_value()), conf),
+		states_(conf.spin_val(), atomic_pot_.num_electrons(ions.symbols()) + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size(), states_.num_states())),
 		kpin_comm_(kpin_subcomm(full_comm_)),
 		kpin_states_comm_(kpin_states_subcomm(full_comm_)),
@@ -186,8 +186,8 @@ public:
 		eigenvalues_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 		occupations_.reextent({static_cast<boost::multi::size_t>(kpin_.size()), max_local_spinor_set_size_});
 
-		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() == 0) throw std::runtime_error("inq error: the system does not have any electrons");
-		if(atomic_pot_.num_electrons() + conf.extra_electrons_val() < 0) throw std::runtime_error("inq error: the system has a negative number of electrons");		
+		if(states_.num_electrons() == 0.0) throw std::runtime_error("inq error: the system does not have any electrons");
+		if(states_.num_electrons() <  0.0) throw std::runtime_error("inq error: the system has a negative number of electrons");
 		
 		print(ions);
 

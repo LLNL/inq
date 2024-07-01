@@ -45,8 +45,6 @@ namespace hamiltonian {
 	private:
 		
 		pseudo::math::erf_range_separation sep_;
-		int natoms_;
-		double nelectrons_;
 		pseudo::set pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
@@ -54,11 +52,10 @@ namespace hamiltonian {
 		bool fourier_pseudo_;
 
 	public:
-		
-		template <class atom_array>
-		atomic_potential(const int natoms, const atom_array & atom_list, double gcutoff, options::electrons const & conf = {}):
+
+		template <class SpeciesList>
+		atomic_potential(SpeciesList const & species_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
-			natoms_(natoms),
 			pseudo_set_(conf.pseudopotentials_value()),
 			double_grid_(conf.double_grid_value()),
 			fourier_pseudo_(conf.fourier_pseudo_value())
@@ -69,29 +66,20 @@ namespace hamiltonian {
 			gcutoff *= double_grid_.spacing_factor(); 
 			
 			has_nlcc_ = false;
-			nelectrons_ = 0.0;
 
-			for(int iatom = 0; iatom < natoms; iatom++){
-				if(!pseudo_set_.has(atom_list[iatom])) throw std::runtime_error("inq error: pseudopotential for element " + atom_list[iatom].symbol() + " not found.");
+			for(auto const & species : species_list) {
+				if(!pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
 				
-				auto map_ref = pseudopotential_list_.find(atom_list[iatom].symbol());
+				if(pseudopotential_list_.find(species.symbol()) != pseudopotential_list_.end()) throw std::runtime_error("INQ Error: duplicated species");
 				
-				if(map_ref == pseudopotential_list_.end()){
-					
-					auto file_path = pseudo_set_.file_path(atom_list[iatom]);
-					if(atom_list[iatom].has_file()) file_path = atom_list[iatom].file_path();
+				auto file_path = pseudo_set_.file_path(species);
+				if(species.has_file()) file_path = species.file_path();
 
-					//sorry for this, emplace has a super ugly syntax
-					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(atom_list[iatom].symbol()), std::make_tuple(file_path, sep_, gcutoff, atom_list[iatom].filter_pseudo()));
-					map_ref = insert.first;
-					
-				}
+				//sorry for this, emplace has a super ugly syntax
+				auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(species.symbol()), std::make_tuple(file_path, sep_, gcutoff, species.filter_pseudo()));
+				auto & pseudo = insert.first->second;
 				
-				auto & pseudo = map_ref->second;
-				
-				nelectrons_ += pseudo.valence_charge();
 				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
-				
 			}
 
 		}
@@ -100,12 +88,19 @@ namespace hamiltonian {
 			return pseudopotential_list_.size();
 		}
 
-		const double & num_electrons() const {
-			return nelectrons_;
+		template <class SymbolsList>
+		auto num_electrons(SymbolsList const symbols_list) {
+			double nel = 0.0;
+			for(auto symbol : symbols_list) {
+				auto map_ref = pseudopotential_list_.find(symbol);
+				assert(map_ref != pseudopotential_list_.end());
+				auto & pseudo = map_ref->second;
+				nel += pseudo.valence_charge();
+			}
+			return nel;
 		}
-		
-		template <class element_type>
-		const pseudopotential_type & pseudo_for_element(const element_type & el) const {
+
+		auto & pseudo_for_element(input::species const & el) const {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
@@ -116,7 +111,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> potential(basis);
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			potential.fill(0.0);
 			
@@ -126,7 +121,7 @@ namespace hamiltonian {
 				
 				auto atom_position = ions.positions()[iatom];
 				
-				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.species(iatom));
 				basis::spherical_grid sphere(basis, atom_position, ps.short_range_potential_radius());
 
 				if(not double_grid_.enabled()){
@@ -167,7 +162,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			basis::field<basis_type, double> density(basis);
 			
@@ -179,7 +174,7 @@ namespace hamiltonian {
 				
 				auto atom_position = ions.positions()[iatom];
 				
-				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.species(iatom));
 				basis::spherical_grid sphere(basis, atom_position, sep_.long_range_density_radius());
 
 				//OPTIMIZATION: this should be done in parallel for atoms too
@@ -204,7 +199,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 
 			auto nspin = states.num_density_components();
 			basis::field_set<basis_type, double> density(basis, nspin);
@@ -218,7 +213,7 @@ namespace hamiltonian {
 				
 				auto atom_position = ions.positions()[iatom];
 				
-				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.species(iatom));
 
 				if(ps.has_electronic_density()){
 
@@ -267,7 +262,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			basis::field<basis_type, double> density(basis);
 
@@ -277,7 +272,7 @@ namespace hamiltonian {
 				
 				auto atom_position = ions.positions()[iatom];
 				
-				auto & ps = pseudo_for_element(ions.atoms()[iatom]);
+				auto & ps = pseudo_for_element(ions.species(iatom));
 
 				if(not ps.has_nlcc_density()) continue;
 
@@ -304,7 +299,6 @@ namespace hamiltonian {
 		void info(output_stream & out) const {
 			out << "ATOMIC POTENTIAL:" << std::endl;
 			out << "	Number of species		= " << num_species() << std::endl;
-			out << "	Number of electrons = " << num_electrons() << std::endl;
 			out << std::endl;
 		}
 
@@ -347,38 +341,35 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({"P", "X"});
 	
-		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 	
 	SECTION("Duplicated element"){
 		std::vector<species> el_list({"N", "N"});
-
-		hamiltonian::atomic_potential pot(el_list.size(), el_list.begin(), gcut);
-
-		CHECK(pot.num_species() == 1);
-		CHECK(pot.num_electrons() == 10.0_a);
-		
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 
 	SECTION("Empty list"){
 		std::vector<species> el_list;
 		
-		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 0);
-		CHECK(pot.num_electrons() == 0.0_a);
 
 		CHECK(not pot.has_nlcc());
 		
 	}
 
 	SECTION("CNOH"){
-		species el_list[] = {"C", "N", "O", "H"};
+		ionic::species_set el_list;
+		el_list.insert("C");
+		el_list.insert("N");
+		el_list.insert("O");
+		el_list.insert("H");
 
-		hamiltonian::atomic_potential pot(4, el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 4);
-		CHECK(pot.num_electrons() == 16.0_a);
 	}
 
 	SECTION("Construct from a geometry"){
@@ -387,10 +378,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
-		hamiltonian::atomic_potential pot(ions.size(), ions.atoms(), rs.gcutoff());
+		hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 		
 		CHECK(pot.num_species() == 2);
-		CHECK(pot.num_electrons() == 30.0_a);
+		CHECK(pot.num_electrons(ions.symbols()) == 30.0_a);
 		
 		rs.info(std::cout);
 		
