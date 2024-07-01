@@ -15,7 +15,6 @@
 #include <observables/dipole.hpp>
 #include <observables/current.hpp>
 #include <perturbations/none.hpp>
-#include <ions/propagator.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
 #include <real_time/etrs.hpp>

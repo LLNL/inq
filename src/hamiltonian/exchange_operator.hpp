@@ -42,7 +42,7 @@ namespace hamiltonian {
 		
   public:
 
-		exchange_operator(systems::cell const & cell, ions::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
+		exchange_operator(systems::cell const & cell, ionic::brillouin const & bzone, double const exchange_coefficient, bool const use_ace):
 			exchange_coefficient_(exchange_coefficient),
 			use_ace_(use_ace),
 			sing_(cell, bzone){

@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <ions/brillouin.hpp>
+#include <ionic/brillouin.hpp>
 
 namespace inq {
 namespace hamiltonian {
@@ -44,7 +44,7 @@ public:
     return 4*M_PI*M_PI/val;
   }
 
-  singularity_correction(systems::cell const & cell, ions::brillouin const & bzone):
+  singularity_correction(systems::cell const & cell, ionic::brillouin const & bzone):
     fk_(bzone.size()),
     nkpoints_(bzone.size()),
     cell_volume_(cell.volume())
@@ -127,7 +127,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		auto ions = systems::ions(systems::cell::lattice({aa, 0.0_b, 0.0_b}, {0.0_b, aa, 0.0_b}, {0.0_b, 0.0_b, aa}));
     auto const & cell = ions.cell();
 
-    auto bzone = ions::brillouin(ions, input::kpoints::grid({2, 2, 2}));
+    auto bzone = ionic::brillouin(ions, input::kpoints::grid({2, 2, 2}));
         
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{0.0, -0.5, 0.0}) == 25.9081_a);
     CHECK(hamiltonian::singularity_correction::auxiliary(cell, 2.0*M_PI*vector3<double, covariant>{8.3333333333333332E-003, 7.4999999999999997E-002, 0.26666666666666666}) == 42.650855183181122_a);

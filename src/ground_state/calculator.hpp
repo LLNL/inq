@@ -31,7 +31,6 @@
 #include <mixers/broyden.hpp>
 #include <eigensolvers/steepest_descent.hpp>
 #include <math/complex.hpp>
-#include <ions/interaction.hpp>
 #include <observables/dipole.hpp>
 #include <observables/magnetization.hpp>
 #include <options/ground_state.hpp>
@@ -136,7 +135,7 @@ public:
 		sc_.update_ionic_fields(electrons.states_comm(), ions_, electrons.atomic_pot());
 		sc_.update_hamiltonian(ham_, res.energy, electrons.spin_density());
 		
-		res.energy.ion(inq::ions::interaction_energy(ions_.cell(), ions_, electrons.atomic_pot()));
+		res.energy.ion(ionic::interaction_energy(ions_.cell(), ions_, electrons.atomic_pot()));
 		
 		double old_exe = ham_.exchange().update(electrons);
 		double exe_diff = fabs(old_exe);

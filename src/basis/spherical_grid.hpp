@@ -22,7 +22,7 @@
 #include <gpu/atomic.hpp>
 #include <gpu/run.hpp>
 #include <gpu/reduce.hpp>
-#include <ions/periodic_replicas.hpp>
+#include <ionic/periodic_replicas.hpp>
 #include <basis/containing_cube.hpp>
 #include <basis/real_space.hpp>
 #include <cassert>
@@ -59,7 +59,7 @@ namespace basis {
 		void initialize(const basis & parent_grid, const vector3<double> & center_point, const double radius){
 			CALI_CXX_MARK_SCOPE("spherical_grid::initialize");
 			
-			ions::periodic_replicas const rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
+			ionic::periodic_replicas const rep(parent_grid.cell(), center_point, parent_grid.diagonal_length());
 
 			vector3<int> local_sizes = parent_grid.local_sizes();
 			

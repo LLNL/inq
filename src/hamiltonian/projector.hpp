@@ -13,7 +13,6 @@
 
 #include <gpu/array.hpp>
 #include <math/vector3.hpp>
-#include <ions/periodic_replicas.hpp>
 #include <basis/double_grid.hpp>
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
