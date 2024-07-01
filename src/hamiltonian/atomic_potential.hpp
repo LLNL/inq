@@ -45,7 +45,6 @@ namespace hamiltonian {
 	private:
 		
 		pseudo::math::erf_range_separation sep_;
-		double nelectrons_;
 		pseudo::set pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
@@ -67,7 +66,6 @@ namespace hamiltonian {
 			gcutoff *= double_grid_.spacing_factor(); 
 			
 			has_nlcc_ = false;
-			nelectrons_ = 0.0;
 
 			for(auto const & species : species_list) {
 				if(!pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
@@ -87,7 +85,6 @@ namespace hamiltonian {
 				
 				auto & pseudo = map_ref->second;
 				
-				nelectrons_ += pseudo.valence_charge();
 				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
 				
 			}
@@ -98,10 +95,18 @@ namespace hamiltonian {
 			return pseudopotential_list_.size();
 		}
 
-		const double & num_electrons() const {
-			return nelectrons_;
+		template <class SymbolsList>
+		auto num_electrons(SymbolsList const symbols_list) {
+			double nel = 0.0;
+			for(auto symbol : symbols_list) {
+				auto map_ref = pseudopotential_list_.find(symbol);
+				assert(map_ref != pseudopotential_list_.end());
+				auto & pseudo = map_ref->second;
+				nel += pseudo.valence_charge();
+			}
+			return nel;
 		}
-		
+
 		auto & pseudo_for_element(input::species const & el) const {
 			return pseudopotential_list_.at(el.symbol());
 		}
@@ -301,7 +306,6 @@ namespace hamiltonian {
 		void info(output_stream & out) const {
 			out << "ATOMIC POTENTIAL:" << std::endl;
 			out << "	Number of species		= " << num_species() << std::endl;
-			out << "	Number of electrons = " << num_electrons() << std::endl;
 			out << std::endl;
 		}
 
@@ -352,7 +356,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 1);
-		CHECK(pot.num_electrons() == 10.0_a);
 		
 	}
 
@@ -362,7 +365,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 0);
-		CHECK(pot.num_electrons() == 0.0_a);
 
 		CHECK(not pot.has_nlcc());
 		
@@ -378,7 +380,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 4);
-		CHECK(pot.num_electrons() == 16.0_a);
 	}
 
 	SECTION("Construct from a geometry"){
@@ -390,7 +391,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 		
 		CHECK(pot.num_species() == 2);
-		CHECK(pot.num_electrons() == 30.0_a);
+		CHECK(pot.num_electrons(ions.atoms()) == 30.0_a);
 		
 		rs.info(std::cout);
 		
