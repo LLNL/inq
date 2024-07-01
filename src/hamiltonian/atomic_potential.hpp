@@ -45,7 +45,6 @@ namespace hamiltonian {
 	private:
 		
 		pseudo::math::erf_range_separation sep_;
-		int natoms_;
 		double nelectrons_;
 		pseudo::set pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
@@ -56,9 +55,8 @@ namespace hamiltonian {
 	public:
 
 		template <class SpeciesList>
-		atomic_potential(int natoms, SpeciesList const & species_list, double gcutoff, options::electrons const & conf = {}):
+		atomic_potential(SpeciesList const & species_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
-			natoms_(natoms),
 			pseudo_set_(conf.pseudopotentials_value()),
 			double_grid_(conf.double_grid_value()),
 			fourier_pseudo_(conf.fourier_pseudo_value())
@@ -115,7 +113,7 @@ namespace hamiltonian {
 			
 			basis::field<basis_type, double> potential(basis);
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			potential.fill(0.0);
 			
@@ -166,7 +164,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			basis::field<basis_type, double> density(basis);
 			
@@ -203,7 +201,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 
 			auto nspin = states.num_density_components();
 			basis::field_set<basis_type, double> density(basis, nspin);
@@ -266,7 +264,7 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_FUNCTION;
 
-			parallel::partition part(natoms_, comm);
+			parallel::partition part(ions.size(), comm);
 			
 			basis::field<basis_type, double> density(basis);
 
@@ -346,12 +344,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Non-existing element"){
 		std::vector<species> el_list({"P", "X"});
 	
-		CHECK_THROWS(hamiltonian::atomic_potential(el_list.size(), el_list, gcut));
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 	
 	SECTION("Duplicated element"){
 		std::vector<species> el_list({"N", "N"});
-		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 1);
 		CHECK(pot.num_electrons() == 10.0_a);
@@ -361,7 +359,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	SECTION("Empty list"){
 		std::vector<species> el_list;
 		
-		hamiltonian::atomic_potential pot(el_list.size(), el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 0);
 		CHECK(pot.num_electrons() == 0.0_a);
@@ -377,7 +375,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		el_list.insert("O");
 		el_list.insert("H");
 
-		hamiltonian::atomic_potential pot(4, el_list, gcut);
+		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 4);
 		CHECK(pot.num_electrons() == 16.0_a);
@@ -389,7 +387,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		
 		basis::real_space rs(ions.cell(), /*spacing = */ 0.49672941, comm);
 		
-		hamiltonian::atomic_potential pot(ions.size(), ions.species_list(), rs.gcutoff());
+		hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 		
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons() == 30.0_a);

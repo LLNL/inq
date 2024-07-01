@@ -263,7 +263,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(rs.volume_element() == 0.125_a);
 	}
 	
-	hamiltonian::atomic_potential pot(ions.size(), ions.species_list(), rs.gcutoff());
+	hamiltonian::atomic_potential pot(ions.species_list(), rs.gcutoff());
 	
 	states::ks_states st(states::spin_config::UNPOLARIZED, 11.0);
 
