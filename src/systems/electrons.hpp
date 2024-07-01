@@ -135,7 +135,7 @@ public:
 	template <typename KptsType = input::kpoints::list>	
 	electrons(input::parallelization const & dist, const inq::systems::ions & ions, const options::electrons & conf = {}, KptsType const & kpts = input::kpoints::gamma()):
 		brillouin_zone_(ions, kpts),
-		atomic_pot_(ions.size(), ions.atoms(), basis::real_space::gcutoff(ions.cell(), conf.spacing_value()), conf),
+		atomic_pot_(ions.size(), ions.species_list(), basis::real_space::gcutoff(ions.cell(), conf.spacing_value()), conf),
 		states_(conf.spin_val(), atomic_pot_.num_electrons() + conf.extra_electrons_val(), conf.extra_states_val(), conf.temperature_val(), kpts.size()),
 		full_comm_(dist.cart_comm(conf.num_spin_components_val(), brillouin_zone_.size(), states_.num_states())),
 		kpin_comm_(kpin_subcomm(full_comm_)),

@@ -36,14 +36,14 @@ public:
 private:
 
 	systems::cell cell_;
-	std::vector<input::species> atoms_;
+	std::vector<std::string> atoms_;
 	positions_type positions_;
 	velocities_type velocities_;
 	ionic::species_set all_species_;
 
 	template <typename PositionType>
 	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
-		atoms_.push_back(element);
+		atoms_.push_back(element.symbol());
 		positions_.push_back(in_atomic_units(position));
 		velocities_.push_back(vel);
 		all_species_.insert(element);
@@ -155,6 +155,14 @@ public:
 	auto & atoms() const {
 		return atoms_;
 	}
+
+	auto & symbol(int const & iatom) const {
+		return atoms_[iatom];
+	}
+	
+	auto & species(int const & iatom) const {
+		return all_species_[atoms_[iatom]];
+	}
 	
 	auto & positions() const {
 		return positions_;
@@ -171,8 +179,12 @@ public:
 	auto & velocities() {
 		return velocities_;
 	}
+
+	auto & species_list() const {
+		return all_species_;
+	}
 	
-	auto symmetry_string() const{
+	auto symmetry_string() const {
 
 		assert(size() > 0);
 		
@@ -182,7 +194,7 @@ public:
 		std::vector<double> lin_pos(3*size());
 		
 		for(int iatom = 0; iatom < size(); iatom++){
-			types[iatom] = atoms()[iatom].atomic_number();
+			types[iatom] = species(iatom).atomic_number();
 			auto pos = cell_.metric().to_contravariant(cell_.position_in_cell(positions()[iatom]));
 			lin_pos[3*iatom + 0] = pos[0];
 			lin_pos[3*iatom + 1] = pos[1];
@@ -240,7 +252,7 @@ public:
 		
 		out << "Ions (" << self.size() << " total):" << std::endl;
 		for(int iatom = 0; iatom < self.size(); iatom++){
-			out << "  " << iatom << "\t-\t" << self.atoms_[iatom].symbol() << '\t' << self.positions_[iatom];
+			out << "  " << iatom << "\t-\t" << self.atoms_[iatom] << '\t' << self.positions_[iatom];
 			if(print_vel) out << "\t\t-\t" << self.velocities_[iatom];
 			out << '\n';
 		}
@@ -251,7 +263,7 @@ public:
 	auto kinetic_energy() {
 		auto energy = 0.0;
 		for(int iatom = 0; iatom < size(); iatom++){
-			energy += 0.5*atoms()[iatom].mass()*norm(velocities()[iatom]);
+			energy += 0.5*species(iatom).mass()*norm(velocities()[iatom]);
 		}
 		return energy;
 	}
@@ -332,10 +344,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     ions.insert("Xe", {1000.0_b, -200.0_b, 6.0_b});
 
     CHECK(ions.size() == 1);
-    CHECK(ions.atoms()[0].atomic_number() == 54);
-    CHECK(ions.atoms()[0] == input::species(54));
-    CHECK(ions.atoms()[0].charge() == -54.0_a);
-    CHECK(ions.atoms()[0].mass() == 239333.5935636_a);
+    CHECK(ions.species(0).atomic_number() == 54);
+    CHECK(ions.species(0) == input::species(54));
+    CHECK(ions.species(0).charge() == -54.0_a);
+    CHECK(ions.species(0).mass() == 239333.5935636_a);
     CHECK(ions.positions()[0][0] == 1000.0_a);
     CHECK(ions.positions()[0][1] == -200.0_a);
     CHECK(ions.positions()[0][2] == 6.0_a);
@@ -367,16 +379,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 12);
     
-    CHECK(ions.atoms()[2] == "C");
-    CHECK(ions.atoms()[2].charge() == -6.0_a);
-    CHECK(ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(ions.species(2) == "C");
+    CHECK(ions.species(2).charge() == -6.0_a);
+    CHECK(ions.species(2).mass() == 21892.1617296_a);
     CHECK(ions.positions()[2][0] == 2.2846788549_a);
     CHECK(ions.positions()[2][1] == -1.3190288178_a);
     CHECK(ions.positions()[2][2] == 0.0_a);
 
-    CHECK(ions.atoms()[11] == "H");
-    CHECK(ions.atoms()[11].charge() == -1.0_a);
-    CHECK(ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(ions.species(11) == "H");
+    CHECK(ions.species(11).charge() == -1.0_a);
+    CHECK(ions.species(11).mass() == 1837.17994584_a);
     CHECK(ions.positions()[11][0] == -4.0572419367_a);
     CHECK(ions.positions()[11][1] == 2.343260364_a);
     CHECK(ions.positions()[11][2] == 0.0_a);
@@ -389,10 +401,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
 
     CHECK(ions.size() == 13);
-    CHECK(ions.atoms()[12].atomic_number() == 17);
-    CHECK(ions.atoms()[12] == input::species(17));
-    CHECK(ions.atoms()[12].charge() == -17.0_a);
-    CHECK(ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(ions.species(12).atomic_number() == 17);
+    CHECK(ions.species(12) == input::species(17));
+    CHECK(ions.species(12).charge() == -17.0_a);
+    CHECK(ions.species(12).mass() == 64614.105771_a);
     CHECK(ions.positions()[12][0] == -3.0_a);
     CHECK(ions.positions()[12][1] == 4.0_a);
     CHECK(ions.positions()[12][2] == 5.0_a);
@@ -418,16 +430,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(read_ions.size() == 13);
 		
-    CHECK(read_ions.atoms()[2] == "C");
-    CHECK(read_ions.atoms()[2].charge() == -6.0_a);
-    CHECK(read_ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(read_ions.species(2) == "C");
+    CHECK(read_ions.species(2).charge() == -6.0_a);
+    CHECK(read_ions.species(2).mass() == 21892.1617296_a);
     CHECK(read_ions.positions()[2][0] == 2.2846788549_a);
     CHECK(read_ions.positions()[2][1] == -1.3190288178_a);
     CHECK(read_ions.positions()[2][2] == 0.0_a);
 
-    CHECK(read_ions.atoms()[11] == "H");
-    CHECK(read_ions.atoms()[11].charge() == -1.0_a);
-    CHECK(read_ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(read_ions.species(11) == "H");
+    CHECK(read_ions.species(11).charge() == -1.0_a);
+    CHECK(read_ions.species(11).mass() == 1837.17994584_a);
     CHECK(read_ions.positions()[11][0] == -4.0572419367_a);
     CHECK(read_ions.positions()[11][1] == 2.343260364_a);
     CHECK(read_ions.positions()[11][2] == 0.0_a);
@@ -435,10 +447,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(read_ions.velocities()[11][1] == 0.0_a);
     CHECK(read_ions.velocities()[11][2] == 0.0_a);
 
-    CHECK(read_ions.atoms()[12].atomic_number() == 17);
-    CHECK(read_ions.atoms()[12] == input::species(17));
-    CHECK(read_ions.atoms()[12].charge() == -17.0_a);
-    CHECK(read_ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(read_ions.species(12).atomic_number() == 17);
+    CHECK(read_ions.species(12) == input::species(17));
+    CHECK(read_ions.species(12).charge() == -17.0_a);
+    CHECK(read_ions.species(12).mass() == 64614.105771_a);
     CHECK(read_ions.positions()[12][0] == -3.0_a);
     CHECK(read_ions.positions()[12][1] == 4.0_a);
     CHECK(read_ions.positions()[12][2] == 5.0_a);
@@ -471,16 +483,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
     CHECK(ions.size() == 12);
     
-    CHECK(ions.atoms()[2] == "C");
-    CHECK(ions.atoms()[2].charge() == -6.0_a);
-    CHECK(ions.atoms()[2].mass() == 21892.1617296_a);
+    CHECK(ions.species(2) == "C");
+    CHECK(ions.species(2).charge() == -6.0_a);
+    CHECK(ions.species(2).mass() == 21892.1617296_a);
     CHECK(ions.positions()[2][0] == 2.2846788549_a);
     CHECK(ions.positions()[2][1] == -1.3190288178_a);
     CHECK(ions.positions()[2][2] == 0.0_a);
 
-    CHECK(ions.atoms()[11] == "H");
-    CHECK(ions.atoms()[11].charge() == -1.0_a);
-    CHECK(ions.atoms()[11].mass() == 1837.17994584_a);
+    CHECK(ions.species(11) == "H");
+    CHECK(ions.species(11).charge() == -1.0_a);
+    CHECK(ions.species(11).mass() == 1837.17994584_a);
     CHECK(ions.positions()[11][0] == -4.0572419367_a);
     CHECK(ions.positions()[11][1] == 2.343260364_a);
     CHECK(ions.positions()[11][2] == 0.0_a);
@@ -493,10 +505,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
 
     CHECK(ions.size() == 13);
-    CHECK(ions.atoms()[12].atomic_number() == 17);
-    CHECK(ions.atoms()[12] == input::species(17));
-    CHECK(ions.atoms()[12].charge() == -17.0_a);
-    CHECK(ions.atoms()[12].mass() == 64614.105771_a);
+    CHECK(ions.species(12).atomic_number() == 17);
+    CHECK(ions.species(12) == input::species(17));
+    CHECK(ions.species(12).charge() == -17.0_a);
+    CHECK(ions.species(12).mass() == 64614.105771_a);
     CHECK(ions.positions()[12][0] == -3.0_a);
     CHECK(ions.positions()[12][1] == 4.0_a);
     CHECK(ions.positions()[12][2] == 5.0_a);
@@ -524,10 +536,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 4);
 
-		CHECK(ions.atoms()[0] == "Al");
-		CHECK(ions.atoms()[1] == "Al");
-		CHECK(ions.atoms()[2] == "Al");		
-		CHECK(ions.atoms()[3] == "Al");
+		CHECK(ions.species(0) == "Al");
+		CHECK(ions.species(1) == "Al");
+		CHECK(ions.species(2) == "Al");		
+		CHECK(ions.species(3) == "Al");
 
 		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
@@ -573,121 +585,121 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		//  5.85503 -> -3.6881312343
 		
 		//Sr         0.00000        0.00000        1.95168
-		CHECK(ions.atoms()[0] == "Sr");
+		CHECK(ions.species(0) == "Sr");
 		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][2] == 3.6881312343_a);
 
 		//Sr         0.00000        0.00000        5.85503
-		CHECK(ions.atoms()[1] == "Sr");
+		CHECK(ions.species(1) == "Sr");
 		CHECK(ions.positions()[1][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][2] == -3.6881312343_a);
 
 		//Sr         2.76010        2.76010        5.85503
-		CHECK(ions.atoms()[2] == "Sr");
+		CHECK(ions.species(2) == "Sr");
 		CHECK(ions.positions()[2][0] == -5.2158330766_a);
 		CHECK(ions.positions()[2][1] == -5.2158330766_a);
 		CHECK(ions.positions()[2][2] == -3.6881312343_a);
 
 		//Sr         2.76010        2.76010        1.95167
-		CHECK(ions.atoms()[3] == "Sr");
+		CHECK(ions.species(3) == "Sr");
 		CHECK(ions.positions()[3][0] == -5.2158330766_a);
 		CHECK(ions.positions()[3][1] == -5.2158330766_a);
 		CHECK(ions.positions()[3][2] ==  3.6881312343_a);
 
 		//Ti         2.76010        0.00000        0.00000
-		CHECK(ions.atoms()[4] == "Ti");
+		CHECK(ions.species(4) == "Ti");
 		CHECK(ions.positions()[4][0] == -5.2158330766_a);
 		CHECK(ions.positions()[4][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[4][2] == Approx(0.0).margin(1e-12));
 
 		//Ti         2.76010        0.00000        3.90335
-		CHECK(ions.atoms()[5] == "Ti");
+		CHECK(ions.species(5) == "Ti");
 		CHECK(ions.positions()[5][0] == -5.2158330766_a);
 		CHECK(ions.positions()[5][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[5][2] == -7.3762624686_a);
 
 		//Ti         0.00000        2.76010        3.90335
-		CHECK(ions.atoms()[6] == "Ti");
+		CHECK(ions.species(6) == "Ti");
 		CHECK(ions.positions()[6][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[6][1] == -5.2158330766_a);
 		CHECK(ions.positions()[6][2] == -7.3762624686_a);
 
 		//Ti         0.00000        2.76010        0.00000
-		CHECK(ions.atoms()[7] == "Ti");
+		CHECK(ions.species(7) == "Ti");
 		CHECK(ions.positions()[7][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[7][1] == -5.2158330766_a);
 		CHECK(ions.positions()[7][2] == Approx(0.0).margin(1e-12));
 
 		//O          0.00000        2.76010        1.95168
-		CHECK(ions.atoms()[8] == "O");
+		CHECK(ions.species(8) == "O");
 		CHECK(ions.positions()[8][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[8][1] == -5.2158330766_a);
 		CHECK(ions.positions()[8][2] == 3.6881312343_a);
 
 		//O          0.00000        2.76010        5.85503
-		CHECK(ions.atoms()[9] == "O");
+		CHECK(ions.species(9) == "O");
 		CHECK(ions.positions()[9][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[9][1] == -5.2158330766_a);
 		CHECK(ions.positions()[9][2] == -3.6881312343_a);
 
 		//O          2.76010        0.00000        5.85503
-		CHECK(ions.atoms()[10] == "O");
+		CHECK(ions.species(10) == "O");
 		CHECK(ions.positions()[10][0] == -5.2158330766_a);
 		CHECK(ions.positions()[10][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[10][2] == -3.6881312343_a);
 
 		//O          2.76010        0.00000        1.95167
-		CHECK(ions.atoms()[11] == "O");
+		CHECK(ions.species(11) == "O");
 		CHECK(ions.positions()[11][0] == -5.2158330766_a);
 		CHECK(ions.positions()[11][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[11][2] ==  3.6881312343_a);
 
 		//O          4.14015        1.38005        0.00000
-		CHECK(ions.atoms()[12] == "O");
+		CHECK(ions.species(12) == "O");
 		CHECK(ions.positions()[12][0] == -2.6079165383_a);
 		CHECK(ions.positions()[12][1] ==  2.6079165383_a);
 		CHECK(ions.positions()[12][2] == Approx(0.0).margin(1e-12));
 
 		//4.14015        1.38005        3.90335
-		CHECK(ions.atoms()[13] == "O");
+		CHECK(ions.species(13) == "O");
 		CHECK(ions.positions()[13][0] == -2.6079165383_a);
 		CHECK(ions.positions()[13][1] ==  2.6079165383_a);
 		CHECK(ions.positions()[13][2] == -7.3762624686_a);
 
 		//O          1.38005        4.14015        3.90335
-		CHECK(ions.atoms()[14] == "O");
+		CHECK(ions.species(14) == "O");
 		CHECK(ions.positions()[14][0] ==  2.6079165383_a);
 		CHECK(ions.positions()[14][1] == -2.6079165383_a);
 		CHECK(ions.positions()[14][2] == -7.3762624686_a);
 
 		//O          1.38005        1.38005        3.90335
-		CHECK(ions.atoms()[15] == "O");
+		CHECK(ions.species(15) == "O");
 		CHECK(ions.positions()[15][0] ==  2.6079165383_a);
 		CHECK(ions.positions()[15][1] ==  2.6079165383_a);
 		CHECK(ions.positions()[15][2] == -7.3762624686_a);
 
 		//O          4.14015        4.14015        3.90335
-		CHECK(ions.atoms()[16] == "O");
+		CHECK(ions.species(16) == "O");
 		CHECK(ions.positions()[16][0] == -2.6079165383_a);
 		CHECK(ions.positions()[16][1] == -2.6079165383_a);
 		CHECK(ions.positions()[16][2] == -7.3762624686_a);
 
 		//O          4.14015        4.14015        0.00000
-		CHECK(ions.atoms()[17] == "O");
+		CHECK(ions.species(17) == "O");
 		CHECK(ions.positions()[17][0] == -2.6079165383_a);
 		CHECK(ions.positions()[17][1] == -2.6079165383_a);
 		CHECK(ions.positions()[17][2] == Approx(0.0).margin(1e-12));
 
 		//O          1.38005        1.38005        0.00000
-		CHECK(ions.atoms()[18] == "O");
+		CHECK(ions.species(18) == "O");
 		CHECK(ions.positions()[18][0] ==  2.6079165383_a);
 		CHECK(ions.positions()[18][1] ==  2.6079165383_a);
 		CHECK(ions.positions()[18][2] == Approx(0.0).margin(1e-12));
 
 		//O          1.38005        4.14015        0.00000
-		CHECK(ions.atoms()[19] == "O");
+		CHECK(ions.species(19) == "O");
 		CHECK(ions.positions()[19][0] ==  2.6079165383_a);
 		CHECK(ions.positions()[19][1] == -2.6079165383_a);
 		CHECK(ions.positions()[19][2] == Approx(0.0).margin(1e-12));
@@ -710,62 +722,62 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 12);
 		
-		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.species(0) == "Ca");
 		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][2] == 9.6727962369_a);
 		
-		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.species(1) == "Ca");
 		CHECK(ions.positions()[1][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][2] == -9.6727962369_a);
 
-		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.species(2) == "Ca");
 		CHECK(ions.positions()[2][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[2][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[2][2] == -18.3787432869_a);
 		
-		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.species(3) == "Ca");
 		CHECK(ions.positions()[3][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[3][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[3][2] ==   4.3529735250_a);
 		
-		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.species(4) == "Ca");
 		CHECK(ions.positions()[4][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[4][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[4][2] ==  -4.3529735250_a);
 		
-		CHECK(ions.atoms()[5] == "Ca");
+		CHECK(ions.species(5) == "Ca");
 		CHECK(ions.positions()[5][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[5][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[5][2] ==  18.3787432869_a);
 
-		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.species(6) == "P");
 		CHECK(ions.positions()[6][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[6][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[6][2] == -21.0386546428_a);
 
-		CHECK(ions.atoms()[7] == "P");
+		CHECK(ions.species(7) == "P");
 		CHECK(ions.positions()[7][0] == -4.0734958074_a);
 		CHECK(ions.positions()[7][1] ==  2.3518339010_a);
 		CHECK(ions.positions()[7][2] == -7.0128848809_a);
 
-		CHECK(ions.atoms()[8] == "P");
+		CHECK(ions.species(8) == "P");
 		CHECK(ions.positions()[8][0] ==  4.0734958074_a);
 		CHECK(ions.positions()[8][1] == -2.3518339010_a);
 		CHECK(ions.positions()[8][2] ==  7.0128848809_a);
 
-		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.species(9) == "I");
 		CHECK(ions.positions()[9][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[9][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[9][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(ions.atoms()[10] == "I");
+		CHECK(ions.species(10) == "I");
 		CHECK(ions.positions()[10][0] == -4.0734958074_a);
 		CHECK(ions.positions()[10][1] ==  2.3518339010_a);
 		CHECK(ions.positions()[10][2] == 14.0257697619_a);
 
-		CHECK(ions.atoms()[11] == "I");
+		CHECK(ions.species(11) == "I");
 		CHECK(ions.positions()[11][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[11][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[11][2] == -14.0257697619_a);
@@ -775,52 +787,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(ions.size() == 10);
 				
-		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.species(0) == "Ca");
 		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][2] == 9.6727962369_a);
 		
-		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.species(1) == "Ca");
 		CHECK(ions.positions()[1][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[1][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[1][2] == -18.3787432869_a);
 		
-		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.species(2) == "Ca");
 		CHECK(ions.positions()[2][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[2][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[2][2] ==   4.3529735250_a);
 		
-		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.species(3) == "Ca");
 		CHECK(ions.positions()[3][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[3][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[3][2] ==  -4.3529735250_a);
 		
-		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.species(4) == "Ca");
 		CHECK(ions.positions()[4][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[4][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[4][2] ==  18.3787432869_a);
 
-		CHECK(ions.atoms()[5] == "P");
+		CHECK(ions.species(5) == "P");
 		CHECK(ions.positions()[5][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[5][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[5][2] == -21.0386546428_a);
 
-		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.species(6) == "P");
 		CHECK(ions.positions()[6][0] ==  4.0734958074_a);
 		CHECK(ions.positions()[6][1] == -2.3518339010_a);
 		CHECK(ions.positions()[6][2] ==  7.0128848809_a);
 
-		CHECK(ions.atoms()[7] == "I");
+		CHECK(ions.species(7) == "I");
 		CHECK(ions.positions()[7][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[7][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[7][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(ions.atoms()[8] == "I");
+		CHECK(ions.species(8) == "I");
 		CHECK(ions.positions()[8][0] == -4.0734958074_a);
 		CHECK(ions.positions()[8][1] ==  2.3518339010_a);
 		CHECK(ions.positions()[8][2] == 14.0257697619_a);
 
-		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.species(9) == "I");
 		CHECK(ions.positions()[9][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[9][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[9][2] == -14.0257697619_a);
@@ -843,62 +855,62 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.size() == 12);
 
 		//the order here is to match the symmetrized test above
-		CHECK(ions.atoms()[1] == "Ca");
+		CHECK(ions.species(1) == "Ca");
 		CHECK(ions.positions()[1][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[1][2] == 9.6727962369_a);
 
-		CHECK(ions.atoms()[4] == "Ca");
+		CHECK(ions.species(4) == "Ca");
 		CHECK(ions.positions()[4][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[4][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[4][2] == -9.6727962369_a);
 
-		CHECK(ions.atoms()[3] == "Ca");
+		CHECK(ions.species(3) == "Ca");
 		CHECK(ions.positions()[3][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[3][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[3][2] == -18.3787432869_a);
 
-		CHECK(ions.atoms()[0] == "Ca");
+		CHECK(ions.species(0) == "Ca");
 		CHECK(ions.positions()[0][0] ==  -4.0734958074_a);
 		CHECK(ions.positions()[0][1] ==   2.3518339010_a);
 		CHECK(ions.positions()[0][2] ==   4.3529735250_a);
 
-		CHECK(ions.atoms()[5] == "Ca");
+		CHECK(ions.species(5) == "Ca");
 		CHECK(ions.positions()[5][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[5][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[5][2] ==  -4.3529735250_a);
 
-		CHECK(ions.atoms()[2] == "Ca");
+		CHECK(ions.species(2) == "Ca");
 		CHECK(ions.positions()[2][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[2][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[2][2] ==  18.3787432869_a);
 
-		CHECK(ions.atoms()[7] == "P");
+		CHECK(ions.species(7) == "P");
 		CHECK(ions.positions()[7][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[7][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[7][2] == -21.0386546428_a);
 
-		CHECK(ions.atoms()[8] == "P");
+		CHECK(ions.species(8) == "P");
 		CHECK(ions.positions()[8][0] == -4.0734958074_a);
 		CHECK(ions.positions()[8][1] ==  2.3518339010_a);
 		CHECK(ions.positions()[8][2] == -7.0128848809_a);
 		
-		CHECK(ions.atoms()[6] == "P");
+		CHECK(ions.species(6) == "P");
 		CHECK(ions.positions()[6][0] ==  4.0734958074_a);
 		CHECK(ions.positions()[6][1] == -2.3518339010_a);
 		CHECK(ions.positions()[6][2] ==  7.0128848809_a);
 
-		CHECK(ions.atoms()[9] == "I");
+		CHECK(ions.species(9) == "I");
 		CHECK(ions.positions()[9][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[9][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[9][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(ions.atoms()[10] == "I");
+		CHECK(ions.species(10) == "I");
 		CHECK(ions.positions()[10][0] == -4.0734958074_a);
 		CHECK(ions.positions()[10][1] ==  2.3518339010_a);
 		CHECK(ions.positions()[10][2] == 14.0257697619_a);
 
-		CHECK(ions.atoms()[11] == "I");
+		CHECK(ions.species(11) == "I");
 		CHECK(ions.positions()[11][0] ==   4.0734958074_a);
 		CHECK(ions.positions()[11][1] ==  -2.3518339010_a);
 		CHECK(ions.positions()[11][2] == -14.0257697619_a);
@@ -922,17 +934,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 3);
 		
-		CHECK(ions.atoms()[0] == "Na");
+		CHECK(ions.species(0) == "Na");
 		CHECK(ions.positions()[0][0] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][1] == Approx(0.0).margin(1e-12));
 		CHECK(ions.positions()[0][2] == Approx(0.0).margin(1e-12));
 
-		CHECK(ions.atoms()[1] == "Na");
+		CHECK(ions.species(1) == "Na");
 		CHECK(ions.positions()[1][0] == 11.2403978126_a);
 		CHECK(ions.positions()[1][1] ==  2.2789211505_a);
 		CHECK(ions.positions()[1][2] ==  1.3517980130_a);
 
-		CHECK(ions.atoms()[2] == "Na");
+		CHECK(ions.species(2) == "Na");
 		CHECK(ions.positions()[2][0] == -11.2403978126_a);
 		CHECK(ions.positions()[2][1] ==  -2.2789211505_a);
 		CHECK(ions.positions()[2][2] ==  -1.3517980130_a);
@@ -954,8 +966,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 2);
 
-		CHECK(ions.atoms()[0] == "B");
-		CHECK(ions.atoms()[1] == "N");
+		CHECK(ions.species(0) == "B");
+		CHECK(ions.species(1) == "N");
 
 		CHECK(ions.positions()[0][0] == 0.0_a);
 		CHECK(ions.positions()[0][1] == 0.0_a);
@@ -981,10 +993,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 4);
 
-		CHECK(ions.atoms()[0] == "Al");
-		CHECK(ions.atoms()[1] == "Al");
-		CHECK(ions.atoms()[2] == "Al");		
-		CHECK(ions.atoms()[3] == "Al");
+		CHECK(ions.species(0) == "Al");
+		CHECK(ions.species(1) == "Al");
+		CHECK(ions.species(2) == "Al");		
+		CHECK(ions.species(3) == "Al");
 
 		CHECK(ions.positions()[0][0] == 0.0_a);
 		CHECK(ions.positions()[0][1] == 0.0_a);
@@ -1022,11 +1034,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 5);
 
-		CHECK(ions.atoms()[0] == "Ni");
-		CHECK(ions.atoms()[1] == "Ni");
-		CHECK(ions.atoms()[2] == "Ni");
-		CHECK(ions.atoms()[3] == "Ni");		
-		CHECK(ions.atoms()[4] == "Ni");
+		CHECK(ions.species(0) == "Ni");
+		CHECK(ions.species(1) == "Ni");
+		CHECK(ions.species(2) == "Ni");
+		CHECK(ions.species(3) == "Ni");		
+		CHECK(ions.species(4) == "Ni");
 
 		CHECK(ions.positions()[0][0] == 0.0_a);
 		CHECK(ions.positions()[0][1] == 0.0_a);
@@ -1139,22 +1151,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(ions.size() == 128);
 
-		CHECK(ions.atoms()[0]   == "C");
-		CHECK(ions.atoms()[10]  == "C");
-		CHECK(ions.atoms()[20]  == "C");
-		CHECK(ions.atoms()[30]  == "C");
-		CHECK(ions.atoms()[40]  == "C");
-		CHECK(ions.atoms()[50]  == "C");
-		CHECK(ions.atoms()[60]  == "C");
-		CHECK(ions.atoms()[63]  == "C");
-		CHECK(ions.atoms()[64]  == "O");
-		CHECK(ions.atoms()[70]  == "O");
-		CHECK(ions.atoms()[80]  == "O");
-		CHECK(ions.atoms()[90]  == "O");
-		CHECK(ions.atoms()[100] == "O");
-		CHECK(ions.atoms()[110] == "O");
-		CHECK(ions.atoms()[120] == "O");
-		CHECK(ions.atoms()[127] == "O");
+		CHECK(ions.species(0)   == "C");
+		CHECK(ions.species(10)  == "C");
+		CHECK(ions.species(20)  == "C");
+		CHECK(ions.species(30)  == "C");
+		CHECK(ions.species(40)  == "C");
+		CHECK(ions.species(50)  == "C");
+		CHECK(ions.species(60)  == "C");
+		CHECK(ions.species(63)  == "C");
+		CHECK(ions.species(64)  == "O");
+		CHECK(ions.species(70)  == "O");
+		CHECK(ions.species(80)  == "O");
+		CHECK(ions.species(90)  == "O");
+		CHECK(ions.species(100) == "O");
+		CHECK(ions.species(110) == "O");
+		CHECK(ions.species(120) == "O");
+		CHECK(ions.species(127) == "O");
 		
 		CHECK(ions.positions()[1][0] == 17.2379607321_a);
 		CHECK(ions.positions()[1][1] == 13.7235682342_a);
