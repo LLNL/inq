@@ -39,14 +39,14 @@ private:
 	std::vector<std::string> atoms_;
 	positions_type positions_;
 	velocities_type velocities_;
-	ionic::species_set all_species_;
+	ionic::species_set species_list_;
 
 	template <typename PositionType>
 	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
 		atoms_.push_back(element.symbol());
 		positions_.push_back(in_atomic_units(position));
 		velocities_.push_back(vel);
-		all_species_.insert(element);
+		species_list_.insert(element);
 	}
 
 public:
@@ -161,7 +161,7 @@ public:
 	}
 	
 	auto & species(int const & iatom) const {
-		return all_species_[atoms_[iatom]];
+		return species_list_[atoms_[iatom]];
 	}
 	
 	auto & positions() const {
@@ -181,7 +181,7 @@ public:
 	}
 
 	auto & species_list() const {
-		return all_species_;
+		return species_list_;
 	}
 	
 	auto symmetry_string() const {
