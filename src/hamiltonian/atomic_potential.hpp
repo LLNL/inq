@@ -70,23 +70,16 @@ namespace hamiltonian {
 			for(auto const & species : species_list) {
 				if(!pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
 				
-				auto map_ref = pseudopotential_list_.find(species.symbol());
+				if(pseudopotential_list_.find(species.symbol()) != pseudopotential_list_.end()) throw std::runtime_error("INQ Error: duplicated species");
 				
-				if(map_ref == pseudopotential_list_.end()){
-					
-					auto file_path = pseudo_set_.file_path(species);
-					if(species.has_file()) file_path = species.file_path();
+				auto file_path = pseudo_set_.file_path(species);
+				if(species.has_file()) file_path = species.file_path();
 
-					//sorry for this, emplace has a super ugly syntax
-					auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(species.symbol()), std::make_tuple(file_path, sep_, gcutoff, species.filter_pseudo()));
-					map_ref = insert.first;
-					
-				}
-				
-				auto & pseudo = map_ref->second;
+				//sorry for this, emplace has a super ugly syntax
+				auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(species.symbol()), std::make_tuple(file_path, sep_, gcutoff, species.filter_pseudo()));
+				auto & pseudo = insert.first->second;
 				
 				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
-				
 			}
 
 		}
@@ -353,10 +346,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	SECTION("Duplicated element"){
 		std::vector<species> el_list({"N", "N"});
-		hamiltonian::atomic_potential pot(el_list, gcut);
-
-		CHECK(pot.num_species() == 1);
-		
+		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 
 	SECTION("Empty list"){
