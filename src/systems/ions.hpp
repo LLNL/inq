@@ -14,7 +14,7 @@
 #include <spglib.h>
 
 #include <systems/cell.hpp>
-#include <input/species.hpp>
+#include <ionic/species.hpp>
 #include <ionic/species_set.hpp>
 #include <gpu/array.hpp>
 #include <parse/cif.hpp>

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__SPECIES
-#define INPUT__SPECIES
+#ifndef IONIC__SPECIES
+#define IONIC__SPECIES
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -103,8 +103,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_SPECIES_UNIT_TEST
-#undef INQ_INPUT_SPECIES_UNIT_TEST
+#ifdef INQ_IONIC_SPECIES_UNIT_TEST
+#undef INQ_IONIC_SPECIES_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 

@@ -15,7 +15,7 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/species.hpp>
+#include <ionic/species.hpp>
 #include <magnitude/length.hpp>
 
 namespace inq {

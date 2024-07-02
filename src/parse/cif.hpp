@@ -14,7 +14,7 @@
 #include <gemmi/symmetry.hpp>
 #include <vector>
 
-#include <input/species.hpp>
+#include <ionic/species.hpp>
 #include <magnitude/length.hpp>
 #include <math/vector3.hpp>
 
