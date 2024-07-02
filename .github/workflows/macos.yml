@@ -24,13 +24,13 @@ jobs:
           gfortran-14 --version
 
     - name: Configure CMake
-      run: FC=gfortran-14 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: FC=gfortran-14 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} --install-prefix=$HOME
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Install
-      run: cmake --install ${{github.workspace}}/build --prefix $HOME/.local
+      run: make install  # run: cmake --install ${{github.workspace}}/build --prefix $HOME/.local
 
     - name: Test
       working-directory: ${{github.workspace}}/build
