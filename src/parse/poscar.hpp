@@ -19,7 +19,7 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/species.hpp>
+#include <ionic/species.hpp>
 #include <magnitude/length.hpp>
 #include <magnitude/time.hpp>
 
@@ -29,7 +29,7 @@ namespace parse {
 class poscar {
 
 	std::vector<vector3<double>> lattice_vectors_;
-	std::vector<input::species> atoms_;
+	std::vector<ionic::species> atoms_;
 	std::vector<vector3<double>> positions_;
 	std::vector<vector3<double>> velocities_;
 	
@@ -81,7 +81,7 @@ public:
 			iss >> species_name;
 			if(iss.eof()) break;
 			species.push_back(species_name);
-			input::species sp(species.back());
+			ionic::species sp(species.back());
 			if(not sp.valid()) throw std::runtime_error("Cannot read the species from POSCAR file \'" + poscar_file_name +
 																									"\'. Make sure your file contains the optional \'Species names\' line (see\n https://www.vasp.at/wiki/index.php/POSCAR for details).");
 		}
@@ -104,7 +104,7 @@ public:
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
 					vector3<double> pos;
 					poscar_file >> pos;
-					atoms_.emplace_back(input::species(species[ispecies]));
+					atoms_.emplace_back(ionic::species(species[ispecies]));
 					positions_.emplace_back(scaling_factor*in_atomic_units(1.0_A*pos));
 					std::getline(poscar_file, tail);
 				}
@@ -117,7 +117,7 @@ public:
 				for(int iatom = 0; iatom < species_num[ispecies]; iatom++){
 					vector3<double, contravariant> pos;
 					poscar_file >> pos;
-					atoms_.emplace_back(input::species(species[ispecies]));
+					atoms_.emplace_back(ionic::species(species[ispecies]));
 					positions_.emplace_back(cell.metric().to_cartesian(pos));
 					std::getline(poscar_file, tail);					
 				}

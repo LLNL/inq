@@ -141,13 +141,13 @@ These are the uses for the command:
 		status();
 	}
 
-	static void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos) {
+	static void insert(ionic::species const & sp, vector3<quantity<magnitude::length>> const & pos) {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert(sp, pos);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	static void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos) {
+	static void insert_fractional(ionic::species const & sp, vector3<double, contravariant> const & pos) {
 		auto ions = systems::ions::load(".inq/default_ions");
 		ions.insert_fractional(sp, pos);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");

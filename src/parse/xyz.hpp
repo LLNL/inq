@@ -15,7 +15,7 @@
 #include <math/vector3.hpp>
 
 #include <pseudopod/element.hpp>
-#include <input/species.hpp>
+#include <ionic/species.hpp>
 #include <magnitude/length.hpp>
 
 namespace inq {
@@ -23,7 +23,7 @@ namespace parse {
 
 class xyz {
 
-	std::vector<input::species> atoms_;
+	std::vector<ionic::species> atoms_;
 	std::vector<vector3<double>> positions_;
 
 	public:

@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INPUT__SPECIES
-#define INPUT__SPECIES
+#ifndef IONIC__SPECIES
+#define IONIC__SPECIES
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -16,7 +16,7 @@
 #include <optional>
 
 namespace inq {
-namespace input {
+namespace ionic {
 
 class species : public pseudo::element {
 
@@ -90,12 +90,6 @@ public:
 	auto filter_pseudo() const {
 		return filter_.value_or(true);
 	}
-
-	template<class OStream>
-	friend OStream & operator<<(OStream & out, species const & self){
-		out << self.symbol();
-		return out;
-	}
 	
 };
 
@@ -103,8 +97,8 @@ public:
 }
 #endif
 
-#ifdef INQ_INPUT_SPECIES_UNIT_TEST
-#undef INQ_INPUT_SPECIES_UNIT_TEST
+#ifdef INQ_IONIC_SPECIES_UNIT_TEST
+#undef INQ_IONIC_SPECIES_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
@@ -115,7 +109,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor"){
 		
-		auto s = input::species("Xe");
+		auto s = ionic::species("Xe");
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -123,7 +117,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor with options"){
 		
-		auto s = input::species("Xe").mass(20);
+		auto s = ionic::species("Xe").mass(20);
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -132,7 +126,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option mass"){
 		
-		auto s = input::species("U").mass(235);
+		auto s = ionic::species("U").mass(235);
 		
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
@@ -140,7 +134,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Option symbol"){
 		
-		auto s = input::species("U").symbol("U235").mass(235);
+		auto s = ionic::species("U").symbol("U235").mass(235);
 		
 		CHECK(s.symbol() == "U235");
 		CHECK(s.mass() == 428378.7975_a);
@@ -148,7 +142,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option pseudopotential"){
 		
-		auto s = input::species("He").pseudo("hola");
+		auto s = ionic::species("He").pseudo("hola");
 		
 		CHECK(s.symbol() == "He");
 		CHECK(s.has_file());

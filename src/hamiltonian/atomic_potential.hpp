@@ -100,7 +100,7 @@ namespace hamiltonian {
 			return nel;
 		}
 
-		auto & pseudo_for_element(input::species const & el) const {
+		auto & pseudo_for_element(ionic::species const & el) const {
 			return pseudopotential_list_.at(el.symbol());
 		}
 
@@ -332,7 +332,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
 	using Catch::Approx;
-	using input::species;
+	using ionic::species;
 
 	double const gcut = 0.785;
 

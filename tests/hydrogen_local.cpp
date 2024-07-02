@@ -14,7 +14,7 @@ int main(int argc, char ** argv){
 
 	inq::utils::match energy_match(3.0e-5);
 
-	auto local_h = inq::input::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	auto local_h = inq::ionic::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 
 	inq::systems::ions ions(inq::systems::cell::cubic(15.0_b).finite());
 	ions.insert(local_h, {150.0_b, -30.0_b, 0.0_b});
