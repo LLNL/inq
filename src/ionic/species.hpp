@@ -90,12 +90,6 @@ public:
 	auto filter_pseudo() const {
 		return filter_.value_or(true);
 	}
-
-	template<class OStream>
-	friend OStream & operator<<(OStream & out, species const & self){
-		out << self.symbol();
-		return out;
-	}
 	
 };
 
