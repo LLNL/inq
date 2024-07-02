@@ -30,7 +30,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Install
-      run: cmake --install ${{github.workspace}}/build
+      run: cmake --install ${{github.workspace}}/build --prefix $HOME/.local
 
     - name: Test
       working-directory: ${{github.workspace}}/build
