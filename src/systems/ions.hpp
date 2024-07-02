@@ -42,7 +42,7 @@ private:
 	ionic::species_set species_list_;
 
 	template <typename PositionType>
-	void add_atom(input::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
+	void add_atom(ionic::species const & element, PositionType const & position, vector3<double> const & vel = vector3<double>(0.0, 0.0, 0.0)){
 		atoms_.push_back(element.symbol());
 		positions_.push_back(in_atomic_units(position));
 		velocities_.push_back(vel);
@@ -220,11 +220,11 @@ public:
 		return cell_;
 	}
 
-	void insert(input::species const & sp, vector3<quantity<magnitude::length>> const & pos){
+	void insert(ionic::species const & sp, vector3<quantity<magnitude::length>> const & pos){
 		add_atom(sp, pos);
 	}
 	
-	void insert_fractional(input::species const & sp, vector3<double, contravariant> const & pos){
+	void insert_fractional(ionic::species const & sp, vector3<double, contravariant> const & pos){
 		add_atom(sp, cell_.metric().to_cartesian(pos));
 	}
 
@@ -345,7 +345,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(ions.size() == 1);
     CHECK(ions.species(0).atomic_number() == 54);
-    CHECK(ions.species(0) == input::species(54));
+    CHECK(ions.species(0) == ionic::species(54));
     CHECK(ions.species(0).charge() == -54.0_a);
     CHECK(ions.species(0).mass() == 239333.5935636_a);
     CHECK(ions.positions()[0][0] == 1000.0_a);
@@ -402,7 +402,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(ions.size() == 13);
     CHECK(ions.species(12).atomic_number() == 17);
-    CHECK(ions.species(12) == input::species(17));
+    CHECK(ions.species(12) == ionic::species(17));
     CHECK(ions.species(12).charge() == -17.0_a);
     CHECK(ions.species(12).mass() == 64614.105771_a);
     CHECK(ions.positions()[12][0] == -3.0_a);
@@ -448,7 +448,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(read_ions.velocities()[11][2] == 0.0_a);
 
     CHECK(read_ions.species(12).atomic_number() == 17);
-    CHECK(read_ions.species(12) == input::species(17));
+    CHECK(read_ions.species(12) == ionic::species(17));
     CHECK(read_ions.species(12).charge() == -17.0_a);
     CHECK(read_ions.species(12).mass() == 64614.105771_a);
     CHECK(read_ions.positions()[12][0] == -3.0_a);
@@ -506,7 +506,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     CHECK(ions.size() == 13);
     CHECK(ions.species(12).atomic_number() == 17);
-    CHECK(ions.species(12) == input::species(17));
+    CHECK(ions.species(12) == ionic::species(17));
     CHECK(ions.species(12).charge() == -17.0_a);
     CHECK(ions.species(12).mass() == 64614.105771_a);
     CHECK(ions.positions()[12][0] == -3.0_a);

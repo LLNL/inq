@@ -18,7 +18,7 @@ int main(int argc, char ** argv){
   //SINGLE ATOM SANITY CHECK
   {
     systems::ions ions(systems::cell::cubic(8.0_b).finite());
-    ions.insert(input::species("He").nofilter(), {0.0_b, 0.0_b, 0.0_b});
+    ions.insert(ionic::species("He").nofilter(), {0.0_b, 0.0_b, 0.0_b});
     
     systems::electrons electrons(ions, options::electrons{}.extra_states(3).cutoff(30.0_Ha));
     ground_state::initial_guess(ions, electrons);

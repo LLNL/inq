@@ -20,7 +20,7 @@ int main(int argc, char ** argv){
 	{
 		systems::ions ions(cell);
 		
-		ions.insert(input::species("C").pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
+		ions.insert(ionic::species("C").pseudo(inq::config::path::unit_tests_data() + "C_ONCV_PBE-1.2.xml"), {0.0_b, 0.0_b, 0.0_b});
 
 		systems::electrons electrons(ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
 	{
 		systems::ions ions(cell);
 		
-		ions.insert(input::species("C"), {0.0_b, 0.0_b, 0.0_b});
+		ions.insert(ionic::species("C"), {0.0_b, 0.0_b, 0.0_b});
 
 		systems::electrons electrons(ions, options::electrons{}.pseudopotentials(pseudo::set::ccecp()).cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		

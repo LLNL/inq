@@ -23,7 +23,7 @@ namespace parse {
 
 class xyz {
 
-	std::vector<input::species> atoms_;
+	std::vector<ionic::species> atoms_;
 	std::vector<vector3<double>> positions_;
 
 	public:

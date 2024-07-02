@@ -16,7 +16,7 @@ namespace ionic {
 
 class species_set {
 
-	using container_type = 	std::unordered_map<std::string, input::species>;
+	using container_type = 	std::unordered_map<std::string, ionic::species>;
 
 	container_type list_;
 
@@ -30,7 +30,7 @@ public:
 		return list_;
 	}
 
-	auto insert(input::species const & sp) {
+	auto insert(ionic::species const & sp) {
 		list_.insert_or_assign(sp.symbol(), sp);
 	}
 

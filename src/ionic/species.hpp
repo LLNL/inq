@@ -16,7 +16,7 @@
 #include <optional>
 
 namespace inq {
-namespace input {
+namespace ionic {
 
 class species : public pseudo::element {
 
@@ -115,7 +115,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor"){
 		
-		auto s = input::species("Xe");
+		auto s = ionic::species("Xe");
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -123,7 +123,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Constructor with options"){
 		
-		auto s = input::species("Xe").mass(20);
+		auto s = ionic::species("Xe").mass(20);
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
@@ -132,7 +132,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option mass"){
 		
-		auto s = input::species("U").mass(235);
+		auto s = ionic::species("U").mass(235);
 		
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
@@ -140,7 +140,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Option symbol"){
 		
-		auto s = input::species("U").symbol("U235").mass(235);
+		auto s = ionic::species("U").symbol("U235").mass(235);
 		
 		CHECK(s.symbol() == "U235");
 		CHECK(s.mass() == 428378.7975_a);
@@ -148,7 +148,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	SECTION("Option pseudopotential"){
 		
-		auto s = input::species("He").pseudo("hola");
+		auto s = ionic::species("He").pseudo("hola");
 		
 		CHECK(s.symbol() == "He");
 		CHECK(s.has_file());

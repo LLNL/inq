@@ -24,7 +24,7 @@ namespace parse {
 class cif {
 
 	std::vector<vector3<double>> lattice_vectors_;
-	std::vector<input::species> atoms_;
+	std::vector<ionic::species> atoms_;
 	std::vector<vector3<double, contravariant>> positions_;
 
   static auto to_double(std::string const * strptr, std::string const & cif_file_name){
