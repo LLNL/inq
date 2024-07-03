@@ -34,6 +34,10 @@ public:
 		list_.insert_or_assign(sp.symbol(), sp);
 	}
 
+	auto contains(std::string const & symbol) const{
+		return list_.find(symbol) != list_.end();
+	}
+
 	auto & operator[](std::string const & symbol) const{
 		return list_.at(symbol);
 	}
@@ -76,7 +80,6 @@ public:
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-
 }
 
 #endif
