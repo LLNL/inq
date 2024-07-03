@@ -183,6 +183,10 @@ public:
 	auto & species_list() const {
 		return species_list_;
 	}
+
+	auto & species_list() {
+		return species_list_;
+	}
 	
 	auto symmetry_string() const {
 
