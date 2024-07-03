@@ -46,7 +46,7 @@ private:
 		atoms_.push_back(element.symbol());
 		positions_.push_back(in_atomic_units(position));
 		velocities_.push_back(vel);
-		species_list_.insert(element);
+		if(not species_list_.contains(element.symbol())) species_list_.insert(element);
 	}
 
 public:
@@ -181,6 +181,10 @@ public:
 	}
 
 	auto & species_list() const {
+		return species_list_;
+	}
+
+	auto & species_list() {
 		return species_list_;
 	}
 	
