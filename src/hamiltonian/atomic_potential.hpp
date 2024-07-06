@@ -56,7 +56,7 @@ namespace hamiltonian {
 		template <class SpeciesList>
 		atomic_potential(SpeciesList const & species_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
-			pseudo_set_(conf.pseudopotentials_value()),
+			pseudo_set_(species_list.pseudopotentials()),
 			double_grid_(conf.double_grid_value()),
 			fourier_pseudo_(conf.fourier_pseudo_value())
 		{
@@ -339,19 +339,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	parallel::communicator comm{boost::mpi3::environment::get_self_instance()};
 		
 	SECTION("Non-existing element"){
-		std::vector<species> el_list({"P", "X"});
+		ionic::species_set el_list;
+		el_list.insert("P");
+		el_list.insert("X");
 	
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 	
 	SECTION("Duplicated element"){
-		std::vector<species> el_list({"N", "N"});
+		ionic::species_set el_list;
+		el_list.insert("N");
+		el_list.insert("N");
+		
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
 
 	SECTION("Empty list"){
-		std::vector<species> el_list;
-		
+		ionic::species_set el_list;
+
 		hamiltonian::atomic_potential pot(el_list, gcut);
 
 		CHECK(pot.num_species() == 0);
