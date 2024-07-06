@@ -30,7 +30,6 @@ class electrons {
 	std::optional<double> density_factor_;
 	std::optional<bool> spherical_grid_;
 	std::optional<bool> fourier_pseudo_;
-	std::optional<pseudo::set> pseudo_set_;
 
 public:
 	
@@ -148,16 +147,6 @@ public:
 		return fourier_pseudo_.value_or(false);
 	}
 
-	auto pseudopotentials(pseudo::set && set){
-		electrons conf = *this;
-		conf.pseudo_set_.emplace(std::forward<pseudo::set>(set));
-		return conf;
-	}
-
-	auto pseudopotentials_value() const{
-		return pseudo_set_.value_or(pseudo::set::pseudodojo_pbe());
-	}
-
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
 
@@ -171,7 +160,6 @@ public:
 		utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
 		utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
 		utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
-		if(pseudo_set_.has_value()) utils::save_value(comm, dirname + "/pseudo_set",   pseudo_set_->path(),   error_message);
 		
 	}
 	
@@ -187,17 +175,7 @@ public:
 		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
 		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 		utils::load_optional(dirname + "/spin",           opts.spin_);		
-		
-		//PSEUDO_SET
-		{
-			auto file = std::ifstream(dirname + "/pseudo_set");
-			if(file){
-				std::string readval;
-				file >> readval;
-				opts.pseudo_set_.emplace(readval);
-			}
-		}
-		
+				
 		return opts;
 	}
 
@@ -264,13 +242,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666).spin_non_collinear().pseudopotentials(pseudo::set::ccecp());
+	auto conf = options::electrons{}.spacing(23.1_b).extra_states(666).spin_non_collinear();
 
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
 	CHECK(conf.fourier_pseudo_value() == false);
 	CHECK(conf.spin_val() == states::spin_config::NON_COLLINEAR);
-	CHECK(conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 
 	conf.save(comm, "options_electrons_save");
 	auto read_conf = options::electrons::load("options_electrons_save");
@@ -279,7 +256,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_conf.spacing_value() == 23.1_a);
 	CHECK(read_conf.fourier_pseudo_value() == false);
 	CHECK(read_conf.spin_val() == states::spin_config::NON_COLLINEAR);
-	CHECK(read_conf.pseudopotentials_value().path() == "pseudopotentials/pseudopotentiallibrary.org/ccecp/");
 	
 }
 #endif
