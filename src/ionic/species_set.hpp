@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <ionic/species.hpp>
+#include <pseudopod/set.hpp>
 
 namespace inq {
 namespace ionic {
@@ -19,9 +20,23 @@ class species_set {
 	using container_type = 	std::unordered_map<std::string, ionic::species>;
 
 	container_type list_;
+	pseudo::set pseudo_set_;
 
 public:
-	
+
+	species_set(pseudo::set const & pseudos = pseudo::set::pseudodojo_pbe()):
+		pseudo_set_(pseudos)
+	{
+	}
+
+	auto & pseudopotentials() const {
+		return pseudo_set_;
+	}
+
+	auto & pseudopotentials() {
+		return pseudo_set_;
+	}
+
 	auto size() const {
 		return (long) list_.size();
 	}
