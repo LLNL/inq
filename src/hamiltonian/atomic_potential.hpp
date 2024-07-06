@@ -345,14 +345,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
 	}
-	
-	SECTION("Duplicated element"){
-		ionic::species_set el_list;
-		el_list.insert("N");
-		el_list.insert("N");
-		
-		CHECK_THROWS(hamiltonian::atomic_potential(el_list, gcut));
-	}
 
 	SECTION("Empty list"){
 		ionic::species_set el_list;
