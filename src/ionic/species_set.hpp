@@ -82,6 +82,35 @@ public:
 	auto end() const {
 		return const_iterator{list_.end()};
 	}
+
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save species_set to directory '" + dirname + "'.";
+
+		utils::create_directory(comm, dirname);
+		
+		utils::save_value    (comm, dirname + "/pseudo_set", pseudo_set_, error_message);
+		utils::save_container(comm, dirname + "/symbols",    list_,       error_message, [](auto el) { return el.first; });
+
+		for(auto const & species : *this) species.save(comm, dirname + "/species_" + species.symbol());
+	}
+	
+	static auto load(std::string const & dirname) {
+		auto error_message = "INQ error: Cannot load species_set from directory '" + dirname + "'.";
+
+		auto read = ionic::species_set();
+		
+		utils::load_value(dirname + "/pseudo_set", read.pseudo_set_, error_message);
+
+		auto symbols = std::vector<std::string>{};
+		utils::load_vector(dirname + "/symbols", symbols);
+
+		for(auto const & sym : symbols) {
+			auto species = ionic::species::load(dirname + "/species_" + sym);
+			read.insert(species);
+		}
+
+		return read;
+	}
 	
 };
 
@@ -98,9 +127,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 	using Catch::Approx;
+
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 	
 	auto list = ionic::species_set();
 
+	list.pseudopotentials() = pseudo::set_id::sg15();
+
+	CHECK(list.pseudopotentials() == pseudo::set_id::sg15());
+	
 	list.insert("C");
 
 	CHECK(list.contains("C"));
@@ -133,6 +168,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(has_c);
 	CHECK(has_u);
 	CHECK(count == 3);
+
+	list.save(comm, "save_species_set");
+	auto read_list = list.load("save_species_set");
+
+	CHECK(read_list.size() == 3);
+	CHECK(read_list.pseudopotentials() == pseudo::set_id::sg15());
+	CHECK(read_list.contains("C"));
+	CHECK(read_list.contains("Hloc"));
+	CHECK(not read_list.contains("H"));
+	CHECK(read_list["Hloc"].mass() == 1837.17994584_a);
+	CHECK(read_list["Hloc"].file_path() == inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	CHECK(read_list.contains("U"));
 	
 }
 

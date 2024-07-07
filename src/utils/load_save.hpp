@@ -94,8 +94,8 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 	save_value(comm, filename, static_cast<int>(*value), error_message);
 }
 
-template <typename Type>
-void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message) {
+template <typename Type, typename Function>
+void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message, Function const & func) {
 	
 	comm.barrier();
 
@@ -117,7 +117,7 @@ void save_container(parallel::communicator & comm, std::string const & filename,
 		}
 		
 		file.precision(25);
-		for(auto const & el : container) file << el << '\n';
+		for(auto const & el : container) file << func(el) << '\n';
 
  		exception_happened = false;
 		comm.broadcast_value(exception_happened);
@@ -127,6 +127,11 @@ void save_container(parallel::communicator & comm, std::string const & filename,
 	}
 
 	comm.barrier();
+}
+
+template <typename Type>
+void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message) {
+	save_container(comm, filename, container, error_message, [](auto val){return val;});
 }
 
 template <typename Type>
