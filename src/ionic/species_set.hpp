@@ -111,7 +111,24 @@ public:
 
 		return read;
 	}
-	
+
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, species_set const & self){
+
+		using namespace magnitude;
+
+		out << "Species (" << self.size() << "):\n";
+
+		for(auto const & species : self) {
+			out << "  " << species;
+			if(species.default_pseudo()) out << " *";
+			out << std::endl;
+		}
+
+		out << "\n  * Uses default pseudopotential set: '" << self.pseudopotentials() << "'" << std::endl;
+		
+		return out;
+	}
 };
 
 }
@@ -141,16 +158,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(list.contains("C"));
 	CHECK(not list.contains("F"));
 
-	auto local_h = inq::ionic::species("H").symbol("Hloc").pseudo_file(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	auto local_h = ionic::species("H").symbol("Hloc").pseudo_file(config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	list.insert(local_h);
 
 	CHECK(list.contains("Hloc"));
 	CHECK(not list.contains("H"));
 	CHECK(list.size() == 2);
 	CHECK(list["Hloc"].mass() == 1837.17994584_a);
-	CHECK(list["Hloc"].file_path() == inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	CHECK(list["Hloc"].file_path() == config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 
-	list.insert("U");
+	list.insert(ionic::species("U").mass(235));
 
 	CHECK(list.size() == 3);
 
@@ -178,8 +195,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_list.contains("Hloc"));
 	CHECK(not read_list.contains("H"));
 	CHECK(read_list["Hloc"].mass() == 1837.17994584_a);
-	CHECK(read_list["Hloc"].file_path() == inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	CHECK(read_list["Hloc"].file_path() == config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	CHECK(read_list.contains("U"));
+
+	list.insert(ionic::species("Te").nofilter());
+	list.insert(ionic::species("Vn").symbol("Vn_ccecp").pseudo_set(pseudo::set_id::ccecp()).nofilter());
+
+	std::cout << list << std::endl;
 	
 }
 
