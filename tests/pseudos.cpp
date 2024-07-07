@@ -43,10 +43,10 @@ int main(int argc, char ** argv){
 
 	{
 		systems::ions ions(cell);
-		
+		ions.species_list().pseudopotentials() = pseudo::set_id::ccecp();
 		ions.insert(ionic::species("C"), {0.0_b, 0.0_b, 0.0_b});
 
-		systems::electrons electrons(ions, options::electrons{}.pseudopotentials(pseudo::set::ccecp()).cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
+		systems::electrons electrons(ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
 		
 		ground_state::initial_guess(ions, electrons);
 		
