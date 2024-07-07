@@ -45,7 +45,7 @@ namespace hamiltonian {
 	private:
 		
 		pseudo::math::erf_range_separation sep_;
-		pseudo::set pseudo_set_;
+		pseudo::set default_pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
 		basis::double_grid double_grid_;
@@ -56,7 +56,7 @@ namespace hamiltonian {
 		template <class SpeciesList>
 		atomic_potential(SpeciesList const & species_list, double gcutoff, options::electrons const & conf = {}):
 			sep_(0.625), //this is the default from octopus
-			pseudo_set_(species_list.pseudopotentials()),
+			default_pseudo_set_(species_list.pseudopotentials()),
 			double_grid_(conf.double_grid_value()),
 			fourier_pseudo_(conf.fourier_pseudo_value())
 		{
@@ -68,12 +68,20 @@ namespace hamiltonian {
 			has_nlcc_ = false;
 
 			for(auto const & species : species_list) {
-				if(!pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
-				
 				if(pseudopotential_list_.find(species.symbol()) != pseudopotential_list_.end()) throw std::runtime_error("INQ Error: duplicated species");
 				
-				auto file_path = pseudo_set_.file_path(species);
-				if(species.has_file()) file_path = species.file_path();
+				auto file_path = std::string{};
+				if(species.has_file()) {
+					file_path = species.file_path();
+				} else if(species.has_pseudo_set()) {
+					auto set = pseudo::set{species.pseudo_set()};
+					if(!set.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found in requested set.");
+					file_path = set.file_path(species);
+				} else {
+					if(!default_pseudo_set_.has(species)) throw std::runtime_error("inq error: pseudopotential for element " + species.symbol() + " not found.");
+					file_path = default_pseudo_set_.file_path(species);
+				}
+				assert(not file_path.empty());
 
 				//sorry for this, emplace has a super ugly syntax
 				auto insert = pseudopotential_list_.emplace(std::piecewise_construct, std::make_tuple(species.symbol()), std::make_tuple(file_path, sep_, gcutoff, species.filter_pseudo()));
