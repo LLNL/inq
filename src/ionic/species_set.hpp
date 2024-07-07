@@ -106,7 +106,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(list.contains("C"));
 	CHECK(not list.contains("F"));
 
-	auto local_h = inq::ionic::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
+	auto local_h = inq::ionic::species("H").symbol("Hloc").pseudo_file(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF");
 	list.insert(local_h);
 
 	CHECK(list.contains("Hloc"));

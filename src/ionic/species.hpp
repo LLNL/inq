@@ -10,6 +10,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <pseudopod/element.hpp>
+#include <pseudopod/set_id.hpp>
 #include <utils/merge_optional.hpp>
 #include <vector>
 #include <cmath>
@@ -21,10 +22,11 @@ namespace ionic {
 class species : public pseudo::element {
 
 	std::optional<std::string> symbol_;
+	std::optional<pseudo::set_id> pseudo_set_;
 	std::optional<std::string> pseudo_file_;	
 	std::optional<double> mass_;
 	std::optional<bool> filter_;
-	
+
 public:
 	
 	species(char const * const arg_symbol):
@@ -45,12 +47,18 @@ public:
 		return rspec;
 	}
 		
-	auto pseudo(const std::string & pseudo_file){
+	auto pseudo_file(const std::string & file){
 		species rspec = *this;
-		rspec.pseudo_file_ = pseudo_file;
+		rspec.pseudo_file_ = file;
 		return rspec;
 	}
 
+	auto pseudo_set(pseudo::set_id const & set){
+		species rspec = *this;
+		rspec.pseudo_set_ = set;
+		return rspec;
+	}
+	
 	auto mass(const double arg_mass){
 		species rspec = *this;
 		rspec.mass_ = arg_mass;
@@ -63,6 +71,14 @@ public:
 
 	auto const & file_path() const {
 		return pseudo_file_.value();
+	}
+	
+	auto has_pseudo_set() const {
+		return pseudo_set_.has_value();
+	}
+
+	auto const & pseudo_set() const {
+		return pseudo_set_.value();
 	}
 
 	auto symbol() const {
@@ -113,6 +129,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
+		CHECK(not s.has_pseudo_set());
 	}
 
 	SECTION("Constructor with options"){
@@ -122,6 +139,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
 		CHECK(s.mass() == 36457.77_a);
+		CHECK(not s.has_pseudo_set());
 	}
 
 	SECTION("Option mass"){
@@ -130,6 +148,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
+		CHECK(not s.has_pseudo_set());
 	}
 	
 	SECTION("Option symbol"){
@@ -138,17 +157,30 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(s.symbol() == "U235");
 		CHECK(s.mass() == 428378.7975_a);
+		CHECK(not s.has_pseudo_set());
 	}
 
 	SECTION("Option pseudopotential"){
 		
-		auto s = ionic::species("He").pseudo("hola");
+		auto s = ionic::species("He").pseudo_file("hola");
 		
 		CHECK(s.symbol() == "He");
 		CHECK(s.has_file());
 		CHECK(s.file_path() == "hola");
+		CHECK(not s.has_pseudo_set());
+
 	}
 	
+	SECTION("Option pseudopotential set"){
+		
+		auto s = ionic::species("He").pseudo_set(pseudo::set_id::ccecp());
+		
+		CHECK(s.symbol() == "He");
+		CHECK(not s.has_file());
+		CHECK(s.has_pseudo_set());
+		CHECK(s.pseudo_set() == pseudo::set_id::ccecp());
+		
+	}
 	
 }
 #endif

@@ -15,7 +15,7 @@ int main(int argc, char ** argv){
 	inq::utils::match energy_match(3.0e-5);
 
 	inq::systems::ions ions(inq::systems::cell::cubic(15.0_b).finite());
-	ions.species_list().insert(inq::ionic::species("H").symbol("Hloc").pseudo(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF"));
+	ions.species_list().insert(inq::ionic::species("H").symbol("Hloc").pseudo_file(inq::config::path::unit_tests_data() + "H.blyp-vbc.UPF"));
 	ions.insert("Hloc", {150.0_b, -30.0_b, 0.0_b});
 	
 	inq::systems::electrons electrons(ions, inq::options::electrons{}.cutoff(40.0_Ha));
