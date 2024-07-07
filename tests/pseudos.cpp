@@ -63,6 +63,29 @@ int main(int argc, char ** argv){
 		energy_match.check("HF exchange energy",  result.energy.exact_exchange(),  0.000000000000);
 		energy_match.check("ion-ion energy",      result.energy.ion(),          0.000000000000);
 	}
+
+	{
+		systems::ions ions(cell);
+		ions.insert(ionic::species("C").pseudo_set(pseudo::set_id::sg15()), {0.0_b, 0.0_b, 0.0_b});
+		
+		systems::electrons electrons(ions, options::electrons{}.cutoff(25.0_Ha).extra_states(4).temperature(300.0_K));
+		
+		ground_state::initial_guess(ions, electrons);
+		
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
+		
+		energy_match.check("total energy",        result.energy.total()    ,       -5.364217589921);
+		energy_match.check("kinetic energy",      result.energy.kinetic()  ,        3.177120187949);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(),     -1.404887043368);
+		energy_match.check("Hartree energy",      result.energy.hartree(),          4.371307074758);
+		energy_match.check("external energy",     result.energy.external(),       -11.994166361196);
+		energy_match.check("non-local energy",    result.energy.non_local(),        0.494223882716);
+		energy_match.check("XC energy",           result.energy.xc(),              -1.412702374148);
+		energy_match.check("XC density integral", result.energy.nvxc(),            -1.824678902353);
+		energy_match.check("HF exchange energy",  result.energy.exact_exchange(),   0.000000000000);
+		energy_match.check("ion-ion energy",      result.energy.ion(),              0.000000000000);
+	}
+		
 	return energy_match.fail();
 	
 }

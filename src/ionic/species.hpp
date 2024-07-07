@@ -171,6 +171,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	}
 	
+	SECTION("Option pseudopotential set"){
+		
+		auto s = ionic::species("He").pseudo_set(pseudo::set_id::ccecp());
+		
+		CHECK(s.symbol() == "He");
+		CHECK(not s.has_file());
+		CHECK(s.has_pseudo_set());
+		CHECK(s.pseudo_set() == pseudo::set_id::ccecp());
+		
+	}
 	
 }
 #endif
