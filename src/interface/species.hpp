@@ -64,6 +64,13 @@ These are the options available:
    Shell example:  `inq species pseudo-set sg15`
    Python example: `pinq.species.pseudo-set("sg15")`
 
+-  Shell:  `species list-sets`
+   Python: `species.list_sets()`
+
+   Prints a list of the available pseudopotentials.
+
+   Shell example:  `inq species list-sets`
+   Python example: `pinq.species.list_sets()`
 
 )"""";
 	}
@@ -93,6 +100,14 @@ These are the options available:
 		}
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
+
+	static void list_sets() {
+		auto list = pseudo::set_id::list();
+		std::cout << "Available pseudopotential sets:" << std::endl;
+		for(auto const & item : list) {
+			std::cout << "  " << item << std::endl;
+		}
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -111,7 +126,11 @@ These are the options available:
 
 		if(args.size() == 2 and args[0] == "pseudo-set") {
 			pseudo_set(args[1]);
-			status();
+      actions::normal_exit();
+    }
+
+		if(args.size() == 1 and args[0] == "list-sets") {
+			list_sets();
 			actions::normal_exit();
 		}
 		
@@ -126,6 +145,7 @@ These are the options available:
 		auto sub = module.def_submodule(name(), help());
 		sub.def("status", &status);
 		sub.def("pseudo_set", &pseudo_set);
+		sub.def("list_sets", &list_sets);
 		
 	}
 #endif

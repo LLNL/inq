@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
 		{	"kpoints"s,                  "kpoints"s                  },
 		{	"k-point"s,                  "kpoints"s                  },
 		{	"k-points"s,                 "kpoints"s                  },
+		{	"listsets"s,                 "list-sets"s                },		
 		{ "maxsteps"s,                 "max-steps"s                },
 		{ "mix"s,                      "mixing"s                   },
 		{ "noncollinear"s,             "non-collinear"s            },
