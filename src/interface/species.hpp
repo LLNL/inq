@@ -46,6 +46,25 @@ These are the options available:
    Shell example:  `inq species`
    Python example: `pinq.species.status()`
 
+-  Shell:  `species pseudo-set`
+   Python: `species.pseudo_set()`
+
+   Returns the current pseudopotential set that will be used by
+   default for all species in the simulation.
+
+   Shell example:  `inq species pseudo-set`
+   Python example: `pinq.species.pseudo_set()`
+
+-  Shell:  `species pseudo-set <set name>`
+   Python: `species.pseudo_set("set_name")`
+
+   Sets the pseudopotential set that will be used by default for all
+   species in the simulation.
+
+   Shell example:  `inq species pseudo-set sg15`
+   Python example: `pinq.species.pseudo-set("sg15")`
+
+
 )"""";
 	}
 	
@@ -55,6 +74,24 @@ These are the options available:
 	
 	void operator()() const {
 		status();
+	}
+
+	static void pseudo_set() {
+		if(input::environment::global().comm().root()) std::cout << systems::ions::load(".inq/default_ions").species_list().pseudopotentials() << std::endl;
+	}
+
+	static void pseudo_set(std::string set_name) {
+		auto ions = systems::ions::load(".inq/default_ions");
+
+		std::replace(set_name.begin(), set_name.end(), '-', '_');
+			
+		std::stringstream ss;
+		ss << set_name;
+		try { ss >> ions.species_list().pseudopotentials(); }
+		catch(...) {
+			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'."); 
+		}
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 	
 	template <typename ArgsType>
@@ -67,6 +104,17 @@ These are the options available:
 			actions::normal_exit();
 		}
 
+		if(args.size() == 1 and args[0] == "pseudo-set") {
+			pseudo_set();
+			actions::normal_exit();
+		}
+
+		if(args.size() == 2 and args[0] == "pseudo-set") {
+			pseudo_set(args[1]);
+			status();
+			actions::normal_exit();
+		}
+		
 	}
 	
 #ifdef INQ_PYTHON_INTERFACE
@@ -77,6 +125,8 @@ These are the options available:
  
 		auto sub = module.def_submodule(name(), help());
 		sub.def("status", &status);
+		sub.def("pseudo_set", &pseudo_set);
+		
 	}
 #endif
 
