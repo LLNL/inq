@@ -77,6 +77,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::results_real_time)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
+		+ interface::item(interface::species)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);
 
