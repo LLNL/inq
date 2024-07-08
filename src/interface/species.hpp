@@ -107,6 +107,16 @@ These are the options available:
    Python example: `pinq.species.add_by_atomic_number("C14", 6)`
 
 
+-  Shell:  `species <symbol> pseudo-set <set name>`
+   Python: `species.pseudo_set("symbol", "set_name")`
+
+   Sets the pseudopotential set that will be used for the species
+   given by <symbol>.
+
+   Shell example:  `inq species He pseudo-set sg15`
+   Python example: `pinq.species.pseudo-set("He", "sg15")`
+
+
 )"""";
 	}
 	
@@ -183,6 +193,32 @@ These are the options available:
 		ions.species_list().insert(new_species);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
+
+	static void pseudo_set(std::string symbol, std::string set_name) {
+		auto ions = systems::ions::load(".inq/default_ions");
+
+		symbol[0] = std::toupper(symbol[0]);
+		std::replace(set_name.begin(), set_name.end(), '-', '_');
+			
+		std::stringstream ss;
+		ss << set_name;
+		pseudo::set_id set;
+
+		try { ss >> set; }
+		catch(...) {
+			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'."); 
+		}
+
+		if(not ions.species_list().contains(symbol)) {
+			auto new_species = ionic::species(symbol);
+			if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + symbol + "' in `species` command.");
+			ions.species_list().insert(new_species);
+		}
+
+		ions.species_list()[symbol].pseudo_set(set);
+		
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -228,6 +264,12 @@ These are the options available:
 			actions::normal_exit();
 		}
 		
+		if(args.size() == 3 and args[1] == "pseudo-set") {
+			pseudo_set(args[0], args[2]);
+			status();
+			actions::normal_exit();
+		}
+				
 	}
 	
 #ifdef INQ_PYTHON_INTERFACE
