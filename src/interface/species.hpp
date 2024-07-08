@@ -46,6 +46,7 @@ These are the options available:
    Shell example:  `inq species`
    Python example: `pinq.species.status()`
 
+
 -  Shell:  `species pseudo-set`
    Python: `species.pseudo_set()`
 
@@ -54,6 +55,7 @@ These are the options available:
 
    Shell example:  `inq species pseudo-set`
    Python example: `pinq.species.pseudo_set()`
+
 
 -  Shell:  `species pseudo-set <set name>`
    Python: `species.pseudo_set("set_name")`
@@ -64,6 +66,7 @@ These are the options available:
    Shell example:  `inq species pseudo-set sg15`
    Python example: `pinq.species.pseudo-set("sg15")`
 
+
 -  Shell:  `species list-sets`
    Python: `species.list_sets()`
 
@@ -71,6 +74,38 @@ These are the options available:
 
    Shell example:  `inq species list-sets`
    Python example: `pinq.species.list_sets()`
+
+
+-  Shell:  `species add <element>`
+   Python: `species.add("element")`
+
+   Adds a new species of given by <element>. The element must be a
+   IUPAC recognized element chemical symbol.
+
+   Shell example:  `inq species add Tc`
+   Python example: `pinq.species.add("Tc")`
+
+
+-  Shell:  `species add <symbol> element <element>`
+   Python: `species.add_by_element("symbol", "element")`
+
+   Adds a new species given by its <symbol> as an alias to
+   <element>. Note that element must be a IUPAC recognized element
+   symbol.
+
+   Shell example:  `inq species add proton element H`
+   Python example: `pinq.species.add_by_element("proton", "H")`
+
+
+-  Shell:  `species add <symbol> atomic_number <z>`
+   Python: `species.add_by_atomic_number("symbol", z)`
+
+   Adds a new species given by its <symbol> as an alias to
+   the chemical element with atomic number <z>.
+
+   Shell example:  `inq species add C14 atomic-number 6`
+   Python example: `pinq.species.add_by_atomic_number("C14", 6)`
+
 
 )"""";
 	}
@@ -108,6 +143,46 @@ These are the options available:
 			std::cout << "  " << item << std::endl;
 		}
 	}
+
+	static void add_species(std::string element) {
+
+		element[0] = std::toupper(element[0]);
+		
+		auto ions = systems::ions::load(".inq/default_ions");
+		auto new_species = ionic::species(element);
+
+		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + element + "' in `species add`.");
+		
+		ions.species_list().insert(new_species);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+	
+	static void add_species_by_element(std::string symbol, std::string element) {
+
+		symbol[0] = std::toupper(symbol[0]);
+		element[0] = std::toupper(element[0]);
+		
+		auto ions = systems::ions::load(".inq/default_ions");
+		auto new_species = ionic::species(element).symbol(symbol);
+
+		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + element + "' in `species add`.");
+		
+		ions.species_list().insert(new_species);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+
+	static void add_species_by_atomic_number(std::string symbol, int atomic_number) {
+
+		symbol[0] = std::toupper(symbol[0]);
+		
+		auto ions = systems::ions::load(".inq/default_ions");
+		auto new_species = ionic::species(atomic_number).symbol(symbol);
+
+		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Invalid atomic number ", atomic_number, " in `species add`.");
+		
+		ions.species_list().insert(new_species);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -126,11 +201,30 @@ These are the options available:
 
 		if(args.size() == 2 and args[0] == "pseudo-set") {
 			pseudo_set(args[1]);
+			status();
       actions::normal_exit();
     }
 
 		if(args.size() == 1 and args[0] == "list-sets") {
 			list_sets();
+			actions::normal_exit();
+		}
+
+		if(args.size() == 2 and args[0] == "add") {
+			add_species(args[1]);
+			status();
+			actions::normal_exit();
+		}
+		
+		if(args.size() == 4 and args[0] == "add" and args[2] == "element") {
+			add_species_by_element(args[1], args[3]);
+			status();
+			actions::normal_exit();
+		}
+		
+		if(args.size() == 4 and args[0] == "add" and args[2] == "atomic-number") {
+			add_species_by_atomic_number(args[1], str_to<int>(args[3]));
+			status();
 			actions::normal_exit();
 		}
 		

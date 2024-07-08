@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
 	using interface::operator+;
  
 	std::unordered_map<std::string, std::string> aliases = {
+		{ "atomicnumber"s,             "atomic-number"s            },
 		{ "calculator"s,               "calc"s                     },
 		{ "clean"s,                    "clear"s                    },
 		{ "exactexchange"s,            "exact-exchange"s           },
