@@ -276,6 +276,7 @@ public:
 		auto error_message = "INQ error: Cannot save the ions to directory '" + dirname + "'.";
 
 		cell_.save(comm, dirname + "/cell");
+		species_list_.save(comm, dirname + "/species_list");
 		utils::save_value(comm, dirname + "/num_ions",   size(),      error_message);
 		utils::save_container(comm, dirname + "/atoms",      atoms_,      error_message);
 		utils::save_container(comm, dirname + "/positions",  positions_,  error_message);
@@ -288,6 +289,7 @@ public:
 		auto error_message = "INQ error: Cannot load the ions from directory '" + dirname + "'.";
 
 		auto read_ions = ions(cell);
+		read_ions.species_list() = ionic::species_set::load(dirname + "/species_list");
 		
 		int num;
 		utils::load_value(dirname + "/num_ions", num, error_message);
@@ -358,6 +360,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.velocities()[0][0] == 0.0_a);
     CHECK(ions.velocities()[0][1] == 0.0_a);
     CHECK(ions.velocities()[0][2] == 0.0_a);
+		CHECK(ions.species_list().size() == 1);
 		
     ions.positions()[0][0] += 8;
     
@@ -382,7 +385,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(ions.cell().periodicity() == 0);
 		
     CHECK(ions.size() == 12);
-    
+		CHECK(ions.species_list().size() == 2);
+		
     CHECK(ions.species(2) == "C");
     CHECK(ions.species(2).charge() == -6.0_a);
     CHECK(ions.species(2).mass() == 21892.1617296_a);
@@ -405,6 +409,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     ions.insert("Cl", {-3.0_b, 4.0_b, 5.0_b});
 
     CHECK(ions.size() == 13);
+		CHECK(ions.species_list().size() == 3);
     CHECK(ions.species(12).atomic_number() == 17);
     CHECK(ions.species(12) == ionic::species(17));
     CHECK(ions.species(12).charge() == -17.0_a);
@@ -433,7 +438,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_ions.cell().periodicity() == 0);
 
     CHECK(read_ions.size() == 13);
-		
+		CHECK(read_ions.species_list().size() == 3);
     CHECK(read_ions.species(2) == "C");
     CHECK(read_ions.species(2).charge() == -6.0_a);
     CHECK(read_ions.species(2).mass() == 21892.1617296_a);
