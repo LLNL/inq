@@ -117,15 +117,19 @@ public:
 
 		using namespace magnitude;
 
-		out << "Species (" << self.size() << "):\n";
+		out << "Species (" << self.size() << " total):\n";
 
+		auto any_species_uses_default = false;
 		for(auto const & species : self) {
 			out << "  " << species;
-			if(species.default_pseudo()) out << " *";
+			if(species.default_pseudo()) {
+				out << " *";
+				any_species_uses_default = true;
+			}
 			out << std::endl;
 		}
 
-		out << "\n  * Uses default pseudopotential set: '" << self.pseudopotentials() << "'" << std::endl;
+		if(any_species_uses_default)	out << "\n  * Uses default pseudopotential set: '" << self.pseudopotentials() << "'" << std::endl;
 		
 		return out;
 	}
