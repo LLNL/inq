@@ -129,8 +129,8 @@ public:
 			out << std::endl;
 		}
 
-		if(any_species_uses_default)	out << "\n  * Uses default pseudopotential set: '" << self.pseudopotentials() << "'" << std::endl;
-		
+		if(any_species_uses_default)	out << "\n  * Uses default pseudopotential set: '" << self.pseudopotentials() << "'\n";
+		out << std::endl;
 		return out;
 	}
 };
