@@ -119,6 +119,18 @@ These are the options available:
 
 )"""";
 	}
+
+	static auto string_to_pseudo_set(std::string set_name){
+		try { 
+			std::replace(set_name.begin(), set_name.end(), '-', '_');
+			pseudo::set_id set(set_name);
+			return set;
+		}
+		catch(...) {
+			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'.");
+			return pseudo::set_id{};
+		}
+	}
 	
 	static void status() {
 		if(input::environment::global().comm().root()) std::cout << systems::ions::load(".inq/default_ions").species_list();
@@ -132,17 +144,10 @@ These are the options available:
 		if(input::environment::global().comm().root()) std::cout << systems::ions::load(".inq/default_ions").species_list().pseudopotentials() << std::endl;
 	}
 
-	static void pseudo_set(std::string set_name) {
+	static void pseudo_set(std::string const & set_name) {
 		auto ions = systems::ions::load(".inq/default_ions");
 
-		std::replace(set_name.begin(), set_name.end(), '-', '_');
-			
-		std::stringstream ss;
-		ss << set_name;
-		try { ss >> ions.species_list().pseudopotentials(); }
-		catch(...) {
-			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'."); 
-		}
+		ions.species_list().pseudopotentials() = string_to_pseudo_set(set_name);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
@@ -194,28 +199,18 @@ These are the options available:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
-	static void pseudo_set(std::string symbol, std::string set_name) {
+	static void pseudo_set(std::string symbol, std::string const & set_name) {
 		auto ions = systems::ions::load(".inq/default_ions");
 
 		symbol[0] = std::toupper(symbol[0]);
-		std::replace(set_name.begin(), set_name.end(), '-', '_');
-			
-		std::stringstream ss;
-		ss << set_name;
-		pseudo::set_id set;
-
-		try { ss >> set; }
-		catch(...) {
-			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'."); 
-		}
-
+		
 		if(not ions.species_list().contains(symbol)) {
 			auto new_species = ionic::species(symbol);
 			if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + symbol + "' in `species` command.");
 			ions.species_list().insert(new_species);
 		}
 
-		ions.species_list()[symbol].pseudo_set(set);
+		ions.species_list()[symbol].pseudo_set(string_to_pseudo_set(set_name));
 		
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
