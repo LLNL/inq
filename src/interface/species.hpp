@@ -131,6 +131,13 @@ These are the options available:
 			return pseudo::set_id{};
 		}
 	}
+
+	static auto string_to_species(std::string element){
+		element[0] = std::toupper(element[0]);
+		auto new_species = ionic::species(element);
+		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + element + "' in `species` command.");
+		return new_species;
+	}
 	
 	static void status() {
 		if(input::environment::global().comm().root()) std::cout << systems::ions::load(".inq/default_ions").species_list();
@@ -159,59 +166,37 @@ These are the options available:
 		}
 	}
 
-	static void add_species(std::string element) {
+	static void add_species(std::string const & element) {
 
-		element[0] = std::toupper(element[0]);
-		
 		auto ions = systems::ions::load(".inq/default_ions");
-		auto new_species = ionic::species(element);
-
-		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + element + "' in `species add`.");
-		
-		ions.species_list().insert(new_species);
+		ions.species_list().insert(string_to_species(element));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 	
-	static void add_species_by_element(std::string symbol, std::string element) {
+	static void add_species_by_element(std::string symbol, std::string const & element) {
 
 		symbol[0] = std::toupper(symbol[0]);
-		element[0] = std::toupper(element[0]);
-		
 		auto ions = systems::ions::load(".inq/default_ions");
-		auto new_species = ionic::species(element).symbol(symbol);
-
-		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + element + "' in `species add`.");
-		
-		ions.species_list().insert(new_species);
+		ions.species_list().insert(string_to_species(element).symbol(symbol));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
 	static void add_species_by_atomic_number(std::string symbol, int atomic_number) {
 
 		symbol[0] = std::toupper(symbol[0]);
-		
 		auto ions = systems::ions::load(".inq/default_ions");
 		auto new_species = ionic::species(atomic_number).symbol(symbol);
-
 		if(not new_species.valid()) actions::error(input::environment::global().comm(), "Invalid atomic number ", atomic_number, " in `species add`.");
-		
 		ions.species_list().insert(new_species);
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
 	static void pseudo_set(std::string symbol, std::string const & set_name) {
-		auto ions = systems::ions::load(".inq/default_ions");
 
 		symbol[0] = std::toupper(symbol[0]);
-		
-		if(not ions.species_list().contains(symbol)) {
-			auto new_species = ionic::species(symbol);
-			if(not new_species.valid()) actions::error(input::environment::global().comm(), "Unknown element '" + symbol + "' in `species` command.");
-			ions.species_list().insert(new_species);
-		}
-
+		auto ions = systems::ions::load(".inq/default_ions");
+		if(not ions.species_list().contains(symbol)) ions.species_list().insert(string_to_species(symbol));
 		ions.species_list()[symbol].pseudo_set(string_to_pseudo_set(set_name));
-		
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 	
