@@ -117,6 +117,16 @@ These are the options available:
    Python example: `pinq.species.pseudo-set("He", "sg15")`
 
 
+-  Shell:  `species <symbol> file <filename>`
+   Python: `species.file("symbol", "filename")`
+
+   Sets the pseudopotential file that will be used for the species
+   given by <symbol>.
+
+   Shell example:  `inq species Xe file Xe.upf`
+   Python example: `pinq.species.pseudo-set("Xe", "Xe.upf")`
+
+
 -  Shell:  `species <symbol> mass <value>`
    Python: `species.pseudo_set("symbol", value)`
 
@@ -212,6 +222,15 @@ These are the options available:
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
 
+	static void file(std::string symbol, std::string const & file) {
+
+		symbol[0] = std::toupper(symbol[0]);
+		auto ions = systems::ions::load(".inq/default_ions");
+		if(not ions.species_list().contains(symbol)) ions.species_list().insert(string_to_species(symbol));
+		ions.species_list()[symbol].pseudo_file(file);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
+
 	static void mass(std::string symbol, double const & mass_value) {
 
 		symbol[0] = std::toupper(symbol[0]);
@@ -267,6 +286,12 @@ These are the options available:
 		
 		if(args.size() == 3 and args[1] == "pseudo-set") {
 			pseudo_set(args[0], args[2]);
+			status();
+			actions::normal_exit();
+		}
+
+		if(args.size() == 3 and args[1] == "file") {
+			file(args[0], args[2]);
 			status();
 			actions::normal_exit();
 		}
