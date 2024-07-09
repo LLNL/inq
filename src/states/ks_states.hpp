@@ -20,6 +20,7 @@ namespace states {
 
 class ks_states {
 
+	spin_config spin_;
 	double num_electrons_;
 	int nstates_;
 	int num_spin_indices_;
@@ -34,6 +35,7 @@ public:
 	typedef complex coeff_type;
     
 	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0, int nkpoints = 1):
+		spin_(spin),
 		temperature_(temperature),
 		nkpoints_(nkpoints)
 	{
@@ -80,8 +82,10 @@ public:
 	
 	template<class OStream>
 	friend OStream& operator<<(OStream& out, ks_states const& self){
-		out << "Orbitals:" << std::endl;
-		out << "  Number of states = " << self.num_states() << std::endl;
+		out << "Kohn-Sham representation:" << std::endl;
+		out << "  Number of electrons      = " << self.num_electrons_ << std::endl;
+		out << "  Spin                     = " << self.spin_ << std::endl;
+		out << "  States per spin/kpoint   = " << self.num_states() << std::endl;
 		out << std::endl;
 		return out;
 	}
