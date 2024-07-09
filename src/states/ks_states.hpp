@@ -69,17 +69,12 @@ public:
 		return spinor_dim_;
 	}
 	
-	template <class output_stream>
-	void info(output_stream & out) const {
-		out << "KOHN-SHAM STATES:" << std::endl;
-		out << "  Number of states = " << num_states() << std::endl;
-		out << std::endl;
-	}
-	
 	template<class OStream>
-	friend OStream& operator<<(OStream& os, ks_states const& self){
-		self.info(os);
-		return os;
+	friend OStream& operator<<(OStream& out, ks_states const& self){
+		out << "Orbitals:" << std::endl;
+		out << "  Number of states = " << self.num_states() << std::endl;
+		out << std::endl;
+		return out;
 	}
 	
 	auto num_electrons() const {
