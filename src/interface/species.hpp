@@ -117,6 +117,18 @@ These are the options available:
    Python example: `pinq.species.pseudo-set("He", "sg15")`
 
 
+-  Shell:  `species <symbol> mass <value>`
+   Python: `species.pseudo_set("symbol", value)`
+
+   Sets the ionic mass for the species given by <symbol>. The mass
+   must be given in atomic mass units (amu). They should not be
+   confused with atomic units of mass. In amu the mass of a carbon
+   atom is 12.
+
+   Shell example:  `inq species U mass 235`
+   Python example: `pinq.species.mass("U", 235)`
+
+
 )"""";
 	}
 
@@ -199,6 +211,15 @@ These are the options available:
 		ions.species_list()[symbol].pseudo_set(string_to_pseudo_set(set_name));
 		ions.save(input::environment::global().comm(), ".inq/default_ions");
 	}
+
+	static void mass(std::string symbol, double const & mass_value) {
+
+		symbol[0] = std::toupper(symbol[0]);
+		auto ions = systems::ions::load(".inq/default_ions");
+		if(not ions.species_list().contains(symbol)) ions.species_list().insert(string_to_species(symbol));
+		ions.species_list()[symbol].mass(mass_value);
+		ions.save(input::environment::global().comm(), ".inq/default_ions");
+	}
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -249,7 +270,13 @@ These are the options available:
 			status();
 			actions::normal_exit();
 		}
-				
+
+		if(args.size() == 3 and args[1] == "mass") {
+			mass(args[0], str_to<double>(args[2]));
+			status();
+			actions::normal_exit();
+		}
+		
 	}
 	
 #ifdef INQ_PYTHON_INTERFACE
