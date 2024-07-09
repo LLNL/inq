@@ -20,6 +20,15 @@ namespace states {
 
 class ks_states {
 
+	double num_electrons_;
+	int nstates_;
+	int num_spin_indices_;
+	int num_density_components_;
+	int spinor_dim_;
+	double temperature_;
+	double max_occ_;
+	int nkpoints_;
+
 public:
 
 	typedef complex coeff_type;
@@ -220,17 +229,6 @@ public:
 		return efermi;
 	}
 	
-private:
-
-	double num_electrons_;
-	int nstates_;
-	int num_spin_indices_;
-	int num_density_components_;
-	int spinor_dim_;
-	double temperature_;
-	double max_occ_;
-	int nkpoints_;
-
 };
 
 }
