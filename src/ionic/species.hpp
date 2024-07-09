@@ -28,6 +28,8 @@ class species : public pseudo::element {
 	std::optional<bool> filter_;
 
 public:
+
+	constexpr static double const amu_to_atomic_units = 1822.8885;
 	
 	species(char const * const arg_symbol):
 		pseudo::element(std::string(arg_symbol)){
@@ -74,6 +76,7 @@ public:
 	}
 	
 	auto has_pseudo_set() const {
+		if(has_file()) return false;
 		return pseudo_set_.has_value();
 	}
 
@@ -107,6 +110,10 @@ public:
 		return filter_.value_or(true);
 	}
 
+	auto default_pseudo() const {
+		return not has_pseudo_set() and not has_file();
+	}
+	
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save species to directory '" + dirname + "'.";
 
@@ -137,6 +144,36 @@ public:
 		return read_species;
 	}
 	
+	template<class OStream>
+	friend OStream & operator<<(OStream & out, species const & self){
+
+		auto defaults = true;
+		out << self.symbol() << std::string(std::max(0ul, 20 - self.symbol().size()), ' ') << "- |";
+
+		if(self.symbol_.has_value() and self.symbol_ != pseudo::element(self).symbol()) {
+			out << " element = " << pseudo::element(self).symbol() << " |";
+			defaults = false;
+		}
+		if(self.mass_.has_value()) {
+			out << " mass = " << self.mass()/amu_to_atomic_units << " amu |";
+			defaults = false;
+		}
+		if(self.pseudo_file_.has_value()) {
+			out << " pseudo = '" << *self.pseudo_file_ << "' |";
+			defaults = false;
+		}
+		if(self.has_pseudo_set()) {
+			out << " pseudo set = '" << *self.pseudo_set_ << "' |";
+			defaults = false;
+		}
+		if(self.filter_.has_value() and *self.filter_ == false) {
+			out << " filter = no |";
+			defaults = false;			
+		}
+
+		if(defaults) out << " defaults |";
+		return out;
+	}
 };
 
 }
@@ -162,6 +199,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.atomic_number() == 54);
 		CHECK(not s.has_file());
 		CHECK(not s.has_pseudo_set());
+		CHECK(s.default_pseudo());
 		
 		s.save(comm, "save_species_xe");
 		auto read_s = ionic::species::load("save_species_xe");
@@ -169,7 +207,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_s.atomic_number() == 54);
 		CHECK(not read_s.has_file());
 		CHECK(not read_s.has_pseudo_set());
-		
+		CHECK(read_s.default_pseudo());
 	}
 
 	SECTION("Constructor with options"){
@@ -180,7 +218,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not s.has_file());
 		CHECK(s.mass() == 36457.77_a);
 		CHECK(not s.has_pseudo_set());
-
+		CHECK(s.default_pseudo());
+	
 		s.save(comm, "save_species_xe_mass");
 		auto read_s = ionic::species::load("save_species_xe_mass");
 
@@ -188,7 +227,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not read_s.has_file());
 		CHECK(read_s.mass() == 36457.77_a);
 		CHECK(not read_s.has_pseudo_set());
-		
+		CHECK(read_s.default_pseudo());
 	}
 
 	SECTION("Option mass"){
@@ -198,14 +237,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.symbol() == "U");
 		CHECK(s.mass() == 428378.7975_a);
 		CHECK(not s.has_pseudo_set());
-
+		CHECK(s.default_pseudo());
+		
 		s.save(comm, "save_species_u");
 		auto read_s = ionic::species::load("save_species_u");
 
 		CHECK(read_s.symbol() == "U");
 		CHECK(read_s.mass() == 428378.7975_a);
 		CHECK(not read_s.has_pseudo_set());
-		
+		CHECK(read_s.default_pseudo());
 	}
 	
 	SECTION("Option symbol"){
@@ -233,7 +273,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(s.has_file());
 		CHECK(s.file_path() == "hola");
 		CHECK(not s.has_pseudo_set());
-
+		CHECK(not s.default_pseudo());
+		
 		s.save(comm, "save_species_he_hola");
 		auto read_s = ionic::species::load("save_species_he_hola");
 
@@ -241,7 +282,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(read_s.has_file());
 		CHECK(read_s.file_path() == "hola");
 		CHECK(not read_s.has_pseudo_set());
-		
+		CHECK(not read_s.default_pseudo());
 	}
 	
 	SECTION("Option pseudopotential set"){
@@ -252,6 +293,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not s.has_file());
 		CHECK(s.has_pseudo_set());
 		CHECK(s.pseudo_set() == pseudo::set_id::ccecp());
+		CHECK(not s.default_pseudo());		
 
 		s.save(comm, "save_species_he_ccecp");
 		auto read_s = ionic::species::load("save_species_he_ccecp");
@@ -260,6 +302,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(not read_s.has_file());
 		CHECK(read_s.has_pseudo_set());
 		CHECK(read_s.pseudo_set() == pseudo::set_id::ccecp());
+		CHECK(not read_s.default_pseudo());
 		
 	}
 	
