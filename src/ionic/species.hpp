@@ -49,11 +49,13 @@ public:
 	}
 		
 	auto pseudo_file(const std::string & file){
+		pseudo_set_.reset();
 		pseudo_file_ = file;
 		return *this;
 	}
-
+	
 	auto pseudo_set(pseudo::set_id const & set){
+		pseudo_file_.reset();
 		pseudo_set_ = set;
 		return *this;
 	}
