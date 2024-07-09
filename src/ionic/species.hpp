@@ -43,28 +43,26 @@ public:
 		pseudo::element(atomic_number){
 	}
 	
-	auto symbol(const std::string & arg_symbol) const{
-		species rspec = *this;
-		rspec.symbol_ = arg_symbol;
-		return rspec;
+	auto symbol(const std::string & arg_symbol) {
+		symbol_ = arg_symbol;
+		return *this;
 	}
 		
 	auto pseudo_file(const std::string & file){
-		species rspec = *this;
-		rspec.pseudo_file_ = file;
-		return rspec;
+		pseudo_set_.reset();
+		pseudo_file_ = file;
+		return *this;
 	}
-
+	
 	auto pseudo_set(pseudo::set_id const & set){
-		species rspec = *this;
-		rspec.pseudo_set_ = set;
-		return rspec;
+		pseudo_file_.reset();
+		pseudo_set_ = set;
+		return *this;
 	}
 	
 	auto mass(const double arg_mass){
-		species rspec = *this;
-		rspec.mass_ = arg_mass;
-		return rspec;
+		mass_ = arg_mass;
+		return *this;
 	}
 
 	auto has_file() const {

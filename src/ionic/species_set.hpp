@@ -49,14 +49,18 @@ public:
 		list_.insert_or_assign(sp.symbol(), sp);
 	}
 
-	auto contains(std::string const & symbol) const{
+	auto contains(std::string const & symbol) const {
 		return list_.find(symbol) != list_.end();
 	}
 
-	auto & operator[](std::string const & symbol) const{
+	auto & operator[](std::string const & symbol) const {
 		return list_.at(symbol);
 	}
 
+	auto & operator[](std::string const & symbol) {
+		return list_.at(symbol);
+	}
+	
 	struct const_iterator {
 
 		container_type::const_iterator base_iter;

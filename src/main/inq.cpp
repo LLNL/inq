@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
 	using interface::operator+;
  
 	std::unordered_map<std::string, std::string> aliases = {
+		{ "atomicnumber"s,             "atomic-number"s            },
 		{ "calculator"s,               "calc"s                     },
 		{ "clean"s,                    "clear"s                    },
 		{ "exactexchange"s,            "exact-exchange"s           },
@@ -31,6 +32,7 @@ int main(int argc, char* argv[]) {
 		{	"kpoints"s,                  "kpoints"s                  },
 		{	"k-point"s,                  "kpoints"s                  },
 		{	"k-points"s,                 "kpoints"s                  },
+		{	"listsets"s,                 "list-sets"s                },		
 		{ "maxsteps"s,                 "max-steps"s                },
 		{ "mix"s,                      "mixing"s                   },
 		{ "noncollinear"s,             "non-collinear"s            },
@@ -38,6 +40,9 @@ int main(int argc, char* argv[]) {
 		{ "nonlocal"s,                 "non-local"s                },
 		{ "observable"s,               "observables"s              },
 		{ "perturbation"s,             "perturbations"s            },
+		{ "pseudo-potential"s,         "pseudo"s                   },
+		{ "pseudopotential"s,          "pseudo"s                   },
+		{ "pseudoset"s,                "pseudo-set"s               },
 		{ "realtime"s,                 "real-time"s                },
 		{ "rt"s,                       "real-time"s                },
 		{ "result"s,                   "results"s                  },
@@ -77,6 +82,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::results_real_time)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
+		+ interface::item(interface::species)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);
 
