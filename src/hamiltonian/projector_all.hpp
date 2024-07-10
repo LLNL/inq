@@ -294,7 +294,7 @@ public:
 		}
 		
 		for(auto iproj = 0; iproj < nprojs_; iproj++){		
-			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
+			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, blas::transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
 		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
