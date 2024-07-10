@@ -388,8 +388,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(pot.num_species() == 2);
 		CHECK(pot.num_electrons(ions.symbols()) == 30.0_a);
 		
-		rs.info(std::cout);
-		
 		auto vv = pot.local_potential(comm, rs, ions);
 		
 		CHECK(operations::integral(vv) == -45.5744357466_a);

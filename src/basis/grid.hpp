@@ -99,18 +99,14 @@ namespace basis {
 			return nr_local_;
 		}
 		
-		template <class output_stream>
-    void info(output_stream & out) const {
-      out << "PLANE WAVE BASIS SET:" << std::endl;
-      out << "  Grid size   = " << sizes()[0] << " x " << sizes()[1] << " x " << sizes()[2] << std::endl;
-			out << "  Spacing [b] = " << rspacing() << std::endl;
-			out << std::endl;
-    }
-    
 		template<class OStream>
-		friend OStream& operator<<(OStream& os, grid const& self){
-			self.info(os);
-			return os;
+		friend OStream& operator<<(OStream& out, grid const& self){
+			out << "Basis set:" << std::endl;
+			out << "  Spacing                 = " << self.rspacing()[0] << " " << self.rspacing()[1] << " " << self.rspacing()[2] << " bohr" << std::endl;
+      out << "  Grid size               = " << self.sizes()[0] << " x " << self.sizes()[1] << " x " << self.sizes()[2] << std::endl;
+			out << "  Number of grid points   = " << self.sizes()[0]*self.sizes()[1]*self.sizes()[2] << std::endl;
+			out << std::endl;
+			return out;
 		}
 
 		constexpr auto & cubic_part(int dim) const {

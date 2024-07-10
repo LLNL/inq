@@ -20,11 +20,22 @@ namespace states {
 
 class ks_states {
 
+	spin_config spin_;
+	double num_electrons_;
+	int nstates_;
+	int num_spin_indices_;
+	int num_density_components_;
+	int spinor_dim_;
+	double temperature_;
+	double max_occ_;
+	int nkpoints_;
+
 public:
 
 	typedef complex coeff_type;
     
 	ks_states(const spin_config spin, const double nelectrons, const int extra_states = 0, double temperature = 0.0, int nkpoints = 1):
+		spin_(spin),
 		temperature_(temperature),
 		nkpoints_(nkpoints)
 	{
@@ -69,17 +80,14 @@ public:
 		return spinor_dim_;
 	}
 	
-	template <class output_stream>
-	void info(output_stream & out) const {
-		out << "KOHN-SHAM STATES:" << std::endl;
-		out << "  Number of states = " << num_states() << std::endl;
-		out << std::endl;
-	}
-	
 	template<class OStream>
-	friend OStream& operator<<(OStream& os, ks_states const& self){
-		self.info(os);
-		return os;
+	friend OStream& operator<<(OStream& out, ks_states const& self){
+		out << "Kohn-Sham representation:" << std::endl;
+		out << "  Number of electrons      = " << self.num_electrons_ << std::endl;
+		out << "  Spin                     = " << self.spin_ << std::endl;
+		out << "  States per spin/kpoint   = " << self.num_states() << std::endl;
+		out << std::endl;
+		return out;
 	}
 	
 	auto num_electrons() const {
@@ -225,17 +233,6 @@ public:
 		return efermi;
 	}
 	
-private:
-
-	double num_electrons_;
-	int nstates_;
-	int num_spin_indices_;
-	int num_density_components_;
-	int spinor_dim_;
-	double temperature_;
-	double max_occ_;
-	int nkpoints_;
-
 };
 
 }
