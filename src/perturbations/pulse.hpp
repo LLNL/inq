@@ -104,7 +104,6 @@ using namespace magnitude;
         perturbations::pulse las({1.0, 0.0, 0.0}, 1.0_eV, 1.0_fs, 0.0_invfs2, 0.0_fs, M_PI, perturbations::gauge::length);
 
 	SECTION("ramplaser velocity gauge"){
-		perturbations::ramplaser ramp_vector_potential({0.1, 0.0, 0.0}, 1.0_eV, 0.0_fs, 1.0_fs, perturbations::gauge::velocity);
                 perturbations::pulse las({1.0, 0.0, 0.0}, 1.0_eV, 1.0_fs, 0.0_invfs2, 0.0_fs, 0.0, perturbations::gauge::velocity);
 		CHECK(las.has_uniform_vector_potential());
 		CHECK(not las.has_uniform_electric_field());

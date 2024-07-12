@@ -23,11 +23,11 @@ auto operator "" _auchirp(long double val){
 }
 
 auto operator "" _invfs2(long double val){
-	return inq::quantity<chirp>::from_atomic_units(val/ (1.0_fs.in_atomic_units() * 1.0_fs.in_atomic_units() ) );
+	return inq::quantity<chirp>::from_atomic_units(val/ ((1.0_fs).in_atomic_units() * (1.0_fs).in_atomic_units() ) );
 }
 
 auto operator "" _invps2(long double val){
-	return inq::quantity<chirp>::from_atomic_units(val/ (1.0_ps.in_atomic_units() * 1.0_ps.in_atomic_units() ) );
+	return inq::quantity<chirp>::from_atomic_units(val/ ((1.0_ps).in_atomic_units() * (1.0_ps).in_atomic_units() ) );
 }
 
 struct chirp {
@@ -54,8 +54,8 @@ struct chirp {
 
 #endif
 
-#ifdef INQ_MAGNITUDE_LENGTH_UNIT_TEST
-#undef INQ_MAGNITUDE_LENGTH_UNIT_TEST
+#ifdef INQ_MAGNITUDE_CHIRP_UNIT_TEST
+#undef INQ_MAGNITUDE_CHIRP_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 
