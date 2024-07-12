@@ -67,24 +67,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
   {
     auto ch = 100.0_auchirp;
-    CHECK(ch.in_atomic_units() == 100.0_auchirp);
+    CHECK(ch.in_atomic_units() == 100.0_a);
   }
 
   {
     auto ch = 1709.109149248447_invfs2;
-    CHECK(ch.in_atomic_units() == 1.0_auchirp);
+    CHECK(ch.in_atomic_units() == 1.0_a);
   }
 
   {
     auto ch = 1709109149.248447_invps2;
-    CHECK(ch.in_atomic_units() == 1.0_auchirp);
+    CHECK(ch.in_atomic_units() == 1.0_a);
   }
 
 
 	CHECK(chirp::parse(1.0, "auchirp") == 1.0_auchirp);	
 	CHECK(chirp::parse(12.0, "invfs2") == 12.0_invfs2);
 	CHECK(chirp::parse(1.0, "invps2") == 1.0_invps2);
-	CHECK_THROWS(chirp::parse(1.0, "not_a_unit") == 1.0_auchirp);	
+	CHECK_THROWS(chirp::parse(1.0, "not_a_unit") == 1.0_a);	
 	
 }
 #endif
