@@ -46,7 +46,7 @@ public:
                 time_shift_(time_shift.in_atomic_units()),
                 phase_shift_(phase_shift),
 		gauge_(arg_gauge) {
-		assert(gauge_ != gauge::mixed);
+		if(gauge_ == gauge::automatic) gauge_ = gauge::velocity;
 	}
 	
 	auto has_uniform_electric_field() const {
@@ -108,7 +108,7 @@ using namespace magnitude;
 		CHECK(las.has_uniform_vector_potential());
 		CHECK(not las.has_uniform_electric_field());
 		CHECK(las.uniform_vector_potential(0.0)[0] == 0.0);
-		CHECK(ramp_vector_potential.uniform_vector_potential(0.0)[2] == 0.0);
+		CHECK(las.uniform_vector_potential(0.0)[2] == 0.0);
 	}
 
 }
