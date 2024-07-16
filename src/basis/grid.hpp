@@ -30,11 +30,6 @@ namespace basis {
 			cell_(cell),
 			nr_(nr){
 
-			if(base::part_.local_size() == 0){
-				std::cerr << "\n  Partition " << comm.rank() << " has 0 points. Please change the number of processors.\n" << std::endl;
-				comm.abort(1);
-			}
-			
 			for(int idir = 0; idir < 3; idir++){
 				rlength_[idir] = length(cell[idir]);
 				ng_[idir] = nr_[idir];
