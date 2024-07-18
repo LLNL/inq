@@ -24,7 +24,7 @@ class array_iterator {
 public:
 
   array_iterator(PartitionType part, parallel::cartesian_communicator<1> comm, ArrayType const & arr):
-		bit_(1, part, comm, arr.partitioned(1)){		
+		bit_(1, part, comm, arr.partitioned(1)){        
   }
 
 	template <typename EndType>
@@ -84,9 +84,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
 			
 			CHECK(ipart == pai.ipart());
-			CHECK(pai->size() == part.local_size(ipart)); 
+			CHECK((*pai).size() == part.local_size(ipart)); 
 			
-			for(int ii = 0; ii < pai->size(); ii++){
+			for(int ii = 0; ii < (*pai).size(); ii++){
 				CHECK((*pai)[ii] == ipart + 1.0);
 			}
 			
@@ -104,9 +104,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(parallel::array_iterator pai(part, comm, arr); pai != pai.end(); ++pai){
 			
 			CHECK(ipart == pai.ipart());
-			CHECK(pai->size() == part.local_size(ipart)); 
+			CHECK((*pai).size() == part.local_size(ipart)); 
 			
-			for(int ii = 0; ii < pai->size(); ii++){
+			for(int ii = 0; ii < (*pai).size(); ii++){
 				CHECK((*pai)[ii][0] == ipart + 1.0);
 				CHECK((*pai)[ii][1] == ipart*2.0);
 				CHECK((*pai)[ii][2] == ipart - 5.0);
