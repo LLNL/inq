@@ -41,11 +41,11 @@ public:
   }
 
   auto operator*() const {
-    return bit_->flatted();
+    return (*bit_).flatted();
   }
 
   auto operator->() const {
-    return &(bit_->flatted());
+    return &((*bit_).flatted());
   }
   
   static auto end() {
