@@ -180,8 +180,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     int itcount = 0;
     for(parallel::array_iterator_2d pai(partx, party, comm, arr); pai != pai.end(); ++pai){
 
-      CHECK(pai->size() ==  partx.local_size(pai.xpart()));
-      CHECK(pai->rotated().size() ==  party.local_size(pai.ypart()));
+      CHECK((*pai).size() ==  partx.local_size(pai.xpart()));
+      CHECK((*pai).rotated().size() ==  party.local_size(pai.ypart()));
       
       for(long ix = 0; ix < partx.local_size(pai.xpart()); ix++){
         for(long iy = 0; iy < party.local_size(pai.ypart()); iy++){

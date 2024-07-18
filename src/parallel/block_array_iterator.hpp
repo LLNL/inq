@@ -39,7 +39,7 @@ public:
     comm_(std::move(comm)),
     arr_({block_size, part.max_local_size()}),
     istep_(0),
-		bsize_(block_size)					
+		bsize_(block_size)                  
   {
 		assert(arr.size() == block_size);
 		assert(arr.rotated().size() == part_.local_size());
@@ -125,10 +125,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(parallel::block_array_iterator pai(bsize, part, comm, arr); pai != pai.end(); ++pai){
 
 			CHECK(ipart == pai.ipart());
-			CHECK(pai->size() == bsize);
-			CHECK(pai->rotated().size() == part.local_size(ipart));
+			CHECK((*pai).size() == bsize);
+			CHECK((*pai).rotated().size() == part.local_size(ipart));
 			
-			for(int ii = 0; ii < pai->size(); ii++){
+			for(int ii = 0; ii < (*pai).size(); ii++){
 				for(int jj = 0; jj < bsize; jj++) CHECK((*pai)[jj][ii] == ipart + 1.0);
 			}
 			
@@ -146,10 +146,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		for(parallel::block_array_iterator pai(bsize, part, comm, arr); pai != pai.end(); ++pai){
 			
 			CHECK(ipart == pai.ipart());
-			CHECK(pai->size() == bsize);
-			CHECK(pai->rotated().size() == part.local_size(ipart));
+			CHECK( (*pai).size() == bsize);
+			CHECK( (*pai).rotated().size() == part.local_size(ipart));
 			
-			for(int ii = 0; ii < pai->size(); ii++){
+			for(int ii = 0; ii < (*pai).size(); ii++){
 				for(int jj = 0; jj < bsize; jj++) {
 					CHECK((*pai)[jj][ii][0] == ipart + 1.0);
 					CHECK((*pai)[jj][ii][1] == ipart*2.0);
