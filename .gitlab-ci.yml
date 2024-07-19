@@ -368,7 +368,7 @@ clang-ompi-debug:
       - clang++ --version
       - mkdir build
       - cd build
-      - CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - CXXFLAGS="-O3 -pipe -Wall -Werror -Wno-error=deprecated-declarations"
       - CXX=clang++ CC=clang cmake ../ -DCMAKE_BUILD_TYPE=Debug --install-prefix=$HOME -DMPI_EXECUTABLE_SUFFIX=.openmpi
       - ls -l
       - time make
@@ -804,7 +804,7 @@ clang-ompi-template:
       - perl -pi -e s/master/${CI_COMMIT_SHA}/g CMakeLists.txt
       - cat CMakeLists.txt
       - mkdir build && cd build
-      - export CXXFLAGS="-O3 -pipe -Wall -Werror"
+      - export CXXFLAGS="-O3 -pipe -Wall -Werror -Wno-error=deprecated-declarations"
       - export CXX=clang++
       - export CC=clang
       - time cmake ../ --install-prefix=`pwd`/../install/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.openmpi
