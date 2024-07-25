@@ -20,6 +20,7 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
+#include <systems/electrons.hpp>
 #include <cmath>
 
 namespace inq {
@@ -58,26 +59,16 @@ public:
 		SpinDensityType full_density(spin_density.basis(), std::min(2, spin_density.set_size()));
 
 		if(spin_density.set_size() == 4) {
-			//auto mg = 0.0;
-			//for (auto ip=0; ip<spin_density.basis().local_size(); ip++) {
-			//auto mgv = observables::local_magnetization(spin_density.matrix()[ip], 4);
-			//mg += length(mgv);
-			//mg += sqrt (spin_density.matrix()[ip][2]*spin_density.matrix()[ip][2] + spin_density.matrix()[ip][3]*spin_density.matrix()[ip][3]);
-			//}
-			//std::cout << "TOTAL MAGNETIZATION INTEGRATED LOCALLY : " << mg << std::endl;
-			//for spinors convert the density to 2 components
 			gpu::run(spin_density.basis().local_size(),
 							 [spi = begin(spin_density.matrix()), ful = begin(full_density.matrix()), cor = begin(core_density.linear())] GPU_LAMBDA (auto ip){
 								 auto dtot = spi[ip][0] + spi[ip][1];
 								 auto mag = observables::local_magnetization(spi[ip], 4);
-								 // length
-								 auto dpol = length(mag);
+								 auto dpol = mag.length();
 								 ful[ip][0] = 0.5*(dtot + dpol);
 								 ful[ip][1] = 0.5*(dtot - dpol);
-								 // add core density
-								 for (int ispin=0; ispin<2; ispin++) {
-									if (ful[ip][ispin] < 0.0) ful[ip][ispin] = 0.0;
-									ful[ip][ispin] += 0.5*cor[ip];
+								 for(int ispin = 0; ispin < 2; ispin++){
+									 if(ful[ip][ispin] < 0.0) ful[ip][ispin] = 0.0;
+									 ful[ip][ispin] += cor[ip]/2;
 								 }
 							 });
 		} else {
@@ -96,12 +87,6 @@ public:
 		return full_density;
 	}
 
-	template <typename SpinDensityType>
-	double extract_electron_number(SpinDensityType const & spin_density) const {
-		auto full_dens = observables::density::total(spin_density);
-		return operations::integral(full_dens);
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename VXC, typename VKS>
@@ -112,15 +97,14 @@ public:
 						 [spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
 							auto bxc = 0.5*(vx[ip][0]-vx[ip][1]);
 							auto vxc = 0.5*(vx[ip][0]+vx[ip][1]);
-							auto e_mag = observables::local_magnetization(spi[ip], 4);
-							auto dpol = length(e_mag);
+							auto mag = observables::local_magnetization(spi[ip], 4);
+							auto dpol = mag.length();
 							if (fabs(dpol) > 1.e-7) {
-								e_mag = e_mag / dpol;
-								// Vxc = [vxc+bxc^z, bxc^-; bxc^+, vxc-bxc^z]
+								auto e_mag = mag / dpol;
 								vk[ip][0] += vxc + bxc * e_mag[2];
 								vk[ip][1] += vxc - bxc * e_mag[2];
-								vk[ip][2] += 2*bxc * e_mag[0];
-								vk[ip][3] +=-2*bxc * e_mag[1];
+								vk[ip][2] += bxc * e_mag[0];
+								vk[ip][3] += bxc * e_mag[1];
 							}
 							else {
 								vk[ip][0] += vxc;
@@ -130,7 +114,6 @@ public:
 		}
 		else {
 			assert(spin_density.set_size() == 1 or spin_density.set_size() == 2);
-			std::cout << "spin density size : " << spin_density.set_size() << std::endl;
 			gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
 						 [vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
 							vk[ip][is] += vx[ip][is];
@@ -151,15 +134,15 @@ public:
 						 [spi = begin(spin_density.matrix()), vx = begin(vfunc.matrix()), xc = begin(xcp.matrix())] GPU_LAMBDA (auto is, auto ip){
 							auto bxc = 0.5*(vx[ip][0]-vx[ip][1]);
 							auto vxc = 0.5*(vx[ip][0]+vx[ip][1]);
-							auto e_mag = observables::local_magnetization(spi[ip], 4);
-							auto dpol = length(e_mag);
+							auto mag = observables::local_magnetization(spi[ip], 4);
+							auto dpol = mag.length();
 							if (fabs(dpol) > 1.e-7) {
-								e_mag = e_mag / dpol;
+								auto e_mag = mag / dpol;
 								// Vxc = [vxc+bxc^z, bxc^-; bxc^+, vxc-bxc^z]
 								xc[ip][0] = vxc + bxc * e_mag[2];
 								xc[ip][1] = vxc - bxc * e_mag[2];
-								xc[ip][2] = 2.*bxc * e_mag[0];
-								xc[ip][3] =-2.*bxc * e_mag[1];
+								xc[ip][2] = 2.0*bxc * e_mag[0];
+								xc[ip][3] = 2.0*bxc * e_mag[1];
 							}
 							else {
 								xc[ip][0] = vxc;
@@ -173,7 +156,7 @@ public:
 		}
 		return nvxc_;
 	}
-	
+
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
   template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
@@ -181,8 +164,6 @@ public:
     
     exc = 0.0;
 		nvxc = 0.0;
-		auto n = 0.0;
-		auto n2= 0.0;
 		if(not any_true_functional()) return;
 		
 		auto full_density = process_density(spin_density, core_density);
@@ -200,15 +181,8 @@ public:
 			exc += efunc;
 			process_potential(spin_density, vfunc, vks);
 
-			//nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
 			nvxc += compute_nvxc(spin_density, vfunc);
-			n += extract_electron_number(spin_density);
-			n2+= extract_electron_number(full_density);
 		}
-		std::cout << " exc : " << exc << std::endl;
-		std::cout << " nvxc: " << nvxc << std::endl;
-		std::cout << " density: " << n << std::endl;
-		std::cout << " full density: " << n2 << std::endl;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
