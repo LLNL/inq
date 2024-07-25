@@ -21,7 +21,7 @@ GPU_FUNCTION auto local_magnetization(Density const & spin_density, int const & 
 
 	if(components == 4){
 		mag_density[0] = 2.0*spin_density[2];
-		mag_density[1] =-2.0*spin_density[3];
+		mag_density[1] = 2.0*spin_density[3];
 	} else {
 		mag_density[0] = 0.0;
 		mag_density[1] = 0.0;							 
