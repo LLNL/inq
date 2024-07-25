@@ -39,8 +39,8 @@ void scalar_potential_add(basis::field_set<basis::real_space, PotentialType> con
 		gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
 						 [pot = begin(potential.matrix()), vph = begin(vphi.spinor_array()), ph = begin(phi.spinor_array()), shift] GPU_LAMBDA (auto ist, auto ip){
 							 auto offdiag = pot[ip][2] + complex{0.0, 1.0}*pot[ip][3];
-							 vph[ip][0][ist] += (pot[ip][0] + shift)*ph[ip][0][ist] + offdiag*ph[ip][1][ist];
-							 vph[ip][1][ist] += (pot[ip][1] + shift)*ph[ip][1][ist] + conj(offdiag)*ph[ip][0][ist];
+							 vph[ip][0][ist] += (pot[ip][0] + shift)*ph[ip][0][ist] + conj(offdiag)*ph[ip][1][ist];
+							 vph[ip][1][ist] += (pot[ip][1] + shift)*ph[ip][1][ist] + offdiag*ph[ip][0][ist];
 						 });
 	}
 	
@@ -68,8 +68,8 @@ states::orbital_set<basis::real_space, complex> scalar_potential(basis::field_se
 		gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
 						 [pot = begin(potential.matrix()), vph = begin(vphi.spinor_array()), ph = begin(phi.spinor_array()), shift] GPU_LAMBDA (auto ist, auto ip){
 							 auto offdiag = pot[ip][2] + complex{0.0, 1.0}*pot[ip][3];
-							 vph[ip][0][ist] = (pot[ip][0] + shift)*ph[ip][0][ist] + offdiag*ph[ip][1][ist];
-							 vph[ip][1][ist] = (pot[ip][1] + shift)*ph[ip][1][ist] + conj(offdiag)*ph[ip][0][ist];
+							 vph[ip][0][ist] = (pot[ip][0] + shift)*ph[ip][0][ist] + conj(offdiag)*ph[ip][1][ist];
+							 vph[ip][1][ist] = (pot[ip][1] + shift)*ph[ip][1][ist] + offdiag*ph[ip][0][ist];
 						 });
 
 	}
