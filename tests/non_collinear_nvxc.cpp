@@ -15,7 +15,9 @@ auto compute_psi_vxc_psi(occupations_array_type const & occupations, field_set_t
     int nst = phi.local_spinor_set_size();
     int npt = phi.basis().local_size();
     states::orbital_set<basis::real_space, double> vphi(phi.skeleton());
-    field<basis::real_space, double> rfield(cfield.skeleton());
+
+    inq::basis::field<basis::real_space, double> rfield(vphi.basis());
+
     double nvxc = 0.0;
 
     if (phi.spinors()){
