@@ -187,6 +187,51 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template <typename SpinDensityType, typename CoreDensityType, typename VxcType>
+	void compute_vxc(SpinDensityType const & spin_density, CoreDensityType const & core_density, VxcType & vxc) {
+
+		if(not any_true_functional()) return;
+		auto full_density = process_density(spin_density, core_density);
+		double efunc = 0.0;
+		basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
+		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
+		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
+
+		for(auto & func : functionals_) {
+			if(not func.true_functional()) continue;
+			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
+			if (spin_density.set_size() == 4) {
+				gpu::run(vfunc.local_set_size(), vfunc.basis().local_size(),
+				[spi = begin(spin_density.matrix()), vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
+					auto b = 0.5*(vxi[ip][0]-vxi[ip][1]);
+					auto v = 0.5*(vxi[ip][0]+vxi[ip][1]);
+					auto mag = observables::local_magnetization(spi[ip], 4);
+					auto dpol = mag.length();
+					if (fabs(dpol) > 1.e-7) {
+						auto e_mag = mag / dpol;
+						vxf[ip][0] = v + b * e_mag[2];
+						vxf[ip][1] = v - b * e_mag[2];
+						vxf[ip][2] = b * e_mag[0];
+						vxf[ip][3] = b * e_mag[1];
+					}
+					else {
+						vxf[ip][0] = v;
+						vxf[ip][1] = v;
+					}
+				});
+			}
+			else {
+				assert(spin_density.set_size() == 1 or spin_density.set_size() == 2);
+				gpu::run(vfunc.local_set_size(), vfunc.basis().local_size(),
+					[vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
+						vxf[ip][is] = vxi[ip][is];
+					});
+			}
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename DensityType, typename DensityGradientType>
 	static void evaluate_functional(hamiltonian::xc_functional const & functional, DensityType const & density, DensityGradientType const & density_gradient,
 																	double & efunctional, basis::field_set<basis::real_space, double> & vfunctional){
