@@ -17,6 +17,7 @@
 #include <states/ks_states.hpp>
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/energy.hpp>
+#include <interface/actions.hpp>
 #include <ionic/brillouin.hpp>
 #include <ionic/interaction.hpp>
 #include <observables/density.hpp>
@@ -282,22 +283,38 @@ public:
 			logger()->info("  {} k-points/spin indices divided among {} partitions", kpin_part_.size(), kpin_part_.comm_size());
 			logger()->info("  partition 0 has {} k-points/spin indices and the last partition has {}\n", kpin_part_.local_size(0), kpin_part_.local_size(kpin_part_.comm_size() - 1));
 
+			if(kpin_part_.local_size(kpin_part_.comm_size() - 1) == 0) {
+				interface::actions::error(full_comm_, "A processor has 0 kpoints/spin indices assigned, please change the number of processors or the parallelization distribution.");
+			}
+			
 			logger()->info("state parallelization:");
 			logger()->info("  {} states divided among {} partitions", kpin()[0].set_part().size(), kpin()[0].set_part().comm_size());
 			logger()->info("  partition 0 has {} states and the last partition has {} states\n", kpin()[0].set_part().local_size(0), kpin()[0].set_part().local_size(kpin()[0].set_part().comm_size() - 1));
 
+			if(kpin()[0].set_part().local_size(kpin()[0].set_part().comm_size() - 1) == 0) {
+				interface::actions::error(full_comm_, "A processor has 0 states assigned, please change the number of processors or the parallelization distribution.");
+			}
+			
 			logger()->info("real-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_part(0).size(), states_basis_.part().size(), states_basis_.cubic_part(0).comm_size());
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)",
 										 states_basis_.cubic_part(0).local_size(0), states_basis_.cubic_part(0).local_size(states_basis_.part().comm_size() - 1),
 										 states_basis_.part().local_size(0), states_basis_.part().local_size(states_basis_.part().comm_size() - 1));
 
+			if(states_basis_.part().local_size(states_basis_.part().comm_size() - 1) == 0) {
+				interface::actions::error(full_comm_, "A processor has 0 real-space points assigned, please change the number of processors or the parallelization distribution.");
+			}
+			
 			logger()->info("fourier-space parallelization:");
 			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_part(2).size(), fourier_basis.part().size(), fourier_basis.cubic_part(2).comm_size());
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n",
 										 fourier_basis.cubic_part(2).local_size(0), fourier_basis.cubic_part(2).local_size(fourier_basis.part().comm_size() - 1),
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
-				
+
+			if(fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1) == 0) {
+				interface::actions::error(full_comm_, "A processor has 0 real-space points assigned, please change the number of processors or the parallelization distribution.");
+			}
+
 		}
 	}
 

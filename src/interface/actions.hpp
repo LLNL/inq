@@ -25,8 +25,8 @@ void error_exit() {
   exit(1);
 }
 
-template <class Message1Type, class Message2Type = std::string, class Message3Type = std::string>
-void error(parallel::communicator & comm, Message1Type const & message1, Message2Type const & message2 = {}, Message3Type const & message3 = {}) {
+template <class CommType, class Message1Type, class Message2Type = std::string, class Message3Type = std::string>
+void error(CommType & comm, Message1Type const & message1, Message2Type const & message2 = {}, Message3Type const & message3 = {}) {
   if(comm.root()) {
     std::cerr << " -----------------------------------------------------\n\n";
     std::cerr << "  Error : " << message1 << message2 << message3 << "\n\n";
