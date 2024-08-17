@@ -124,11 +124,11 @@ These are the options available:
    given by <symbol>.
 
    Shell example:  `inq species Xe file Xe.upf`
-   Python example: `pinq.species.pseudo-set("Xe", "Xe.upf")`
+   Python example: `pinq.species.file("Xe", "Xe.upf")`
 
 
 -  Shell:  `species <symbol> mass <value>`
-   Python: `species.pseudo_set("symbol", value)`
+   Python: `species.mass("symbol", value)`
 
    Sets the ionic mass for the species given by <symbol>. The mass
    must be given in atomic mass units (amu). They should not be
@@ -311,9 +311,9 @@ These are the options available:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
-		sub.def("status", &status);
-		sub.def("pseudo_set", &pseudo_set);
+		sub.def("status",    &status);
 		sub.def("list_sets", &list_sets);
+		sub.def("file",      &file);
 		
 	}
 #endif
