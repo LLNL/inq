@@ -37,20 +37,25 @@ the testing of inq.
 
 These are the available subcommands:
 
-- `util match calc <math-expression>`
+- Shell: `util match calc <math-expression>`
 
   Calculates the result of the given mathematical expression. This is
   useful if you need to calculate a value in a script or double check
-  an expression you are given to inq in an argument.
+  the result of an expression you are giving to inq in an argument.
 
-  Example: `inq util calc "1/sqrt(2.0) + exp(-1/2)`.
+  This function is not available in Python, since mathematical
+  expressions can be evaluated directly by the language.
+
+  Shell example: `inq util calc "1/sqrt(2.0) + exp(-1/2)`.
 
 
-- `util match <value1> <value2> ... <tolerance>`
+- Shell:  `util match <value1> <value2> ... <tolerance>`
+  Python: `util.match(value1, value2, tolerance)`
 
-  Checks if two set of values match within a certain tolerance. If they match,
-  the command will run successfully, with a 0 return code. If the match
-  fails, then the command will fail with a return value of 1.
+  Checks if two set of values match within a certain tolerance. If
+  they match, the command will run successfully, with a 0 return
+  code. If the match fails, then the command will fail with a return
+  value of 1. For Python it will return true or false.
 
   When more than two values are passed, it is assumed these are two
   sets given in sequential order. For example, if 6 values are passed
@@ -59,15 +64,20 @@ These are the available subcommands:
   fourth one, the second with the fifth, and the third with the sixth
   one.
 
-  Examples: `inq util match 1.0 2.0 1e-5`
-            `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
+  Shell examples: `inq util match 1.0 2.0 1e-5`
+                  `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
+  Python example: `pinq.util.match(1.0, 2.0, 1e-5)`
 
-- `util test-data`
+
+- Shell:  `util test-data`
+  Python: `util.test_data()`
 
   Returns the path where inq install the data files used for
-  tests. This is not really useful for users, just developers.
+  tests. This is not really useful for users, it is mainly for
+  testing.
 
-  Example: `inq util test-data`
+  Shell example:  `inq util test-data`
+  Python example: `pinq.util.test_data()`
 
 
 )"""";
@@ -77,7 +87,7 @@ These are the available subcommands:
 		return utils::str_to<double>(expr);		
 	}
 
-	bool match(double value, double reference, double tolerance) const {
+	static auto match(double value, double reference, double tolerance) {
     
     auto diff = fabs(reference - value);
     
@@ -96,7 +106,7 @@ These are the available subcommands:
     }
   }
 
-	auto test_data() const {
+	static auto test_data() {
 		return config::path::unit_tests_data();
 	}
 
@@ -137,6 +147,19 @@ These are the available subcommands:
 
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'util' command");
 	}
+
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule(name(), help());
+
+		sub.def("match",     &match);
+		sub.def("test_data", &test_data);
+	}
+#endif
 	
 } const util ;
 
