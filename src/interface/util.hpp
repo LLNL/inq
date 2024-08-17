@@ -62,12 +62,16 @@ These are the available subcommands:
   Examples: `inq util match 1.0 2.0 1e-5`
             `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
 
-- `util test-data`
+
+- Shell:  `util test-data`
+  Python: `util.test_data()`
 
   Returns the path where inq install the data files used for
-  tests. This is not really useful for users, just developers.
+  tests. This is not really useful for users, it is mainly for
+  testing.
 
-  Example: `inq util test-data`
+  Shell example:  `inq util test-data`
+  Python example: `pinq.util.test_data()`
 
 
 )"""";
@@ -96,7 +100,7 @@ These are the available subcommands:
     }
   }
 
-	auto test_data() const {
+	static auto test_data() {
 		return config::path::unit_tests_data();
 	}
 
@@ -137,6 +141,18 @@ These are the available subcommands:
 
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'util' command");
 	}
+
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+
+		auto sub = module.def_submodule(name(), help());
+
+		sub.def("test_data", &test_data);
+	}
+#endif
 	
 } const util ;
 
