@@ -46,51 +46,71 @@ units.
 These are the available subcommands:
 
 - Shell:  `results real-time`
+  Python: `results.real_time.status()`
 
-  When no arguments are given, print the values calculated.
+  When no arguments are given (ot the status() function in Python),
+  print the available values.
 
-  Example: `inq results real-time`.
+  Shell example:  `inq results real-time`.
+  Python example: `pinq.results.real_time.status()`
 
 
 - Shell:  `results real-time total-steps`
+  Python: `results.real_time.total_steps()`
 
   Returns the total number of real-time simulation steps done.
 
-  Example: `inq results real-time total-steps`.
+  Shell example:  `inq results real-time total-steps`
+  Python example: `pinq.results.real_time.total_steps()`
 
 
 - Shell:  `results real-time total-time`
+  Python: `results.real_time.total_time()`
 
   Returns the total simulated time (in atomic units).
 
-  Example: `inq results real-time total-time`.
+  Shell example:  `inq results real-time total-time`
+  Python example: `pinq.results.real_time.total_time()`
+
 
 - Shell:  `results real-time time [step]`
+  Python: `results.real_time.time()`
 
-  Returns the time values. If not additional arguments are passed, inq
-  prints the whole series for each time step. Alternatively, you can
-  pass a step index to get the energy value.
+  Returns the time values for each time-step.
+
+  In the shell, if not additional arguments are passed, inq prints the
+  whole series for each time step. Alternatively, you can pass a step
+  index to get the energy value.
+
+  For Python this functions returns an array and does not receive any
+  arguments.
 
   Note that for the moment inq uses a uniform time integration, so the
   time is just the step index times the time-step.
 
-  Examples: `inq results real-time time`.
-            `inq results real-time time 99`.
+  Shell example:  `inq results real-time time`
+                  `inq results real-time time 99`
+  Python example: `pinq.results.real_time.time()`
 
 
 - Shell:  `results real-time total-energy [step]`
+  Python: `results.real_time.total_energy()`
 
-  Returns the values of the total energy during the propagation. If
-  not additional arguments are passed, inq prints the whole series for
-  each time step in a two column format, the first column is the time
-  and the second one is the energy. This output is suitable to view
-  on a plotting program like gnuplot.
+  Returns the values of the total energy during the propagation for each time step.
 
+  For the shell, if not additional arguments are passed, inq prints
+  the whole series for each time step in a two column format, the
+  first column is the time and the second one is the energy. This
+  output is suitable to view on a plotting program like gnuplot.
   Alternatively, you can pass a step index to get the energy value for
   that step.
 
-  Examples: `inq results real-time total-energy`
-            `inq results real-time total-energy 43`.
+  For Python this functions returns an array and does not receive any
+  arguments.
+
+  Shell examples: `inq results real-time total-energy`
+                  `inq results real-time total-energy 43`
+  Python example: `pinq.results.real_time.total_energy()`
 
 
 )"""";
