@@ -45,27 +45,27 @@ units.
 
 These are the available subcommands:
 
-- `results real-time`
+- Shell:  `results real-time`
 
   When no arguments are given, print the values calculated.
 
   Example: `inq results real-time`.
 
 
-- `results real-time total-steps`
+- Shell:  `results real-time total-steps`
 
   Returns the total number of real-time simulation steps done.
 
   Example: `inq results real-time total-steps`.
 
 
-- `results real-time total-time`
+- Shell:  `results real-time total-time`
 
   Returns the total simulated time (in atomic units).
 
   Example: `inq results real-time total-time`.
 
-- `results real-time time [step]`
+- Shell:  `results real-time time [step]`
 
   Returns the time values. If not additional arguments are passed, inq
   prints the whole series for each time step. Alternatively, you can
@@ -78,7 +78,7 @@ These are the available subcommands:
             `inq results real-time time 99`.
 
 
-- `results real-time total-energy [step]`
+- Shell:  `results real-time total-energy [step]`
 
   Returns the values of the total energy during the propagation. If
   not additional arguments are passed, inq prints the whole series for
@@ -108,34 +108,38 @@ private:
 	
 public:
 	
-	void operator()() const {
+	static void status() {
 		auto res = load();
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
+	
+	void operator()() const {
+		status();
+	}
 
-	auto total_steps() const {
+	static auto total_steps() {
 		return load().total_steps;
 	}
 	
-	auto total_time() const {
+	static auto total_time() {
 		return load().total_time;
 	}
 
-	auto time() const {
+	static auto time() {
 		return load().time;
 	}
 	
-	auto total_energy() const {
+	static auto total_energy() {
 		return load().total_energy;
 	}
 
-	auto dipole() const {
+	static auto dipole() {
 		auto && res = load();
 		if(res.dipole.size() == 0)	actions::error(input::environment::global().comm(), "The dipole was not calculated during the real-time simulation");
 		return res.dipole;
 	}
 	
-	auto current() const {
+	static auto current() {
 		auto && res = load();
 		if(res.current.size() == 0)	actions::error(input::environment::global().comm(), "The current was not calculated during the real-time simulation.");
 		return res.current;
@@ -236,6 +240,57 @@ public:
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
+		
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+ 
+		auto sub = module.def_submodule("real_time", help());
+
+		sub.def("status",       &status);
+		sub.def("total_steps",  &total_steps);
+		sub.def("total_time",   &total_time);
+		sub.def("time",         &time);
+		sub.def("total_energy", &total_energy);
+
+		sub.def("dipole", []() {
+			
+			auto dipole_multi = dipole();
+			
+			py::array_t<double, py::array::c_style> dipole_array({(long) dipole_multi.size(), 3l});
+			
+			auto arr = dipole_array.mutable_unchecked();
+			
+			for (py::ssize_t iter = 0; iter < arr.shape(0); iter++) {
+				for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+					arr(iter, idir) = dipole_multi[iter][idir];
+				}
+			}
+		
+			return dipole_array;
+		});
+
+		sub.def("current", []() {
+			
+			auto current_multi = current();
+			
+			py::array_t<double, py::array::c_style> current_array({(long) current_multi.size(), 3l});
+			
+			auto arr = current_array.mutable_unchecked();
+			
+			for (py::ssize_t iter = 0; iter < arr.shape(0); iter++) {
+				for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+					arr(iter, idir) = current_multi[iter][idir];
+				}
+			}
+		
+			return current_array;
+		});
+
+	}
+#endif
 	
 } const results_real_time;
 
