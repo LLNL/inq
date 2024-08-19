@@ -96,7 +96,8 @@ These are the available subcommands:
 - Shell:  `results real-time total-energy [step]`
   Python: `results.real_time.total_energy()`
 
-  Returns the values of the total energy during the propagation for each time step.
+  Returns the values of the total energy for each time step during the
+  propagation.
 
   For the shell, if not additional arguments are passed, inq prints
   the whole series for each time step in a two column format, the
@@ -111,6 +112,62 @@ These are the available subcommands:
   Shell examples: `inq results real-time total-energy`
                   `inq results real-time total-energy 43`
   Python example: `pinq.results.real_time.total_energy()`
+
+
+- Shell:  `results real-time dipole [step] [dir]`
+  Python: `results.real_time.dipole()`
+
+  Returns the values of the dipole for each time-step during the
+  propagation. The value is in cartesian coordinates and atomic
+  units. Note that the calculation of the dipole must be requested
+  before running using the `observables` command.
+
+  Shell: If not additional arguments are passed, inq prints the whole
+  series for each time step in a four column format, the first column
+  is the time and the second, third and fourth ones are the x, y, and
+  z components of the dipole, respectively. This output is suitable to
+  view on a plotting program like gnuplot.  Alternatively, you can
+  pass a step index to get the dipole value for that step. An extra
+  direction index (x, y or z) will return a single component of the
+  dipole vector.
+
+  For Python this functions returns an two-dimensional array with the
+  values of the dipole and does not receive any arguments. The first
+  (leftmost) index is the time-step index while the second array index
+  is the coordinate of the dipole.
+
+  Shell examples: `inq results real-time dipole`
+                  `inq results real-time dipole 7866`
+                  `inq results real-time dipole 33 y`
+  Python example: `dip = pinq.results.real_time.dipole()`
+
+
+- Shell:  `results real-time current [step] [dir]`
+  Python: `results.real_time.current()`
+
+  Returns the values of the current for each time-step during the
+  propagation. The value is in cartesian coordinates and atomic
+  units. Note that the calculation of the current must be requested
+  before running using the `observables` command.
+
+  Shell: If not additional arguments are passed, inq prints the whole
+  series for each time step in a four column format, the first column
+  is the time and the second, third and fourth ones are the x, y, and
+  z components of the current, respectively. This output is suitable to
+  view on a plotting program like gnuplot.  Alternatively, you can
+  pass a step index to get the current value for that step. An extra
+  direction index (x, y or z) will return a single component of the
+  current vector.
+
+  For Python this functions returns an two-dimensional array with the
+  values of the current and does not receive any arguments. The first
+  (leftmost) index is the time-step index while the second array index
+  is the coordinate of the current.
+
+  Shell examples: `inq results real-time current`
+                  `inq results real-time current 183`
+                  `inq results real-time current 97843 y`
+  Python example: `curr = pinq.results.real_time.current()`
 
 
 )"""";
