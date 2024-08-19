@@ -55,7 +55,10 @@ These are the available subcommands:
   Checks if two set of values match within a certain tolerance. If
   they match, the command will run successfully, with a 0 return
   code. If the match fails, then the command will fail with a return
-  value of 1. For Python it will return true or false.
+  value of 1.
+
+  In Python the values can be scalar or arrays (of the same size). The
+  function will return true if the values match or false otherwise.
 
   When more than two values are passed, it is assumed these are two
   sets given in sequential order. For example, if 6 values are passed
@@ -64,10 +67,10 @@ These are the available subcommands:
   fourth one, the second with the fifth, and the third with the sixth
   one.
 
-  Shell examples: `inq util match 1.0 2.0 1e-5`
-                  `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
-  Python example: `pinq.util.match(1.0, 2.0, 1e-5)`
-
+  Shell examples:  `inq util match 1.0 2.0 1e-5`
+                   `inq util match  1.0 0.0 0.0  1.001 1e-12 1e-23  1e-2`
+  Python examples: `pinq.util.match(1.0, 2.0, 1e-5)`
+                   `pinq.util.match([1.0, 0.0, 0.0], [1.001, 1e-12, 1e-23], 1e-2)`
 
 - Shell:  `util test-data`
   Python: `util.test_data()`
@@ -156,8 +159,19 @@ These are the available subcommands:
 
 		auto sub = module.def_submodule(name(), help());
 
-		sub.def("match",     &match);
 		sub.def("test_data", &test_data);
+		sub.def("match",     &match);
+
+		sub.def("match", [](std::vector<double> const & val1, std::vector<double> const & val2, double const & tol) {
+			if(val1.size() != val2.size()) actions::error(input::environment::global().comm(), "Array arguments to match must have the same size");
+
+			auto no_error = true;
+			for(auto icomp = 0ul; icomp < val1.size(); icomp++){
+				no_error = match(val1[icomp], val2[icomp], tol) and no_error;
+			}
+			return no_error;
+		});
+
 	}
 #endif
 	

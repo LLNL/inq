@@ -45,52 +45,129 @@ units.
 
 These are the available subcommands:
 
-- `results real-time`
+- Shell:  `results real-time`
+  Python: `results.real_time.status()`
 
-  When no arguments are given, print the values calculated.
+  When no arguments are given (ot the status() function in Python),
+  print the available values.
 
-  Example: `inq results real-time`.
+  Shell example:  `inq results real-time`.
+  Python example: `pinq.results.real_time.status()`
 
 
-- `results real-time total-steps`
+- Shell:  `results real-time total-steps`
+  Python: `results.real_time.total_steps()`
 
   Returns the total number of real-time simulation steps done.
 
-  Example: `inq results real-time total-steps`.
+  Shell example:  `inq results real-time total-steps`
+  Python example: `pinq.results.real_time.total_steps()`
 
 
-- `results real-time total-time`
+- Shell:  `results real-time total-time`
+  Python: `results.real_time.total_time()`
 
   Returns the total simulated time (in atomic units).
 
-  Example: `inq results real-time total-time`.
+  Shell example:  `inq results real-time total-time`
+  Python example: `pinq.results.real_time.total_time()`
 
-- `results real-time time [step]`
 
-  Returns the time values. If not additional arguments are passed, inq
-  prints the whole series for each time step. Alternatively, you can
-  pass a step index to get the energy value.
+- Shell:  `results real-time time [step]`
+  Python: `results.real_time.time()`
+
+  Returns the time values for each time-step.
+
+  In the shell, if not additional arguments are passed, inq prints the
+  whole series for each time step. Alternatively, you can pass a step
+  index to get the energy value.
+
+  For Python this functions returns an array and does not receive any
+  arguments.
 
   Note that for the moment inq uses a uniform time integration, so the
   time is just the step index times the time-step.
 
-  Examples: `inq results real-time time`.
-            `inq results real-time time 99`.
+  Shell example:  `inq results real-time time`
+                  `inq results real-time time 99`
+  Python example: `pinq.results.real_time.time()`
 
 
-- `results real-time total-energy [step]`
+- Shell:  `results real-time total-energy [step]`
+  Python: `results.real_time.total_energy()`
 
-  Returns the values of the total energy during the propagation. If
-  not additional arguments are passed, inq prints the whole series for
-  each time step in a two column format, the first column is the time
-  and the second one is the energy. This output is suitable to view
-  on a plotting program like gnuplot.
+  Returns the values of the total energy for each time step during the
+  propagation.
 
+  For the shell, if not additional arguments are passed, inq prints
+  the whole series for each time step in a two column format, the
+  first column is the time and the second one is the energy. This
+  output is suitable to view on a plotting program like gnuplot.
   Alternatively, you can pass a step index to get the energy value for
   that step.
 
-  Examples: `inq results real-time total-energy`
-            `inq results real-time total-energy 43`.
+  For Python this functions returns an array and does not receive any
+  arguments.
+
+  Shell examples: `inq results real-time total-energy`
+                  `inq results real-time total-energy 43`
+  Python example: `pinq.results.real_time.total_energy()`
+
+
+- Shell:  `results real-time dipole [step] [dir]`
+  Python: `results.real_time.dipole()`
+
+  Returns the values of the dipole for each time-step during the
+  propagation. The value is in cartesian coordinates and atomic
+  units. Note that the calculation of the dipole must be requested
+  before running using the `observables` command.
+
+  Shell: If not additional arguments are passed, inq prints the whole
+  series for each time step in a four column format, the first column
+  is the time and the second, third and fourth ones are the x, y, and
+  z components of the dipole, respectively. This output is suitable to
+  view on a plotting program like gnuplot.  Alternatively, you can
+  pass a step index to get the dipole value for that step. An extra
+  direction index (x, y or z) will return a single component of the
+  dipole vector.
+
+  For Python this functions returns an two-dimensional array with the
+  values of the dipole and does not receive any arguments. The first
+  (leftmost) index is the time-step index while the second array index
+  is the coordinate of the dipole.
+
+  Shell examples: `inq results real-time dipole`
+                  `inq results real-time dipole 7866`
+                  `inq results real-time dipole 33 y`
+  Python example: `dip = pinq.results.real_time.dipole()`
+
+
+- Shell:  `results real-time current [step] [dir]`
+  Python: `results.real_time.current()`
+
+  Returns the values of the current for each time-step during the
+  propagation. The value is in cartesian coordinates and atomic
+  units. Note that the calculation of the current must be requested
+  before running using the `observables` command.
+
+  Shell: If not additional arguments are passed, inq prints the whole
+  series for each time step in a four column format, the first column
+  is the time and the second, third and fourth ones are the x, y, and
+  z components of the current, respectively. This output is suitable to
+  view on a plotting program like gnuplot.  Alternatively, you can
+  pass a step index to get the current value for that step. An extra
+  direction index (x, y or z) will return a single component of the
+  current vector.
+
+  For Python this functions returns an two-dimensional array with the
+  values of the current and does not receive any arguments. The first
+  (leftmost) index is the time-step index while the second array index
+  is the coordinate of the current.
+
+  Shell examples: `inq results real-time current`
+                  `inq results real-time current 183`
+                  `inq results real-time current 97843 y`
+  Python example: `curr = pinq.results.real_time.current()`
 
 
 )"""";
@@ -108,34 +185,38 @@ private:
 	
 public:
 	
-	void operator()() const {
+	static void status() {
 		auto res = load();
 		if(input::environment::global().comm().root()) std::cout << res;
 	}
+	
+	void operator()() const {
+		status();
+	}
 
-	auto total_steps() const {
+	static auto total_steps() {
 		return load().total_steps;
 	}
 	
-	auto total_time() const {
+	static auto total_time() {
 		return load().total_time;
 	}
 
-	auto time() const {
+	static auto time() {
 		return load().time;
 	}
 	
-	auto total_energy() const {
+	static auto total_energy() {
 		return load().total_energy;
 	}
 
-	auto dipole() const {
+	static auto dipole() {
 		auto && res = load();
 		if(res.dipole.size() == 0)	actions::error(input::environment::global().comm(), "The dipole was not calculated during the real-time simulation");
 		return res.dipole;
 	}
 	
-	auto current() const {
+	static auto current() {
 		auto && res = load();
 		if(res.current.size() == 0)	actions::error(input::environment::global().comm(), "The current was not calculated during the real-time simulation.");
 		return res.current;
@@ -236,6 +317,57 @@ public:
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'results real-time' command");
 	}
+		
+#ifdef INQ_PYTHON_INTERFACE
+	template <class PythonModule>
+	void python_interface(PythonModule & module) const {
+		namespace py = pybind11;
+		using namespace pybind11::literals;
+ 
+		auto sub = module.def_submodule("real_time", help());
+
+		sub.def("status",       &status);
+		sub.def("total_steps",  &total_steps);
+		sub.def("total_time",   &total_time);
+		sub.def("time",         &time);
+		sub.def("total_energy", &total_energy);
+
+		sub.def("dipole", []() {
+			
+			auto dipole_multi = dipole();
+			
+			py::array_t<double, py::array::c_style> dipole_array({(long) dipole_multi.size(), 3l});
+			
+			auto arr = dipole_array.mutable_unchecked();
+			
+			for (py::ssize_t iter = 0; iter < arr.shape(0); iter++) {
+				for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+					arr(iter, idir) = dipole_multi[iter][idir];
+				}
+			}
+		
+			return dipole_array;
+		});
+
+		sub.def("current", []() {
+			
+			auto current_multi = current();
+			
+			py::array_t<double, py::array::c_style> current_array({(long) current_multi.size(), 3l});
+			
+			auto arr = current_array.mutable_unchecked();
+			
+			for (py::ssize_t iter = 0; iter < arr.shape(0); iter++) {
+				for (py::ssize_t idir = 0; idir < arr.shape(1); idir++) {
+					arr(iter, idir) = current_multi[iter][idir];
+				}
+			}
+		
+			return current_array;
+		});
+
+	}
+#endif
 	
 } const results_real_time;
 
