@@ -16,11 +16,20 @@ auto compute_psi_psi(occupations_array_type const & occupations, field_set_type 
     rfield.fill(0.0);
     assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
     assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
-    gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
-        [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip){
-            rf[ip] += occ[ist] * norm(ph[ip][0][ist]);
-            rf[ip] += occ[ist] * norm(ph[ip][1][ist]);
-        });
+
+    if (phi.spinor_dim() == 1) {
+        gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+            [ph = begin(phi.matrix()), rf = begin(rfield.linear()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip){
+                rf[ip] += occ[ist] * norm(ph[ip][ist]);
+            });
+    }
+    else {
+        gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+            [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip){
+                rf[ip] += occ[ist] * norm(ph[ip][0][ist]);
+                rf[ip] += occ[ist] * norm(ph[ip][1][ist]);
+            });
+    }
     auto totn = operations::integral(rfield);
     return totn;
 }
@@ -34,11 +43,27 @@ auto compute_psi_vxc_psi(occupations_array_type const & occupations, field_set_t
 
     assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
     assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
-    if (vxc.set_size() == 2) {
+    if (vxc.set_size() == 1) {
+        gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+                [ph = begin(phi.matrix()), rf = begin(rfield.linear()), vx = begin(vxc.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip){
+                    rf[ip] += occ[ist] * vx[ip][0] * norm(ph[ip][ist]);
+                });
+    }
+    else if (vxc.set_size() == 2) {
+        gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+                [ph = begin(phi.matrix()), rf = begin(rfield.linear()), vx = begin(vxc.matrix()), occ = begin(occupations), spi = phi.spin_index()] GPU_LAMBDA (auto ist, auto ip){
+                    rf[ip] += occ[ist] * vx[ip][spi] * norm(ph[ip][ist]);
+                });
+    }
+    else {
+        assert(vxc.set_size() == 4);
         gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
                 [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), vx = begin(vxc.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip){
-                    rf[ip] += occ[ist] * vx[ip][0] * norm(ph[ip][0][ist]);
-                    rf[ip] += occ[ist] * vx[ip][1] * norm(ph[ip][1][ist]);
+                    auto offdiag = vx[ip][2] + complex{0.0, 1.0}*vx[ip][3];
+                    auto cross = 2.0*occ[ist]*real(offdiag*ph[ip][1][ist]*conj(ph[ip][0][ist]));
+                    rf[ip] += occ[ist]*vx[ip][0]*norm(ph[ip][0][ist]);
+                    rf[ip] += occ[ist]*vx[ip][1]*norm(ph[ip][1][ist]);
+                    rf[ip] += cross;
                 });
     }
     nvxc += operations::integral(rfield);
@@ -47,13 +72,11 @@ auto compute_psi_vxc_psi(occupations_array_type const & occupations, field_set_t
 }
 
 template <class EnvType>
-auto compare_nvxc(EnvType const & env, systems::ions const & ions) {
+auto compare_nvxc(EnvType const & env, systems::ions const & ions, systems::electrons & electrons) {
 
-    auto electrons = systems::electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_polarized());
     ground_state::initial_guess(ions, electrons);
     auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
     auto nvxc = result.energy.nvxc();
-    std::cout << " NVXC :  " << nvxc << std::endl;
 
     auto core_density_ = electrons.atomic_pot().nlcc_density(electrons.states_comm(), electrons.spin_density().basis(), ions);
     basis::field_set<basis::real_space, double> vxc(electrons.spin_density().skeleton());
@@ -68,9 +91,9 @@ auto compare_nvxc(EnvType const & env, systems::ions const & ions) {
         nvxc_2 += compute_psi_vxc_psi(electrons.occupations()[iphi], phi, vxc);
         iphi++;
     }
-    auto nrm_fact = operations::integral_sum(electrons.spin_density()) / totn;
-    std::cout << nrm_fact << "  --  " << totn << std::endl;
-    std::cout << " NVXC2 : " << nvxc_2 << std::endl;
+
+    match.check("electrons number",      electrons.states().num_electrons(),       totn);
+    match.check("nvxc",                  nvxc_2,                                   nvxc);
 }
 
 
@@ -79,5 +102,12 @@ int main (int argc, char ** argv) {
 
     auto ions = systems::ions(systems::cell::cubic(10.0_b));
     ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
-    compare_nvxc(env, ions);
+    auto electrons = systems::electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_unpolarized());
+    compare_nvxc(env, ions, electrons);
+
+    auto electrons_2 = systems::electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_polarized());
+    compare_nvxc(env, ions, electrons_2);
+
+    auto electrons_3 = systems::electrons(env.par(), ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
+    compare_nvxc(env, ions, electrons_3);
 }
