@@ -125,7 +125,7 @@ public:
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename VXC>
-	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vfunc) const {
+	auto compute_nvxc(SpinDensityType const & spin_density, VXC const & vfunc) const {
 
 		auto nvxc_ = 0.;
 		if (spin_density.set_size() == 4) {
