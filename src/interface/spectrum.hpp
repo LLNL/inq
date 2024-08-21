@@ -161,6 +161,23 @@ These are the options available:
 		using namespace pybind11::literals;
  
 		auto sub = module.def_submodule(name(), help());
+
+    sub.def("file", [](std::string const & filename) {
+      auto arr = file(filename);
+			
+			py::array_t<complex, py::array::c_style> py_arr({arr.size(), (~arr).size()});
+			
+			auto acc = py_arr.mutable_unchecked();
+			
+			for (py::ssize_t ii = 0; ii < acc.shape(0); ii++) {
+				for (py::ssize_t jj = 0; jj < acc.shape(1); jj++) {
+					acc(ii, jj) = arr[ii][jj];
+				}
+			}
+		
+			return py_arr;
+    });
+    
 	}
 #endif
 

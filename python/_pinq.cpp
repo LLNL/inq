@@ -211,6 +211,7 @@ PYBIND11_MODULE(_pinq, module) {
 	interface::perturbations.python_interface(interface_module);
 	interface::run.python_interface(interface_module);
 	interface::species.python_interface(interface_module);
+	interface::spectrum.python_interface(interface_module);
 	interface::util.python_interface(interface_module);	
 	
 	auto results_module = interface_module.def_submodule("results");
