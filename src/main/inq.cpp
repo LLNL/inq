@@ -77,12 +77,13 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::history)
 		+ interface::item(interface::ions)
 		+ interface::item(interface::kpoints)
-		+ interface::item(interface::perturbations)		
+		+ interface::item(interface::perturbations)
 		+ interface::item(interface::results_ground_state)
 		+ interface::item(interface::results_real_time)
 		+ interface::item(interface::real_time)
 		+ interface::item(interface::run)
 		+ interface::item(interface::species)
+		+ interface::item(interface::spectrum)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);
 
