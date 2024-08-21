@@ -36,5 +36,4 @@ int main (int argc, char ** argv) {
     ions.insert("O", {0.0_b, 0.0_b, d/2});
     ions.insert("O", {0.0_b, 0.0_b,-d/2});
     compute_GS(env, ions);
-    
 }
