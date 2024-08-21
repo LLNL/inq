@@ -54,9 +54,17 @@ These are the options available:
 )"""";
 	}
 
+  static void print(gpu::array<complex, 2> const & freq_series) {
+    std::cout << std::scientific;
+    for(auto ifreq = 0; ifreq < (~freq_series).size(); ifreq++){
+      std::cout << real(freq_series[0][ifreq]);
+      for(int icol = 1; icol < freq_series.size(); icol++) std::cout << '\t' << real(freq_series[icol][ifreq]) << '\t' << imag(freq_series[icol][ifreq]);
+      std::cout << '\n';
+    }
+  }
   
   template <typename Stream>
-  static void from_stream(Stream & inp) {
+  static auto from_stream(Stream & inp) {
 
     std::vector<double> values;
     
@@ -109,39 +117,38 @@ These are the options available:
 
     long nfreq = maxw/dw + 1;
 
-    gpu::array<complex, 2> freq_series({ncolumns - 1, nfreq});
+    gpu::array<complex, 2> freq_series({ncolumns, nfreq});
+
+    for(auto ifreq = 0; ifreq < nfreq; ifreq++) freq_series[0][ifreq] = ifreq*dw.in_atomic_units();
     
     for(auto icol = 0; icol < ncolumns - 1; icol++){
-      freq_series[icol] = observables::spectrum(maxw, dw, time, time_series[icol]);
+      freq_series[1 + icol] = observables::spectrum(maxw, dw, time, time_series[icol]);
     }
 
-    for(auto ifreq = 0; ifreq < nfreq; ifreq++){
-      std::cout << std::scientific << ifreq*dw;
-      for(int icol = 0; icol < ncolumns - 1; icol++) std::cout << '\t' << real(freq_series[icol][ifreq]) << '\t' << imag(freq_series[icol][ifreq]);
-      std::cout << '\n';
-    }
-    
+    return freq_series;
   }
 
-  static void file(std::string const & filename) {
+  static auto file(std::string const & filename) {
     std::ifstream inp(filename);    
-    from_stream(inp);
+    return from_stream(inp);
   }
 
-  static void stdin() {
-    from_stream(std::cin);
+  static auto stdin() {
+    return from_stream(std::cin);
   }
   
   template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 
 		if(args.size() == 2 and args[0] == "file") {
-      file(args[1]);
+      auto sp = file(args[1]);
+      print(sp);
 			actions::normal_exit();
 		}
 
 		if(args.size() == 1 and args[0] == "stdin") {
-      stdin();
+      auto sp = stdin();
+      print(sp);
 			actions::normal_exit();
 		}
     
