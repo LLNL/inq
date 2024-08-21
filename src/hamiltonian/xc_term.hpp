@@ -95,16 +95,16 @@ public:
 		if (spin_density.set_size() == 4) {
 			gpu::run(vxc.basis().local_size(),
 						 [spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto ip){
-							auto bxc = 0.5*(vx[ip][0]-vx[ip][1]);
-							auto vxc = 0.5*(vx[ip][0]+vx[ip][1]);
+							auto bxc = 0.5*(vx[ip][0] - vx[ip][1]);
+							auto vxc = 0.5*(vx[ip][0] + vx[ip][1]);
 							auto mag = observables::local_magnetization(spi[ip], 4);
 							auto dpol = mag.length();
 							if (fabs(dpol) > 1.e-7) {
-								auto e_mag = mag / dpol;
-								vk[ip][0] += vxc + bxc * e_mag[2];
-								vk[ip][1] += vxc - bxc * e_mag[2];
-								vk[ip][2] += bxc * e_mag[0];
-								vk[ip][3] += bxc * e_mag[1];
+								auto e_mag = mag/dpol;
+								vk[ip][0] += vxc + bxc*e_mag[2];
+								vk[ip][1] += vxc - bxc*e_mag[2];
+								vk[ip][2] += bxc*e_mag[0];
+								vk[ip][3] += bxc*e_mag[1];
 							}
 							else {
 								vk[ip][0] += vxc;
@@ -133,17 +133,17 @@ public:
 			vxc.fill(0.0);
 			gpu::run(vfunc.basis().local_size(),
 						 [spi = begin(spin_density.matrix()), vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto ip){
-							auto b = 0.5*(vxi[ip][0]-vxi[ip][1]);
-							auto v = 0.5*(vxi[ip][0]+vxi[ip][1]);
+							auto b = 0.5*(vxi[ip][0] - vxi[ip][1]);
+							auto v = 0.5*(vxi[ip][0] + vxi[ip][1]);
 							auto mag = observables::local_magnetization(spi[ip], 4);
 							auto dpol = mag.length();
 							if (fabs(dpol) > 1.e-7) {
-								auto e_mag = mag / dpol;
+								auto e_mag = mag/dpol;
 								// Vxc = [vxc+bxc^z, bxc^-; bxc^+, vxc-bxc^z]
-								vxf[ip][0] = v + b * e_mag[2];
-								vxf[ip][1] = v - b * e_mag[2];
-								vxf[ip][2] = 2.0*b * e_mag[0];
-								vxf[ip][3] = 2.0*b * e_mag[1];
+								vxf[ip][0] = v + b*e_mag[2];
+								vxf[ip][1] = v - b*e_mag[2];
+								vxf[ip][2] = 2.0*b*e_mag[0];
+								vxf[ip][3] = 2.0*b*e_mag[1];
 							}
 							else {
 								vxf[ip][0] = v;
@@ -212,16 +212,16 @@ public:
 			if (spin_density.set_size() == 4) {
 				gpu::run(vfunc.basis().local_size(),
 				[spi = begin(spin_density.matrix()), vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto ip){
-					auto b = 0.5*(vxi[ip][0]-vxi[ip][1]);
-					auto v = 0.5*(vxi[ip][0]+vxi[ip][1]);
+					auto b = 0.5*(vxi[ip][0] - vxi[ip][1]);
+					auto v = 0.5*(vxi[ip][0] + vxi[ip][1]);
 					auto mag = observables::local_magnetization(spi[ip], 4);
 					auto dpol = mag.length();
 					if (fabs(dpol) > 1.e-7) {
 						auto e_mag = mag / dpol;
-						vxf[ip][0] += v + b * e_mag[2];
-						vxf[ip][1] += v - b * e_mag[2];
-						vxf[ip][2] += b * e_mag[0];
-						vxf[ip][3] += b * e_mag[1];
+						vxf[ip][0] += v + b*e_mag[2];
+						vxf[ip][1] += v - b*e_mag[2];
+						vxf[ip][2] += b*e_mag[0];
+						vxf[ip][3] += b*e_mag[1];
 					}
 					else {
 						vxf[ip][0] += v;
