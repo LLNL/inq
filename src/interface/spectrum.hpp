@@ -54,8 +54,9 @@ These are the options available:
 )"""";
 	}
 
-  static void file(std::string const & filename) {
-    std::ifstream inp(filename);
+  
+  template <typename Stream>
+  static void from_stream(Stream & inp) {
 
     std::vector<double> values;
     
@@ -122,6 +123,15 @@ These are the options available:
     
   }
 
+  static void file(std::string const & filename) {
+    std::ifstream inp(filename);    
+    from_stream(inp);
+  }
+
+  static void stdin() {
+    from_stream(std::cin);
+  }
+  
   template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
 
@@ -129,6 +139,12 @@ These are the options available:
       file(args[1]);
 			actions::normal_exit();
 		}
+
+		if(args.size() == 1 and args[0] == "stdin") {
+      stdin();
+			actions::normal_exit();
+		}
+    
   }
 	
 #ifdef INQ_PYTHON_INTERFACE
