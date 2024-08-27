@@ -47,9 +47,15 @@ public:
 		if(obs.find(options::real_time::observables::current) != obs.end()){
 			current.emplace_back(observables.current());
 		}
+
+		if(not observables.every(500)) return;
+
+		save(observables.electrons().full_comm(), ".inq/default_checkpoint/observables");
+		observables.electrons().save(".inq/default_checkpoint/orbitals");
   }
 
-	void save(parallel::communicator & comm, std::string const & dirname) const {
+	template <typename Comm>
+	void save(Comm & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save real_time::results to directory '" + dirname + "'.";
 
 		utils::create_directory(comm, dirname);
