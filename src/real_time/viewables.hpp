@@ -122,6 +122,11 @@ public:
 
 		return occ;
 	}
+
+	auto electrons() const {
+		return electrons_;
+	}
+	
 };
 
 }
