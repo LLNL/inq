@@ -17,8 +17,6 @@ namespace real_time {
 
 class results {
 
-  std::string dirname_;
-
 public:
 
 	options::real_time::observables_type obs;
@@ -29,8 +27,7 @@ public:
 	std::vector<vector3<double>> dipole;
 	std::vector<vector3<double>> current;
 	
-  results(std::string const & arg_dirname):
-    dirname_(arg_dirname),
+  results():
     total_steps(0),
     total_time(0.0){
   }
@@ -52,22 +49,22 @@ public:
 		}
   }
 
-	void save(parallel::communicator & comm) const {
-		auto error_message = "INQ error: Cannot save real_time::results to directory '" + dirname_ + "'.";
+	void save(parallel::communicator & comm, std::string const & dirname) const {
+		auto error_message = "INQ error: Cannot save real_time::results to directory '" + dirname + "'.";
 
-    utils::create_directory(comm, dirname_);
-		utils::save_value(comm, dirname_ + "/total_steps",    total_steps,    error_message);
-		utils::save_value(comm, dirname_ + "/total_time",     total_time,     error_message);
-		utils::save_container(comm, dirname_ + "/time",           time,           error_message);
-		utils::save_container(comm, dirname_ + "/total_energy",   total_energy,   error_message);
-		utils::save_container(comm, dirname_ + "/dipole",         dipole,         error_message);
-		utils::save_container(comm, dirname_ + "/current",        current,        error_message);
+		utils::create_directory(comm, dirname);
+		utils::save_value(comm, dirname + "/total_steps",    total_steps,    error_message);
+		utils::save_value(comm, dirname + "/total_time",     total_time,     error_message);
+		utils::save_container(comm, dirname + "/time",           time,           error_message);
+		utils::save_container(comm, dirname + "/total_energy",   total_energy,   error_message);
+		utils::save_container(comm, dirname + "/dipole",         dipole,         error_message);
+		utils::save_container(comm, dirname + "/current",        current,        error_message);
 	}
   
   static auto load(std::string const & dirname) {
     auto error_message = "INQ error: Cannot load real_time::results from directory '" + dirname + "'.";
 
-    results res(dirname);
+    results res;
 
     utils::load_value(dirname + "/total_steps",     res.total_steps,     error_message);
     utils::load_value(dirname + "/total_time",      res.total_time,      error_message);
