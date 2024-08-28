@@ -33,8 +33,8 @@ class xc_term {
 public:
 	
 	xc_term(options::theory interaction, int const spin_components){
-		functionals_.emplace_back(int(interaction.exchange()), spin_components);
-		functionals_.emplace_back(int(interaction.correlation()), spin_components);
+		functionals_.emplace_back(int(interaction.exchange()), std::min(spin_components, 2));
+		functionals_.emplace_back(int(interaction.correlation()), std::min(spin_components, 2));
 	}
 
   ////////////////////////////////////////////////////////////////////////////////////////////
