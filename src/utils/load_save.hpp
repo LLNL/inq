@@ -41,8 +41,8 @@ void create_directory(CommunicatorType & comm, std::string const & dirname) {
 	comm.barrier();
 }
 
-template <typename Type>
-void save_value(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+template <typename Comm, typename Type>
+void save_value(Comm & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 
 	comm.barrier();
 
@@ -70,8 +70,8 @@ void save_value(parallel::communicator & comm, std::string const & filename, Typ
 	comm.barrier();
 }
 
-template <typename Type>
-void save_optional(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+template <typename Comm, typename Type>
+void save_optional(Comm & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
 		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
@@ -82,8 +82,8 @@ void save_optional(parallel::communicator & comm, std::string const & filename, 
 	save_value(comm, filename, *value, error_message);
 }
 
-template <typename Type>
-void save_optional_enum(parallel::communicator & comm, std::string const & filename, Type const & value, std::string const & error_message) {
+template <typename Comm, typename Type>
+void save_optional_enum(Comm & comm, std::string const & filename, Type const & value, std::string const & error_message) {
 	if(not value.has_value()) {
 		comm.barrier();
 		if(comm.root()) std::filesystem::remove(filename);
@@ -94,8 +94,8 @@ void save_optional_enum(parallel::communicator & comm, std::string const & filen
 	save_value(comm, filename, static_cast<int>(*value), error_message);
 }
 
-template <typename Type, typename Function>
-void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message, Function const & func) {
+template <typename Comm, typename Type, typename Function>
+void save_container(Comm & comm, std::string const & filename, Type const & container, std::string const & error_message, Function const & func) {
 	
 	comm.barrier();
 
@@ -129,8 +129,8 @@ void save_container(parallel::communicator & comm, std::string const & filename,
 	comm.barrier();
 }
 
-template <typename Type>
-void save_container(parallel::communicator & comm, std::string const & filename, Type const & container, std::string const & error_message) {
+template <typename Comm, typename Type>
+void save_container(Comm & comm, std::string const & filename, Type const & container, std::string const & error_message) {
 	save_container(comm, filename, container, error_message, [](auto val){return val;});
 }
 
