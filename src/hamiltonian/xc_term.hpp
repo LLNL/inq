@@ -125,9 +125,9 @@ public:
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename VXC>
-	auto compute_nvxc(SpinDensityType const & spin_density, VXC const & vfunc) const {
+	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vfunc) const {
 
-		auto nvxc_ = 0.;
+		auto nvxc_ = 0.0;
 		if (spin_density.set_size() == 4) {
 			basis::field_set<basis::real_space, double> vxc(spin_density.skeleton());
 			vxc.fill(0.0);

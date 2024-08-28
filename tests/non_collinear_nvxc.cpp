@@ -10,7 +10,7 @@ using namespace inq::magnitude;
 inq::utils::match match(3.0e-4);
 
 template<class occupations_array_type, class field_set_type> 
-auto compute_psi_psi(occupations_array_type const & occupations, field_set_type const & phi) {
+double compute_psi_psi(occupations_array_type const & occupations, field_set_type const & phi) {
 
     basis::field<basis::real_space, double> rfield(phi.basis());
     rfield.fill(0.0);
@@ -35,7 +35,7 @@ auto compute_psi_psi(occupations_array_type const & occupations, field_set_type 
 }
 
 template<class occupations_array_type, class field_set_type, typename VxcType>
-auto compute_psi_vxc_psi(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc) {
+double compute_psi_vxc_psi(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc) {
 
     basis::field<basis::real_space, double> rfield(vxc.basis());
     rfield.fill(0.0);
