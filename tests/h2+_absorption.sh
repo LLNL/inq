@@ -38,26 +38,26 @@ inq run rt
 inq util match `inq results rt total-steps`               2000    1e-16
 inq util match `inq results rt total-time`                150.00  1e-12
 
-inq util match `inq results rt total-energy    0`          -6.01357152790813587195e-01 3e-5
+inq util match `inq results rt total-energy    0`          -6.01357152790818916266e-01 3e-5
 inq util match `inq results rt total-energy  250`          -6.01357647700651587463e-01 3e-5
-inq util match `inq results rt total-energy  500`          -6.01357809869950465931e-01 3e-5
-inq util match `inq results rt total-energy  750`          -6.01357900582293214420e-01 3e-5
-inq util match `inq results rt total-energy 1000`          -6.01357961479974778563e-01 3e-5
-inq util match `inq results rt total-energy 1250`          -6.01358006598494143624e-01 3e-5
-inq util match `inq results rt total-energy 1500`          -6.01358042261855518795e-01 3e-5
-inq util match `inq results rt total-energy 1750`          -6.01358071666531324162e-01 3e-5
-inq util match `inq results rt total-energy 2000`          -6.01358096593422097875e-01 3e-5
+inq util match `inq results rt total-energy  500`          -6.01357809869941584147e-01 3e-5
+inq util match `inq results rt total-energy  750`          -6.01357900582282778323e-01 3e-5
+inq util match `inq results rt total-energy 1000`          -6.01357961479969005403e-01 3e-5
+inq util match `inq results rt total-energy 1250`          -6.01358006598493255446e-01 3e-5
+inq util match `inq results rt total-energy 1500`          -6.01358042261849523591e-01 3e-5
+inq util match `inq results rt total-energy 1750`          -6.01358071666526439181e-01 3e-5
+inq util match `inq results rt total-energy 2000`          -6.01358096593417656983e-01 3e-5
 
 #check the individual component query works too
-inq util match `inq results rt dipole    0 x`              -1.54859253834443923344e-03 3e-5
-inq util match `inq results rt dipole    0 y`              -1.54854628723687407985e-03 3e-5
+inq util match `inq results rt dipole    0 x`              -1.54859253809264759034e-03 3e-5
+inq util match `inq results rt dipole    0 y`              -1.54854628737975110950e-03 3e-5
 
-inq util match `inq results rt dipole    0`                -1.54859253834443923344e-03 -1.54854628723687407985e-03 -3.49869452401776624608e-04 3e-5
-inq util match `inq results rt dipole  250`                -1.55123568896079291370e-03 -1.55115793548575640719e-03  2.06165612343310565568e-02 3e-5
-inq util match `inq results rt dipole  500`                -1.54923816168807686362e-03 -1.54919118490723763462e-03 -1.39623342672730247488e-02 3e-5
-inq util match `inq results rt dipole  750`                -1.55113772430569762592e-03 -1.55115884115211862503e-03 -1.24870703322320798084e-02 3e-5
-inq util match `inq results rt dipole 1000`                -1.54800224333070143672e-03 -1.54807469337626285068e-03  2.11928890486084778311e-02 3e-5
-inq util match `inq results rt dipole 1250`                -1.55209413178612428731e-03 -1.55216002500586881460e-03 -2.20788482789152813723e-03 3e-5
-inq util match `inq results rt dipole 1500`                -1.54748415575500157353e-03 -1.54749095690195968660e-03 -2.07210877923769513920e-02 3e-5
-inq util match `inq results rt dipole 1750`                -1.55103034746264861407e-03 -1.55097244567385791555e-03  1.47500374831711651008e-02 3e-5
-inq util match `inq results rt dipole 2000`                -1.55059505033224389638e-03 -1.55051876218004008011e-03  1.01723392738944738017e-02 3e-5
+inq util match `inq results rt dipole    0`                -1.54859253809264759034e-03	-1.54854628737975110950e-03	-3.49869451722191438740e-04 3e-5
+inq util match `inq results rt dipole  250`                -1.55123568829897552461e-03	-1.55115793549341239241e-03	 2.06165612349959205540e-02 3e-5
+inq util match `inq results rt dipole  500`                -1.54923816113996517738e-03	-1.54919118476384279001e-03	-1.39623342683573240658e-02 3e-5
+inq util match `inq results rt dipole  750`                -1.55113772430512039668e-03	-1.55115884097505193039e-03	-1.24870703321999683422e-02 3e-5
+inq util match `inq results rt dipole 1000`                -1.54800224387945778957e-03	-1.54807469329935692114e-03	 2.11928890496754437911e-02 3e-5
+inq util match `inq results rt dipole 1250`                -1.55209413244008836638e-03	-1.55216002509228840137e-03	-2.20788482860621122425e-03 3e-5
+inq util match `inq results rt dipole 1500`                -1.54748415599520895009e-03	-1.54749095708308758573e-03	-2.07210877929851905455e-02 3e-5
+inq util match `inq results rt dipole 1750`                -1.55103034708906919147e-03	-1.55097244580162832266e-03  1.47500374842999444625e-02 3e-5
+inq util match `inq results rt dipole 2000`                -1.55059504965341212260e-03	-1.55051876215510841747e-03  1.01723392737756209575e-02 3e-5

@@ -35,7 +35,7 @@ public:
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
 
-    total_steps = observables.iter() + 1;
+    total_steps = observables.iter();
     total_time = observables.time();
     time.push_back(observables.time());
 		total_energy.push_back(observables.energy().total());
@@ -48,7 +48,7 @@ public:
 			current.emplace_back(observables.current());
 		}
 
-		assert(total_steps == (long) time.size());
+		assert(total_steps + 1 == (long) time.size());
 		
 		if(not observables.every(500)) return;
 
@@ -77,20 +77,18 @@ public:
     utils::load_value(dirname + "/total_steps",     res.total_steps,     error_message);
     utils::load_value(dirname + "/total_time",      res.total_time,      error_message);
 		
-		res.time.resize(res.total_steps);
+		res.time.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/time",            res.time,            error_message);
 		assert(res.time[res.time.size() - 2] < res.time[res.time.size() - 1]);
-		assert((long) res.time.size() == res.total_steps or res.time.size() == 0ul);
 
-		res.total_energy.resize(res.total_steps);
+		res.total_energy.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);
-		assert((long) res.total_energy.size() == res.total_steps or res.total_energy.size() == 0ul);
 
 		utils::load_vector(dirname + "/dipole",         res.dipole);
-		assert((long) res.dipole.size() == res.total_steps or res.dipole.size() == 0ul);
+		assert((long) res.dipole.size() == res.total_steps + 1 or res.dipole.size() == 0ul);
 
 		utils::load_vector(dirname + "/current",        res.current);
-		assert((long) res.current.size() == res.total_steps or res.current.size() == 0ul);
+		assert((long) res.current.size() == res.total_steps + 1 or res.current.size() == 0ul);
 
     return res;
 	}
