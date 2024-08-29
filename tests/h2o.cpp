@@ -71,6 +71,8 @@ int main(int argc, char ** argv){
 			};
 			
 			real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(30).dt(0.055_atomictime));
+
+			assert(energy.size() == 31ul);
 			
 			match.check("ETRS: energy step   0", energy[0],   -17.604152928110);
 			match.check("ETRS: energy step  10", energy[10],  -17.604152928110);
@@ -109,11 +111,11 @@ int main(int argc, char ** argv){
 			
 			auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 			
-			long nsteps = 71;
+			long nsteps = 70;
 			
-			gpu::array<double, 1> time(nsteps);
-			gpu::array<double, 1> dip(nsteps);
-			gpu::array<double, 1> en(nsteps);		
+			gpu::array<double, 1> time(nsteps + 1);
+			gpu::array<double, 1> dip(nsteps + 1);
+			gpu::array<double, 1> en(nsteps + 1);		
 			
 			auto output = [&](auto data){
 				
@@ -136,36 +138,36 @@ int main(int argc, char ** argv){
 			
 			real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), kick);
 			
-			match.check("ETRS length kick: dipole step   0", dip[0],   0.043955375747);
-			match.check("ETRS length kick: dipole step  10", dip[10],  0.376347806791);
-			match.check("ETRS length kick: dipole step  20", dip[20],  0.525427259213);
-			match.check("ETRS length kick: dipole step  30", dip[30],  0.550931744154);
-			match.check("ETRS length kick: dipole step  40", dip[40],  0.497454787505);
-			match.check("ETRS length kick: dipole step  50", dip[50],  0.397016815641);
-			match.check("ETRS length kick: dipole step  60", dip[60],  0.273814233337);
-			match.check("ETRS length kick: dipole step  70", dip[70],  0.150512273021);
+			match.check("ETRS length kick: dipole step   0", dip[0],  -0.000309741032);
+			match.check("ETRS length kick: dipole step  10", dip[10],  0.352439452823);
+			match.check("ETRS length kick: dipole step  20", dip[20],  0.516924511546);
+			match.check("ETRS length kick: dipole step  30", dip[30],  0.552695897606);
+			match.check("ETRS length kick: dipole step  40", dip[40],  0.505285716066);
+			match.check("ETRS length kick: dipole step  50", dip[50],  0.408432017486);
+			match.check("ETRS length kick: dipole step  60", dip[60],  0.286408872554);
+			match.check("ETRS length kick: dipole step  70", dip[70],  0.162609145400);
 			
-			match.check("ETRS length kick: energy step   0", en[0],   -17.563614846419);
-			match.check("ETRS length kick: energy step  10", en[10],  -17.563607131141);
-			match.check("ETRS length kick: energy step  20", en[20],  -17.563615606337);
-			match.check("ETRS length kick: energy step  30", en[30],  -17.563621943406);
-			match.check("ETRS length kick: energy step  40", en[40],  -17.563629437416);
-			match.check("ETRS length kick: energy step  50", en[50],  -17.563635432990);
-			match.check("ETRS length kick: energy step  60", en[60],  -17.563641616526);
-			match.check("ETRS length kick: energy step  70", en[70],  -17.563648522511);
+			match.check("ETRS length kick: energy step   0", en[0],   -17.563616880918);
+			match.check("ETRS length kick: energy step  10", en[10],  -17.563606697534);
+			match.check("ETRS length kick: energy step  20", en[20],  -17.563614886423);
+			match.check("ETRS length kick: energy step  30", en[30],  -17.563621242161);
+			match.check("ETRS length kick: energy step  40", en[40],  -17.563628740525);
+			match.check("ETRS length kick: energy step  50", en[50],  -17.563634809017);
+			match.check("ETRS length kick: energy step  60", en[60],  -17.563641013280);
+			match.check("ETRS length kick: energy step  70", en[70],  -17.563647956213);
 		}
-		
+
 		{
 			electrons.load("h2o_restart");
 			
 			auto kick1 = perturbations::kick{ions.cell(), {0.06, 0.0, 0.0}, perturbations::gauge::velocity};
 			auto kick2 = perturbations::kick{ions.cell(), {0.04, 0.0, 0.0}, perturbations::gauge::velocity};
 			
-			long nsteps = 31;
+			long nsteps = 30;
 			
-			gpu::array<double, 1> time(nsteps);
-			gpu::array<double, 1> dip(nsteps);
-			gpu::array<double, 1> en(nsteps);		
+			gpu::array<double, 1> time(nsteps + 1);
+			gpu::array<double, 1> dip(nsteps + 1);
+			gpu::array<double, 1> en(nsteps + 1);	
 			
 			auto output = [&](auto data){
 
@@ -188,15 +190,15 @@ int main(int argc, char ** argv){
 			
 			real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), kick1 + kick2);
 
-			match.check("ETRS velocity kick: dipole step   0", dip[0],   0.043697788108);
-			match.check("ETRS velocity kick: dipole step  10", dip[10],  0.375961176642);
-			match.check("ETRS velocity kick: dipole step  20", dip[20],  0.525287483544);
-			match.check("ETRS velocity kick: dipole step  30", dip[30],  0.551308944304);
+			match.check("ETRS velocity kick: dipole step   0", dip[0],  -0.000309741032);
+			match.check("ETRS velocity kick: dipole step  10", dip[10],  0.352042693691);
+			match.check("ETRS velocity kick: dipole step  20", dip[20],  0.516780678116);
+			match.check("ETRS velocity kick: dipole step  30", dip[30],  0.552957962009);
 
-			match.check("ETRS velocity kick: energy step   0", en[0],   -17.563918466246);
-			match.check("ETRS velocity kick: energy step  10", en[10],  -17.563906778220);
-			match.check("ETRS velocity kick: energy step  20", en[20],  -17.563911508759);
-			match.check("ETRS velocity kick: energy step  30", en[30],  -17.563914263774);
+			match.check("ETRS velocity kick: energy step   0", en[0],   -17.563920909871);
+			match.check("ETRS velocity kick: energy step  10", en[10],  -17.563906701155);
+			match.check("ETRS velocity kick: energy step  20", en[20],  -17.563911157818);
+			match.check("ETRS velocity kick: energy step  30", en[30],  -17.563913885907);
 		}
 
 		{
@@ -206,11 +208,11 @@ int main(int argc, char ** argv){
 			perts.add(perturbations::kick{ions.cell(), {0.06, 0.0, 0.0}});
 			perts.add(perturbations::kick{ions.cell(), {0.04, 0.0, 0.0}});
 			
-			long nsteps = 31;
+			long nsteps = 30;
 			
-			gpu::array<double, 1> time(nsteps);
-			gpu::array<double, 1> dip(nsteps);
-			gpu::array<double, 1> en(nsteps);		
+			gpu::array<double, 1> time(nsteps + 1);
+			gpu::array<double, 1> dip(nsteps + 1);
+			gpu::array<double, 1> en(nsteps + 1);		
 			
 			auto output = [&](auto data){
 
@@ -233,15 +235,15 @@ int main(int argc, char ** argv){
 			
 			real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(nsteps).dt(0.055_atomictime), perts);
 
-			match.check("ETRS length kick: dipole step   0", dip[0],   0.043955375747);
-			match.check("ETRS length kick: dipole step  10", dip[10],  0.376347806791);
-			match.check("ETRS length kick: dipole step  20", dip[20],  0.525427259213);
-			match.check("ETRS length kick: dipole step  30", dip[30],  0.550931744154);
+			match.check("ETRS length kick: dipole step   0", dip[0],  -0.000309741032);
+			match.check("ETRS length kick: dipole step  10", dip[10],  0.352439452823);
+			match.check("ETRS length kick: dipole step  20", dip[20],  0.516924511546);
+			match.check("ETRS length kick: dipole step  30", dip[30],  0.552695897606);
 			
-			match.check("ETRS length kick: energy step   0", en[0],   -17.563614846419);
-			match.check("ETRS length kick: energy step  10", en[10],  -17.563607131141);
-			match.check("ETRS length kick: energy step  20", en[20],  -17.563615606337);
-			match.check("ETRS length kick: energy step  30", en[30],  -17.563621943406);
+			match.check("ETRS length kick: energy step   0", en[0],   -17.563616880918);
+			match.check("ETRS length kick: energy step  10", en[10],  -17.563606697534);
+			match.check("ETRS length kick: energy step  20", en[20],  -17.563614886423);
+			match.check("ETRS length kick: energy step  30", en[30],  -17.563621242161);
 		}
 		
 		{
@@ -249,11 +251,11 @@ int main(int argc, char ** argv){
 
 			auto kick = perturbations::kick{ions.cell(), {0.1, 0.0, 0.0}};
 
-			long nsteps = 21;
+			long nsteps = 20;
 		
-			gpu::array<double, 1> time(nsteps);
-			gpu::array<double, 1> dip(nsteps);
-			gpu::array<double, 1> en(nsteps);		
+			gpu::array<double, 1> time(nsteps + 1);
+			gpu::array<double, 1> dip(nsteps + 1);
+			gpu::array<double, 1> en(nsteps + 1);
 	
 			auto output = [&](auto data){
 			
