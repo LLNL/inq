@@ -155,7 +155,7 @@ These are the options available:
 		
 		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
 												 options::theory::load(".inq/default_theory"), opts, perturbations::blend::load(".inq/default_perturbations"),
-												 /* start_step = */ res.total_steps - 1);
+												 /* start_step = */ res.total_steps);
 		res.save(input::environment::global().comm(), ".inq/default_results_real_time");
 
 	}
