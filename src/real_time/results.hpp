@@ -34,8 +34,8 @@ public:
 
   template <class ObservablesType>
   void operator()(ObservablesType const & observables){
-    
-    total_steps = observables.iter() + 1;
+
+    total_steps = observables.iter();
     total_time = observables.time();
     time.push_back(observables.time());
 		total_energy.push_back(observables.energy().total());
@@ -48,6 +48,8 @@ public:
 			current.emplace_back(observables.current());
 		}
 
+		assert(total_steps + 1 == (long) time.size());
+		
 		if(not observables.every(500)) return;
 
 		save(observables.electrons().full_comm(), ".inq/default_checkpoint/observables");
@@ -77,6 +79,7 @@ public:
 		
 		res.time.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/time",            res.time,            error_message);
+		assert(res.time[res.time.size() - 2] < res.time[res.time.size() - 1]);
 
 		res.total_energy.resize(res.total_steps + 1);
 		utils::load_array(dirname + "/total_energy",    res.total_energy,    error_message);

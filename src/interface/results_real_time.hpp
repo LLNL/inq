@@ -213,6 +213,7 @@ public:
 	static auto dipole() {
 		auto && res = load();
 		if(res.dipole.size() == 0)	actions::error(input::environment::global().comm(), "The dipole was not calculated during the real-time simulation");
+		assert((long) res.dipole.size() == total_steps() + 1);
 		return res.dipole;
 	}
 	
@@ -259,6 +260,7 @@ private:
 			actions::normal_exit();
 			
 		} else if (args.size() == 2 or args.size() == 3) {
+
 			auto index = utils::str_to<long>(args[1]);
 			if(index < 0 or index >= (long) array.size()) actions::error(input::environment::global().comm(), "Invalid index ", index, " in the '" + command_name + "' command");
 			

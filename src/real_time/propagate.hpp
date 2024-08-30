@@ -99,7 +99,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 				sc.propagate_induced_vector_potential_derivative(dt, current);
 			}
 			
-			func(real_time::viewables{istep == numsteps - 1, istep, (istep + 1.0)*dt, ions, electrons, energy, forces, ham, pert});			
+		func(real_time::viewables{istep == numsteps - 1, istep + 1, (istep + 1.0)*dt, ions, electrons, energy, forces, ham, pert});
 			
 			auto new_time = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed_seconds = new_time - iter_start_time;
