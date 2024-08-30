@@ -52,8 +52,17 @@ public:
 		
 		if(not observables.every(500)) return;
 
-		save(observables.electrons().full_comm(), ".inq/default_checkpoint/observables");
-		observables.electrons().save(".inq/default_checkpoint/orbitals");
+		auto dirname = std::string(".inq/default_checkpoint/");
+		auto error_message = "INQ error: Cannot save checkpoint '" + dirname + "'.";
+
+		//remove the type file and only create at the end, to avoid partially written checkpoints
+		if(observables.electrons().full_comm().root()) std::filesystem::remove(dirname + "/type");
+		observables.electrons().full_comm().barrier();
+		
+		save(observables.electrons().full_comm(), dirname + "real-time/observables");
+		observables.electrons().save(dirname + "real-time/orbitals");
+		
+		utils::save_value(observables.electrons().full_comm(), dirname + "/type", std::string("real-time"), error_message);
   }
 
 	template <typename Comm>

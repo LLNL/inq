@@ -61,6 +61,16 @@ These are the options available:
    Python example: `pinq.run.real_time()`
 
 
+-  Shell:  `run resume`
+   Python: `run.resume()`
+
+   Restarts the run of a stopped simulation from a checkpoint. For the
+   moment this only works for real-time simulations.
+
+   Shell example:  `inq run resume`
+   Python example: `pinq.run.resume()`
+
+
 )"""";
 	}
 
@@ -107,6 +117,49 @@ These are the options available:
 		res.save(input::environment::global().comm(), ".inq/default_results_real_time");
 
 	}
+
+	static void resume() {
+
+		auto dirname = std::string(".inq/default_checkpoint/");
+		
+		std::optional<std::string> run_type;
+		utils::load_optional(dirname + "/type", run_type);
+
+		if(not run_type.has_value()) {
+			actions::error(input::environment::global().comm(), "Cannot resume run, a checkpoint was not found.");
+		}
+		
+		if(*run_type != "real-time") {
+			actions::error(input::environment::global().comm(), "Unknown checkpoint type '" + *run_type + "'.");
+		}
+
+		auto ions = systems::ions::load(".inq/default_ions");
+		auto bz = ionic::brillouin(systems::ions::load(".inq/default_ions"), input::kpoints::gamma());
+
+		try { bz = ionic::brillouin::load(".inq/default_brillouin"); }
+		catch(...) {
+			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
+		}
+		
+		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
+ 
+		if(not electrons.try_load(dirname + "/real-time/orbitals")) {
+			actions::error(input::environment::global().comm(), "Cannot load the restart electron orbitals.\n The checkpoint must be corrupt");
+		}
+
+		auto opts = options::real_time::load(".inq/default_real_time_options");	
+
+		auto res = real_time::results::load(dirname + "/real-time/observables");
+
+		res.obs = opts.observables_container();
+		
+		real_time::propagate(ions, electrons, [&res](auto obs){ res(obs); },
+												 options::theory::load(".inq/default_theory"), opts, perturbations::blend::load(".inq/default_perturbations"),
+												 /* start_step = */ res.total_steps);
+		res.save(input::environment::global().comm(), ".inq/default_results_real_time");
+
+	}
+	
 	
 	template <typename ArgsType>
 	void command(ArgsType const & args, bool quiet) const {
@@ -122,6 +175,11 @@ These are the options available:
 			real_time();
 			actions::normal_exit();
 		}
+						
+		if(args.size() == 1 and args[0] == "resume") {
+			resume();
+			actions::normal_exit();
+		}
 		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'run' command");
 	}
@@ -135,6 +193,7 @@ These are the options available:
 		auto sub = module.def_submodule(name(), help());
 		sub.def("ground_state", &ground_state);
 		sub.def("real_time",    &real_time);
+		sub.def("resume",       &real_time);
 		
 	}
 #endif
