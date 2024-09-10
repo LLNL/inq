@@ -89,7 +89,8 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::util);
 
 	auto all_helpers =
-		interface::item(interface::units);
+		interface::item(interface::units)
+		+ interface::item(interface::results);
 		
 	if(argc == 1){
 		if(comm.root()) {
