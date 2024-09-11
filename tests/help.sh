@@ -15,8 +15,11 @@ inq help ions
 inq help kpoints
 inq help perturbations
 inq help real-time
+inq help results
 inq help results-ground-state
+inq help results-real-time
 inq help run
 inq help theory
 inq help units
 inq help util
+

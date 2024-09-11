@@ -213,8 +213,9 @@ PYBIND11_MODULE(_pinq, module) {
 	interface::species.python_interface(interface_module);
 	interface::spectrum.python_interface(interface_module);
 	interface::util.python_interface(interface_module);	
-	
-	auto results_module = interface_module.def_submodule("results");
+
+	interface_module.def_submodule("units", interface::units.help());
+	auto results_module = interface_module.def_submodule("results", interface::results.help());
 	interface::results_ground_state.python_interface(results_module);
 	interface::results_real_time.python_interface(results_module);
 	

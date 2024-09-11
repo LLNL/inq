@@ -33,6 +33,7 @@
 #include <interface/kpoints.hpp>
 #include <interface/perturbations.hpp>
 #include <interface/real_time.hpp>
+#include <interface/results.hpp>
 #include <interface/results_ground_state.hpp>
 #include <interface/results_real_time.hpp>
 #include <interface/run.hpp>
