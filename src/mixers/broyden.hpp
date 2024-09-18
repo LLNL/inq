@@ -22,12 +22,12 @@
 namespace inq {
 namespace mixers {
 
-template <class ArrayType>
-class broyden : public base<ArrayType> {
+template <class FieldType>
+class broyden : public base<FieldType> {
 	
 public:
 
-	using element_type = typename ArrayType::element_type;
+	using element_type = typename FieldType::element_type;
 	
 	template <class CommType>
 	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
@@ -92,7 +92,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void operator()(ArrayType & input_field, ArrayType const & output_field){
+	void operator()(FieldType & input_field, FieldType const & output_field){
 
 		CALI_CXX_MARK_SCOPE("broyden_mixing");
 		

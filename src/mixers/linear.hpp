@@ -17,8 +17,8 @@
 namespace inq {
 namespace mixers {
 
-template <class ArrayType>
-class linear : public base<ArrayType> {
+template <class FieldType>
+class linear : public base<FieldType> {
 
 public:
 	
@@ -26,7 +26,7 @@ public:
 		mix_factor_(arg_mix_factor){
 	}
 	
-	void operator()(ArrayType & input_value, ArrayType const & output_value){
+	void operator()(FieldType & input_value, FieldType const & output_value){
 		//note: arguments might alias here
 
 		assert(input_value.basis() == output_value.basis());
