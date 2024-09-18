@@ -43,8 +43,8 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-		
-	void broyden_extrapolation(ArrayType & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
+	template <typename Array>
+	void broyden_extrapolation(Array & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
 
 		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
 		
@@ -92,9 +92,12 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void operator()(ArrayType & input_value, ArrayType const & output_value){
+	void operator()(ArrayType & input_field, ArrayType const & output_field){
 
 		CALI_CXX_MARK_SCOPE("broyden_mixing");
+		
+		auto input_value = input_field.matrix().flatted();
+		auto output_value = output_field.matrix().flatted();
 		
 		assert((typename gpu::array<double, 2>::size_type) input_value.size() == dv_[0].size());
 		assert((typename gpu::array<double, 2>::size_type) output_value.size() == dv_[0].size());

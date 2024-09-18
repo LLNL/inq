@@ -121,7 +121,7 @@ public:
 		results res;
 		operations::preconditioner prec;
 		
-		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
+		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density())>;
 		
 		auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 			switch(solver_.mixing_algorithm()){
@@ -191,9 +191,7 @@ public:
 				density_diff /= electrons.states().num_electrons();
 				
 				if(inter_.self_consistent()) {
-					auto tmp = +electrons.spin_density().matrix().flatted();
-					mixer->operator()(tmp, new_density.matrix().flatted());
-					electrons.spin_density().matrix().flatted() = tmp;
+					mixer->operator()(electrons.spin_density(), new_density);
 					observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 				} else {
 					electrons.spin_density() = std::move(new_density);

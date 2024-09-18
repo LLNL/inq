@@ -63,7 +63,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 		energy.ion(ionic::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 	}
 
-	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
+	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density())>;
 	auto mixer = mixers::broyden<mix_arr_type>(4, 0.3, electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
 
 	auto old_exxe = 0.0;
@@ -103,9 +103,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 			if(exxe_diff < exxe_tol) break;
 		}
 		
-		auto tmp = +electrons.spin_density().matrix().flatted();
-		mixer(tmp, new_density.matrix().flatted());
-		electrons.spin_density().matrix().flatted() = tmp;
+		mixer(electrons.spin_density(), new_density);
 		observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 	}
 

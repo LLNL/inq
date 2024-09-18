@@ -28,13 +28,17 @@ public:
 	
 	void operator()(ArrayType & input_value, ArrayType const & output_value){
 		//note: arguments might alias here
+
+		assert(input_value.basis() == output_value.basis());
+		assert(input_value.local_set_size() == output_value.local_set_size());
 		
 		CALI_CXX_MARK_SCOPE("linear_mixing");
 		
-		gpu::run(input_value.size(),
-						 [iv = begin(input_value), ov = begin(output_value), mix = mix_factor_] GPU_LAMBDA (auto ii){
-							 iv[ii] = (1.0 - mix)*iv[ii] + mix*ov[ii];
+		gpu::run(input_value.local_set_size(), input_value.basis().size(),
+						 [iv = begin(input_value.matrix()), ov = begin(output_value.matrix()), mix = mix_factor_] GPU_LAMBDA (auto is, auto ip){
+							 iv[ip][is] = (1.0 - mix)*iv[ip][is] + mix*ov[ip][is];
 						 });
+
 	}
 
 private:
