@@ -183,25 +183,33 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;
-#if 0
 
-	gpu::array<double, 1> vin({10.0, -20.0});
-	gpu::array<double, 1> vout({0.0,  22.2});
-
-  mixers::broyden<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
+	auto comm = parallel::communicator{boost::mpi3::environment::get_self_instance()};
 	
-	lm(vin, vout);
+	basis::trivial bas(2, comm);
+	
+	basis::field_set<basis::trivial, double> vin(bas, 1);
+	vin.matrix()[0][0] =    10.0;
+	vin.matrix()[1][0] =   -20.0;
+
+	basis::field_set<basis::trivial, double> vout(bas, 1);
+	vout.matrix()[0][0] =    0.0;
+	vout.matrix()[1][0] =   22.2;
+
+	mixers::broyden<decltype(vin)> mixer(5, 0.5, 2, comm);
+	
+	mixer(vin, vout);
   
-	CHECK(vin[0] == 5.0_a);
-  CHECK(vin[1] == 1.1_a);
+	CHECK(vin.matrix()[0][0] == 5.0_a);
+	CHECK(vin.matrix()[1][0] == 1.1_a);
 
-	vout = gpu::array<double, 1>({4.0, 5.5});
-
-	lm(vin, vout);
-
-	CHECK(vin[0] == 4.4419411001_a);
-  CHECK(vin[1] == 3.5554591594_a);
-#endif
+	vout.matrix()[0][0] =   4.0;
+	vout.matrix()[1][0] =   5.5;
+	
+	mixer(vin, vout);
+  
+	CHECK(vin.matrix()[0][0] == 4.4419411001_a);
+	CHECK(vin.matrix()[1][0] == 3.5554591594_a);
 	
 }
 #endif
