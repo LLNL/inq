@@ -61,15 +61,28 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  gpu::array<double, 1> vin({10.0, -20.0});
-	gpu::array<double, 1> vout({0.0,  22.2});
-
-  mixers::linear<decltype(vin)> lm(0.5);
+	basis::trivial bas(2, parallel::communicator{boost::mpi3::environment::get_self_instance()});
 	
-	lm(vin, vout);
+	basis::field_set<basis::trivial, double> vin(bas, 2);
+	vin.matrix()[0][0] = 10.0;
+	vin.matrix()[1][0] = -20.0;
+	vin.matrix()[0][1] = 3.45;
+	vin.matrix()[1][1] = 192.34;
+
+	basis::field_set<basis::trivial, double> vout(bas, 2);
+	vout.matrix()[0][0] = 0.0;
+	vout.matrix()[1][0] = 22.2;
+	vout.matrix()[0][1] = 1.87;
+	vout.matrix()[1][1] = -133.55;
+
+	mixers::linear<decltype(vin)> mixer(0.5);
+	
+	mixer(vin, vout);
   
-  CHECK(vin[0] == 5.0_a);
-  CHECK(vin[1] == 1.1_a);
+	CHECK(vin.matrix()[0][0] == 5.0_a);
+	CHECK(vin.matrix()[1][0] == 1.1_a);
+	CHECK(vin.matrix()[0][1] == 2.66_a);
+	CHECK(vin.matrix()[1][1] == 29.395_a);
   
 }
 #endif
