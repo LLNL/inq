@@ -17,8 +17,8 @@
 namespace inq {
 namespace mixers {
 
-template <class ArrayType>
-class linear : public base<ArrayType> {
+template <class FieldType>
+class linear : public base<FieldType> {
 
 public:
 	
@@ -26,15 +26,19 @@ public:
 		mix_factor_(arg_mix_factor){
 	}
 	
-	void operator()(ArrayType & input_value, ArrayType const & output_value){
+	void operator()(FieldType & input_value, FieldType const & output_value){
 		//note: arguments might alias here
+
+		assert(input_value.basis() == output_value.basis());
+		assert(input_value.local_set_size() == output_value.local_set_size());
 		
 		CALI_CXX_MARK_SCOPE("linear_mixing");
 		
-		gpu::run(input_value.size(),
-						 [iv = begin(input_value), ov = begin(output_value), mix = mix_factor_] GPU_LAMBDA (auto ii){
-							 iv[ii] = (1.0 - mix)*iv[ii] + mix*ov[ii];
+		gpu::run(input_value.local_set_size(), input_value.basis().size(),
+						 [iv = begin(input_value.matrix()), ov = begin(output_value.matrix()), mix = mix_factor_] GPU_LAMBDA (auto is, auto ip){
+							 iv[ip][is] = (1.0 - mix)*iv[ip][is] + mix*ov[ip][is];
 						 });
+
 	}
 
 private:
@@ -57,15 +61,28 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
 
-  gpu::array<double, 1> vin({10.0, -20.0});
-	gpu::array<double, 1> vout({0.0,  22.2});
-
-  mixers::linear<decltype(vin)> lm(0.5);
+	basis::trivial bas(2, parallel::communicator{boost::mpi3::environment::get_self_instance()});
 	
-	lm(vin, vout);
+	basis::field_set<basis::trivial, double> vin(bas, 2);
+	vin.matrix()[0][0] = 10.0;
+	vin.matrix()[1][0] = -20.0;
+	vin.matrix()[0][1] = 3.45;
+	vin.matrix()[1][1] = 192.34;
+
+	basis::field_set<basis::trivial, double> vout(bas, 2);
+	vout.matrix()[0][0] = 0.0;
+	vout.matrix()[1][0] = 22.2;
+	vout.matrix()[0][1] = 1.87;
+	vout.matrix()[1][1] = -133.55;
+
+	mixers::linear<decltype(vin)> mixer(0.5);
+	
+	mixer(vin, vout);
   
-  CHECK(vin[0] == 5.0_a);
-  CHECK(vin[1] == 1.1_a);
+	CHECK(vin.matrix()[0][0] == 5.0_a);
+	CHECK(vin.matrix()[1][0] == 1.1_a);
+	CHECK(vin.matrix()[0][1] == 2.66_a);
+	CHECK(vin.matrix()[1][1] == 29.395_a);
   
 }
 #endif

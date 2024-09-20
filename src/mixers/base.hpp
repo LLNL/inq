@@ -14,12 +14,12 @@
 namespace inq {
 namespace mixers {
 
-template <class ArrayType>
+template <class FieldType>
 class base {
 	
 public:
 	virtual ~base(){};
-	virtual void operator()(ArrayType & input_value, ArrayType const & output_value) = 0;
+	virtual void operator()(FieldType & input_value, FieldType const & output_value) = 0;
 	
 };
 

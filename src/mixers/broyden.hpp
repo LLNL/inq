@@ -22,15 +22,14 @@
 namespace inq {
 namespace mixers {
 
-template <class ArrayType>
-class broyden : public base<ArrayType> {
+template <class FieldType>
+class broyden : public base<FieldType> {
 	
 public:
 
-	using element_type = typename ArrayType::element_type;
+	using element_type = typename FieldType::element_type;
 	
-	template <class CommType>
-	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
+	broyden(const int arg_steps, const double arg_mix_factor, const long long dim):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
@@ -38,13 +37,12 @@ public:
 		df_({max_size_, dim}, NAN),
 		f_old_(dim, NAN),
 		vin_old_(dim, NAN),
-		last_pos_(-1),
-		comm_(comm){
+		last_pos_(-1){
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-		
-	void broyden_extrapolation(ArrayType & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
+	template <typename Comm, typename Array>
+	void broyden_extrapolation(Comm & comm, Array & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
 
 		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
 		
@@ -70,12 +68,12 @@ public:
 		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
 		auto work = +workmat[0];
 		
-		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
+		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
 		
-		if(comm_.size() > 1){
+		if(comm.size() > 1){
 			CALI_CXX_MARK_SCOPE("broyden_extrapolation::reduce");
-			comm_.all_reduce_n(raw_pointer_cast(beta.data_elements()), beta.num_elements());
-			comm_.all_reduce_n(raw_pointer_cast(work.data_elements()), work.num_elements());
+			comm.all_reduce_n(raw_pointer_cast(beta.data_elements()), beta.num_elements());
+			comm.all_reduce_n(raw_pointer_cast(work.data_elements()), work.num_elements());
 		}
 		
 		solvers::least_squares(beta, work);
@@ -92,9 +90,12 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 		
-	void operator()(ArrayType & input_value, ArrayType const & output_value){
+	void operator()(FieldType & input_field, FieldType const & output_field){
 
 		CALI_CXX_MARK_SCOPE("broyden_mixing");
+		
+		auto input_value = input_field.matrix().flatted();
+		auto output_value = output_field.matrix().flatted();
 		
 		assert((typename gpu::array<double, 2>::size_type) input_value.size() == dv_[0].size());
 		assert((typename gpu::array<double, 2>::size_type) output_value.size() == dv_[0].size());
@@ -126,9 +127,9 @@ public:
 			
 			gamma_ = dot(conj(df_[pos]), df_[pos]);
 
-			if(comm_.size() > 1){
+			if(input_field.full_comm().size() > 1){
 				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
-				comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
+				input_field.full_comm().all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
 			}
 
 			gamma_ = std::max(1e-8, sqrt(gamma_));
@@ -148,7 +149,7 @@ public:
 
 		auto iter_used = std::min(iter_ - 1, max_size_);
 
-		broyden_extrapolation(input_value, iter_used, ff);
+		broyden_extrapolation(input_field.full_comm(), input_value, iter_used, ff);
 				
 	}
 
@@ -163,8 +164,6 @@ private:
 	gpu::array<element_type, 1> vin_old_;
 	element_type gamma_;
 	int last_pos_;
-	mutable parallel::communicator comm_;
-	
 };
 	
 }
@@ -180,24 +179,33 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	using namespace inq;
 	using namespace Catch::literals;
- 
 
-	gpu::array<double, 1> vin({10.0, -20.0});
-	gpu::array<double, 1> vout({0.0,  22.2});
-
-  mixers::broyden<decltype(vin)> lm(5, 0.5, 2, boost::mpi3::environment::get_self_instance());
+	auto comm = parallel::communicator{boost::mpi3::environment::get_self_instance()};
 	
-	lm(vin, vout);
+	basis::trivial bas(2, comm);
+	
+	basis::field_set<basis::trivial, double> vin(bas, 1);
+	vin.matrix()[0][0] =    10.0;
+	vin.matrix()[1][0] =   -20.0;
+
+	basis::field_set<basis::trivial, double> vout(bas, 1);
+	vout.matrix()[0][0] =    0.0;
+	vout.matrix()[1][0] =   22.2;
+
+	mixers::broyden<decltype(vin)> mixer(5, 0.5, 2);
+	
+	mixer(vin, vout);
   
-	CHECK(vin[0] == 5.0_a);
-  CHECK(vin[1] == 1.1_a);
+	CHECK(vin.matrix()[0][0] == 5.0_a);
+	CHECK(vin.matrix()[1][0] == 1.1_a);
 
-	vout = gpu::array<double, 1>({4.0, 5.5});
-
-	lm(vin, vout);
-
-	CHECK(vin[0] == 4.4419411001_a);
-  CHECK(vin[1] == 3.5554591594_a);
-
+	vout.matrix()[0][0] =   4.0;
+	vout.matrix()[1][0] =   5.5;
+	
+	mixer(vin, vout);
+  
+	CHECK(vin.matrix()[0][0] == 4.4419411001_a);
+	CHECK(vin.matrix()[1][0] == 3.5554591594_a);
+	
 }
 #endif

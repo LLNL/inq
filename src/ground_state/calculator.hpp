@@ -121,12 +121,12 @@ public:
 		results res;
 		operations::preconditioner prec;
 		
-		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density().matrix().flatted())>;
+		using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density())>;
 		
 		auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 			switch(solver_.mixing_algorithm()){
 			case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver_.mixing());
-			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver_.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver_.mixing(), electrons.spin_density().matrix().flatted().size());
 			} __builtin_unreachable();
 		}();
 		
@@ -191,9 +191,7 @@ public:
 				density_diff /= electrons.states().num_electrons();
 				
 				if(inter_.self_consistent()) {
-					auto tmp = +electrons.spin_density().matrix().flatted();
-					mixer->operator()(tmp, new_density.matrix().flatted());
-					electrons.spin_density().matrix().flatted() = tmp;
+					mixer->operator()(electrons.spin_density(), new_density);
 					observables::density::normalize(electrons.spin_density(), electrons.states().num_electrons());
 				} else {
 					electrons.spin_density() = std::move(new_density);
