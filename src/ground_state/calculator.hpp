@@ -126,7 +126,7 @@ public:
 		auto mixer = [&]()->std::unique_ptr<mixers::base<mix_arr_type>>{
 			switch(solver_.mixing_algorithm()){
 			case options::ground_state::mixing_algo::LINEAR : return std::make_unique<mixers::linear <mix_arr_type>>(solver_.mixing());
-			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver_.mixing(), electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+			case options::ground_state::mixing_algo::BROYDEN: return std::make_unique<mixers::broyden<mix_arr_type>>(4, solver_.mixing(), electrons.spin_density().matrix().flatted().size());
 			} __builtin_unreachable();
 		}();
 		

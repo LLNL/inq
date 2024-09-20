@@ -64,7 +64,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 	}
 
 	using mix_arr_type = std::remove_reference_t<decltype(electrons.spin_density())>;
-	auto mixer = mixers::broyden<mix_arr_type>(4, 0.3, electrons.spin_density().matrix().flatted().size(), electrons.density_basis().comm());
+	auto mixer = mixers::broyden<mix_arr_type>(4, 0.3, electrons.spin_density().matrix().flatted().size());
 
 	auto old_exxe = 0.0;
 	auto update_hf = true;

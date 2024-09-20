@@ -29,8 +29,7 @@ public:
 
 	using element_type = typename FieldType::element_type;
 	
-	template <class CommType>
-	broyden(const int arg_steps, const double arg_mix_factor, const long long dim, CommType & comm):
+	broyden(const int arg_steps, const double arg_mix_factor, const long long dim):
 		iter_(0),
 		max_size_(arg_steps),
 		mix_factor_(arg_mix_factor),
@@ -38,13 +37,12 @@ public:
 		df_({max_size_, dim}, NAN),
 		f_old_(dim, NAN),
 		vin_old_(dim, NAN),
-		last_pos_(-1),
-		comm_(comm){
+		last_pos_(-1){
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	template <typename Array>
-	void broyden_extrapolation(Array & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
+	template <typename Comm, typename Array>
+	void broyden_extrapolation(Comm & comm, Array & input_value, int const iter_used, gpu::array<element_type, 1> const & ff){
 
 		CALI_CXX_MARK_SCOPE("broyden_extrapolation");
 		
@@ -70,12 +68,12 @@ public:
 		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
 		auto work = +workmat[0];
 		
-		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm_.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
+		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
 		
-		if(comm_.size() > 1){
+		if(comm.size() > 1){
 			CALI_CXX_MARK_SCOPE("broyden_extrapolation::reduce");
-			comm_.all_reduce_n(raw_pointer_cast(beta.data_elements()), beta.num_elements());
-			comm_.all_reduce_n(raw_pointer_cast(work.data_elements()), work.num_elements());
+			comm.all_reduce_n(raw_pointer_cast(beta.data_elements()), beta.num_elements());
+			comm.all_reduce_n(raw_pointer_cast(work.data_elements()), work.num_elements());
 		}
 		
 		solvers::least_squares(beta, work);
@@ -129,9 +127,9 @@ public:
 			
 			gamma_ = dot(conj(df_[pos]), df_[pos]);
 
-			if(comm_.size() > 1){
+			if(input_field.full_comm().size() > 1){
 				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
-				comm_.all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
+				input_field.full_comm().all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
 			}
 
 			gamma_ = std::max(1e-8, sqrt(gamma_));
@@ -151,7 +149,7 @@ public:
 
 		auto iter_used = std::min(iter_ - 1, max_size_);
 
-		broyden_extrapolation(input_value, iter_used, ff);
+		broyden_extrapolation(input_field.full_comm(), input_value, iter_used, ff);
 				
 	}
 
@@ -166,8 +164,6 @@ private:
 	gpu::array<element_type, 1> vin_old_;
 	element_type gamma_;
 	int last_pos_;
-	mutable parallel::communicator comm_;
-	
 };
 	
 }
@@ -196,7 +192,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	vout.matrix()[0][0] =    0.0;
 	vout.matrix()[1][0] =   22.2;
 
-	mixers::broyden<decltype(vin)> mixer(5, 0.5, 2, comm);
+	mixers::broyden<decltype(vin)> mixer(5, 0.5, 2);
 	
 	mixer(vin, vout);
   
