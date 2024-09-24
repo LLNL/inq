@@ -16,6 +16,7 @@
 #include <mixers/base.hpp>
 
 #include <parallel/communicator.hpp>
+#include <parallel/reduce_nrm2.hpp>
 #include <mpi3/environment.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -133,14 +134,7 @@ public:
 							 });
 
 			gamma_ = boost::multi::blas::nrm2(df_[pos]);
-
-			if(input_field.full_comm().size() > 1){
-				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
-				auto gamma2 = gamma_*gamma_;
-				input_field.full_comm().all_reduce_in_place_n(&gamma2, 1, std::plus<>{});
-				gamma_ = sqrt(gamma2);
-			}
-
+			parallel::reduce_nrm2(gamma_, input_field.full_comm());
 			gamma_ = std::max(1e-8, gamma_);
 
 			gpu::run(input_value.size(),
