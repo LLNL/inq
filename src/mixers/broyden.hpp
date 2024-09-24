@@ -138,9 +138,9 @@ public:
 			gamma_ = std::max(1e-8, gamma_);
 
 			gpu::run(input_value.size(),
-							 [pos, df = begin(df_), dv = begin(dv_), gamma = gamma_] GPU_LAMBDA (auto ip){
-								 df[pos][ip] /= gamma;
-								 dv[pos][ip] /= gamma;
+							 [pos, df = begin(df_), dv = begin(dv_), invgamma = 1.0/gamma_] GPU_LAMBDA (auto ip){
+								 df[pos][ip] *= invgamma;
+								 dv[pos][ip] *= invgamma;
 							 });
 
 			last_pos_ = pos;
@@ -153,7 +153,7 @@ public:
 		auto iter_used = std::min(iter_ - 1, max_size_);
 
 		broyden_extrapolation(input_field.full_comm(), input_value, iter_used, ff);
-				
+
 	}
 	
 };
