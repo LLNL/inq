@@ -76,11 +76,7 @@ public:
 		
 		auto subdf = df_({0, iter_used}, {0, input_value.size()});
 		auto beta = +blas::gemm(ww*ww, subdf, blas::H(subdf));
-
-		auto matff = gpu::array<element_type, 2>({iter_used, input_value.size()}); //for some reason this has to be iter_used and not 1. 
-		matff[0] = ff({0, input_value.size()});
-		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
-		auto work = +workmat[0];
+		auto work = +blas::gemv(1.0, subdf, ff({0, input_value.size()})); 
 		
 		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
 		
