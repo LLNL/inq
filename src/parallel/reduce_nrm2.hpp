@@ -29,10 +29,11 @@ void reduce_nrm2(double & nrm2, Comm & comm){
 	CALI_CXX_MARK_FUNCTION;
 
 	if(comm.size() == 1) return;
-	
-	auto square = nrm2*nrm2;
-	comm.all_reduce_in_place_n(&square, 1, std::plus<>{});
-	nrm2 = sqrt(square);
+
+	gpu::array<double, 1> buffer(comm.size());
+	MPI_Allgather(&nrm2, 1, MPI_DOUBLE, buffer.data(), 1, MPI_DOUBLE, comm.get());
+	nrm2 = boost::multi::blas::nrm2(buffer);
+
 }
 
 }
