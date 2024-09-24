@@ -24,10 +24,24 @@ namespace mixers {
 
 template <class FieldType>
 class broyden : public base<FieldType> {
-	
+
 public:
 
 	using element_type = typename FieldType::element_type;
+
+private:
+	
+	int iter_;
+	int max_size_;
+	double mix_factor_;
+	gpu::array<element_type, 2> dv_;
+	gpu::array<element_type, 2> df_;
+	gpu::array<element_type, 1> f_old_;
+	gpu::array<element_type, 1> vin_old_;
+	element_type gamma_;
+	int last_pos_;
+	
+public:
 	
 	broyden(const int arg_steps, const double arg_mix_factor, const long long dim):
 		iter_(0),
@@ -152,18 +166,7 @@ public:
 		broyden_extrapolation(input_field.full_comm(), input_value, iter_used, ff);
 				
 	}
-
-private:
-		
-	int iter_;
-	int max_size_;
-	double mix_factor_;
-	gpu::array<element_type, 2> dv_;
-	gpu::array<element_type, 2> df_;
-	gpu::array<element_type, 1> f_old_;
-	gpu::array<element_type, 1> vin_old_;
-	element_type gamma_;
-	int last_pos_;
+	
 };
 	
 }
