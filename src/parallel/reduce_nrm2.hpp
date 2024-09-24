@@ -52,10 +52,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   using namespace inq;
   using namespace Catch::literals;
   
-	///	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
-  
-	//  gpu::array<int, 2> buffer({comm.size(), blocksize}, comm.rank());
+	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
+	auto size = 1000;
+	gpu::array<double, 1> buffer(size);
+	
+	gpu::run(size, [buf = begin(buffer)] GPU_LAMBDA (auto ii) {
+		buf[ii] = pow(cos(ii), 3);
+	});
 
+	auto serial_nrm2 = boost::multi::blas::nrm2(buffer);
+
+	CHECK(serial_nrm2 == 17.6975_a);
+
+	auto part = parallel::partition(size, comm);
+
+	auto par_nrm2 = +boost::multi::blas::nrm2(buffer({part.start(), part.end()}));
+	parallel::reduce_nrm2(par_nrm2, comm);
+
+	CHECK(par_nrm2 == 17.6974674479_a);
 }
 
 #endif
