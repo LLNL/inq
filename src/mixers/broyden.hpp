@@ -132,17 +132,16 @@ public:
 								 dv[pos][ip] -= vin_old[ip];
 							 });
 
-			using boost::multi::blas::dot;
-			using boost::multi::blas::conj;
-			
-			gamma_ = dot(conj(df_[pos]), df_[pos]);
+			gamma_ = boost::multi::blas::nrm2(df_[pos]);
 
 			if(input_field.full_comm().size() > 1){
 				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
-				input_field.full_comm().all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
+				auto gamma2 = gamma_*gamma_;
+				input_field.full_comm().all_reduce_in_place_n(&gamma2, 1, std::plus<>{});
+				gamma_ = sqrt(gamma2);
 			}
 
-			gamma_ = std::max(1e-8, sqrt(gamma_));
+			gamma_ = std::max(1e-8, gamma_);
 
 			gpu::run(input_value.size(),
 							 [pos, df = begin(df_), dv = begin(dv_), gamma = gamma_] GPU_LAMBDA (auto ip){
