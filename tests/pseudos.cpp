@@ -72,18 +72,18 @@ int main(int argc, char ** argv){
 		
 		ground_state::initial_guess(ions, electrons);
 		
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.non_interacting(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
-		energy_match.check("total energy",        result.energy.total()    ,       -5.364217589921);
-		energy_match.check("kinetic energy",      result.energy.kinetic()  ,        3.177120187949);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues(),     -1.404887043368);
-		energy_match.check("Hartree energy",      result.energy.hartree(),          4.371307074758);
-		energy_match.check("external energy",     result.energy.external(),       -11.994166361196);
-		energy_match.check("non-local energy",    result.energy.non_local(),        0.494223882716);
-		energy_match.check("XC energy",           result.energy.xc(),              -1.412702374148);
-		energy_match.check("XC density integral", result.energy.nvxc(),            -1.824678902353);
-		energy_match.check("HF exchange energy",  result.energy.exact_exchange(),   0.000000000000);
-		energy_match.check("ion-ion energy",      result.energy.ion(),              0.000000000000);
+		energy_match.check("total energy",        result.energy.total()    ,        -8.843621788388);
+		energy_match.check("kinetic energy",      result.energy.kinetic()  ,         5.502941033580);
+		energy_match.check("eigenvalues",         result.energy.eigenvalues(),      -8.843621788388);
+		energy_match.check("Hartree energy",      result.energy.hartree(),           0.000000000000);
+		energy_match.check("external energy",     result.energy.external(),        -15.048420030487);
+		energy_match.check("non-local energy",    result.energy.non_local(),         0.701857208520);
+		energy_match.check("XC energy",           result.energy.xc(),                0.000000000000);
+		energy_match.check("XC density integral", result.energy.nvxc(),              0.000000000000);
+		energy_match.check("HF exchange energy",  result.energy.exact_exchange(),    0.000000000000);
+		energy_match.check("ion-ion energy",      result.energy.ion(),               0.000000000000);
 	}
 		
 	return energy_match.fail();
