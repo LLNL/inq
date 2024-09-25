@@ -31,7 +31,7 @@ void reduce_nrm2(double & nrm2, Comm & comm){
 	if(comm.size() == 1) return;
 
 	gpu::array<double, 1> buffer(comm.size());
-	MPI_Allgather(&nrm2, 1, MPI_DOUBLE, buffer.data(), 1, MPI_DOUBLE, comm.get());
+	MPI_Allgather(&nrm2, 1, MPI_DOUBLE, raw_pointer_cast(buffer.data()), 1, MPI_DOUBLE, comm.get());
 	nrm2 = boost::multi::blas::nrm2(buffer);
 
 }
