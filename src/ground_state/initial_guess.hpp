@@ -26,7 +26,7 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons){
 	for(auto & phi : electrons.kpin()) {
 		operations::randomize(phi, iphi + electrons.kpin_part().start());
 		operations::orthogonalize(phi);
-		for(long ist = 0; ist < phi.local_spinor_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.spinor_set_part().start() + (iphi + electrons.kpin_part().start())/double(electrons.kpin_size());
+		for(long ist = 0; ist < phi.local_spinor_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.spinor_set_part().start() + (iphi + electrons.kpin_part().start())/double(electrons.kpin_part().size());
 
 		iphi++;
 	}
