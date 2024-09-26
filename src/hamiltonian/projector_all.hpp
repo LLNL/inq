@@ -251,8 +251,6 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		using boost::multi::blas::gemm;
-		using boost::multi::blas::transposed;
 		namespace blas = boost::multi::blas;
 
 		gpu::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
@@ -278,7 +276,7 @@ public:
 		for(auto iproj = 0; iproj < nprojs_; iproj++){
 			if(locally_empty_[iproj]) continue;
 			
-			blas::real_doubled(projections_all[iproj]) = gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
+			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
 		}
 			
 		{ CALI_CXX_MARK_SCOPE("projector_force_scal"); 
@@ -294,7 +292,7 @@ public:
 		}
 		
 		for(auto iproj = 0; iproj < nprojs_; iproj++){		
-			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, blas::transposed(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
+			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
 		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
