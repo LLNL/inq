@@ -51,7 +51,7 @@ INQ is work in progress, some of the features are not well tested or are not ava
 
 INQ has a few system dependencies and the environment ready in your system, for example in a desktop:
 ```bash
-sudo apt install gfortran libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
+sudo apt install gfortran libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
 ```
 
 Instructions for compiling
