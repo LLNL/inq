@@ -16,6 +16,7 @@
 #include <mixers/base.hpp>
 
 #include <parallel/communicator.hpp>
+#include <parallel/reduce_nrm2.hpp>
 #include <mpi3/environment.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -24,10 +25,24 @@ namespace mixers {
 
 template <class FieldType>
 class broyden : public base<FieldType> {
-	
+
 public:
 
 	using element_type = typename FieldType::element_type;
+
+private:
+	
+	int iter_;
+	int max_size_;
+	double mix_factor_;
+	gpu::array<element_type, 2> dv_;
+	gpu::array<element_type, 2> df_;
+	gpu::array<element_type, 1> f_old_;
+	gpu::array<element_type, 1> vin_old_;
+	element_type gamma_;
+	int last_pos_;
+	
+public:
 	
 	broyden(const int arg_steps, const double arg_mix_factor, const long long dim):
 		iter_(0),
@@ -62,11 +77,7 @@ public:
 		
 		auto subdf = df_({0, iter_used}, {0, input_value.size()});
 		auto beta = +blas::gemm(ww*ww, subdf, blas::H(subdf));
-
-		auto matff = gpu::array<element_type, 2>({iter_used, input_value.size()}); //for some reason this has to be iter_used and not 1. 
-		matff[0] = ff({0, input_value.size()});
-		auto workmat = +blas::gemm(1.0, matff, blas::H(subdf));
-		auto work = +workmat[0];
+		auto work = +blas::gemv(1.0, subdf, ff({0, input_value.size()})); 
 		
 		gpu::run(iter_used, [w0, ww, be = begin(beta), dfactor = 1.0/comm.size()] GPU_LAMBDA (auto ii){ be[ii][ii] = dfactor*(w0*w0 + ww*ww); });
 		
@@ -122,22 +133,14 @@ public:
 								 dv[pos][ip] -= vin_old[ip];
 							 });
 
-			using boost::multi::blas::dot;
-			using boost::multi::blas::conj;
-			
-			gamma_ = dot(conj(df_[pos]), df_[pos]);
-
-			if(input_field.full_comm().size() > 1){
-				CALI_CXX_MARK_SCOPE("broyden_mixing::reduce");
-				input_field.full_comm().all_reduce_in_place_n(&gamma_, 1, std::plus<>{});
-			}
-
-			gamma_ = std::max(1e-8, sqrt(gamma_));
+			gamma_ = boost::multi::blas::nrm2(df_[pos]);
+			parallel::reduce_nrm2(gamma_, input_field.full_comm());
+			gamma_ = std::max(1e-8, gamma_);
 
 			gpu::run(input_value.size(),
-							 [pos, df = begin(df_), dv = begin(dv_), gamma = gamma_] GPU_LAMBDA (auto ip){
-								 df[pos][ip] /= gamma;
-								 dv[pos][ip] /= gamma;
+							 [pos, df = begin(df_), dv = begin(dv_), invgamma = 1.0/gamma_] GPU_LAMBDA (auto ip){
+								 df[pos][ip] *= invgamma;
+								 dv[pos][ip] *= invgamma;
 							 });
 
 			last_pos_ = pos;
@@ -150,20 +153,9 @@ public:
 		auto iter_used = std::min(iter_ - 1, max_size_);
 
 		broyden_extrapolation(input_field.full_comm(), input_value, iter_used, ff);
-				
-	}
 
-private:
-		
-	int iter_;
-	int max_size_;
-	double mix_factor_;
-	gpu::array<element_type, 2> dv_;
-	gpu::array<element_type, 2> df_;
-	gpu::array<element_type, 1> f_old_;
-	gpu::array<element_type, 1> vin_old_;
-	element_type gamma_;
-	int last_pos_;
+	}
+	
 };
 	
 }
