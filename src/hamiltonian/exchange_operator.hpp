@@ -71,9 +71,12 @@ namespace hamiltonian {
 			{
 				auto ist = 0;
 				for(auto & phi : el.kpin()){
-					kpoints_({ist, ist + phi.local_set_size()}).fill(phi.kpoint());
-					kpoint_indices_({ist, ist + phi.local_set_size()}).fill(el.kpoint_index(phi));
 					
+					gpu::run(phi.local_set_size(), [ist, kpoints = begin(kpoints_), indices = begin(kpoint_indices_), kp = phi.kpoint(), ind = el.kpoint_index(phi)] GPU_LAMBDA (auto ii) {
+						kpoints[ist + ii] = kp;
+						indices[ist + ii] = ind;
+					});
+
 					orbitals_->matrix()({0, phi.basis().local_size()}, {ist, ist + phi.local_set_size()}) = phi.matrix();
 					
 					ist += phi.local_set_size();
