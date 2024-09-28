@@ -150,6 +150,10 @@ namespace hamiltonian {
 			}
 			return refs;
 		}
+
+		auto & nspin() const {
+			return nspin_;
+		}
 		
 	private:
 		

@@ -15,6 +15,27 @@
 namespace inq {
 namespace observables {
 
+template <class Density>
+GPU_FUNCTION auto local_magnetization(Density const & spin_density, int const & components) {
+	vector3<double> mag_density;
+
+	if(components == 4){
+		mag_density[0] = 2.0*spin_density[2];
+		mag_density[1] = 2.0*spin_density[3];
+	} else {
+		mag_density[0] = 0.0;
+		mag_density[1] = 0.0;							 
+	}
+
+	if(components >= 2){
+		mag_density[2] = spin_density[0] - spin_density[1];
+	} else {
+		mag_density[2] = 0.0;
+	}
+
+	return mag_density;
+}
+
 basis::field<basis::real_space, vector3<double>> magnetization(basis::field_set<basis::real_space, double> const & spin_density){
 
 	// The formula comes from here: https://gitlab.com/npneq/inq/-/wikis/Magnetization
@@ -24,21 +45,7 @@ basis::field<basis::real_space, vector3<double>> magnetization(basis::field_set<
 
 	gpu::run(magnet.basis().local_size(),
 					 [mag = begin(magnet.linear()), den = begin(spin_density.matrix()), components = spin_density.set_size()] GPU_LAMBDA (auto ip){
-
-						 if(components == 4){
-							 mag[ip][0] = 2.0*den[ip][2];
-							 mag[ip][1] = 2.0*den[ip][3];
-						 } else {
-							 mag[ip][0] = 0.0;
-							 mag[ip][1] = 0.0;							 
-						 }
-
-						 if(components >= 2){
-							 mag[ip][2] = den[ip][0] - den[ip][1];
-						 } else {
-							 mag[ip][2] = 0.0;							 
-						 }
-						 
+						mag[ip] = local_magnetization(den[ip], components);
 					 });
 	
 	return magnet;

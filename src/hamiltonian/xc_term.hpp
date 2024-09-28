@@ -12,6 +12,7 @@
 #include <basis/field.hpp>
 #include <solvers/poisson.hpp>
 #include <observables/density.hpp>
+#include <observables/magnetization.hpp>
 #include <operations/add.hpp>
 #include <operations/integral.hpp>
 #include <options/theory.hpp>
@@ -19,6 +20,8 @@
 #include <hamiltonian/atomic_potential.hpp>
 #include <perturbations/none.hpp>
 #include <utils/profiling.hpp>
+#include <systems/electrons.hpp>
+#include <cmath>
 
 namespace inq {
 namespace hamiltonian {
@@ -30,8 +33,8 @@ class xc_term {
 public:
 	
 	xc_term(options::theory interaction, int const spin_components){
-		functionals_.emplace_back(int(interaction.exchange()), spin_components);
-		functionals_.emplace_back(int(interaction.correlation()), spin_components);
+		functionals_.emplace_back(int(interaction.exchange()), std::min(spin_components, 2));
+		functionals_.emplace_back(int(interaction.correlation()), std::min(spin_components, 2));
 	}
 
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,17 +59,16 @@ public:
 		SpinDensityType full_density(spin_density.basis(), std::min(2, spin_density.set_size()));
 
 		if(spin_density.set_size() == 4) {
-			//for spinors convert the density to 2 components
 			gpu::run(spin_density.basis().local_size(),
 							 [spi = begin(spin_density.matrix()), ful = begin(full_density.matrix()), cor = begin(core_density.linear())] GPU_LAMBDA (auto ip){
 								 auto dtot = spi[ip][0] + spi[ip][1];
-								 auto dd = spi[ip][0] - spi[ip][1];
-								 auto dpol = sqrt(dd*dd + 4.0*(spi[ip][2]*spi[ip][2] + spi[ip][3]*spi[ip][3]));
+								 auto mag = observables::local_magnetization(spi[ip], 4);
+								 auto dpol = mag.length();
 								 ful[ip][0] = 0.5*(dtot + dpol);
 								 ful[ip][1] = 0.5*(dtot - dpol);
 								 for(int ispin = 0; ispin < 2; ispin++){
 									 if(ful[ip][ispin] < 0.0) ful[ip][ispin] = 0.0;
-									 ful[ip][ispin] += 0.5*cor[ip];
+									 ful[ip][ispin] += cor[ip]/2;
 								 }
 							 });
 		} else {
@@ -87,15 +89,81 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename VXC, typename VKS>
-	void process_potential(VXC const & vxc, VKS & vks) const {
+	template <typename SpinDensityType, typename VXC, typename VKS>
+	void process_potential(SpinDensityType const & spin_density, VXC const & vxc, VKS & vks) const {
 		
-		gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
-						 [vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
-							 vk[ip][is] += vx[ip][is];
+		if (spin_density.set_size() == 4) {
+			gpu::run(vxc.basis().local_size(),
+						 [spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto ip){
+							auto bxc = 0.5*(vx[ip][0] - vx[ip][1]);
+							auto vxc = 0.5*(vx[ip][0] + vx[ip][1]);
+							auto mag = observables::local_magnetization(spi[ip], 4);
+							auto dpol = mag.length();
+							if (fabs(dpol) > 1.e-7) {
+								auto e_mag = mag/dpol;
+								vk[ip][0] += vxc + bxc*e_mag[2];
+								vk[ip][1] += vxc - bxc*e_mag[2];
+								vk[ip][2] += bxc*e_mag[0];
+								vk[ip][3] += bxc*e_mag[1];
+							}
+							else {
+								vk[ip][0] += vxc;
+								vk[ip][1] += vxc;
+							}
 						 });
+		}
+		else {
+			assert(spin_density.set_size() == 1 or spin_density.set_size() == 2);
+			gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
+						 [vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
+							vk[ip][is] += vx[ip][is];
+						 });
+		}
+
 	}
-	
+
+  ///////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename SpinDensityType, typename VXC>
+	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vfunc) const {
+
+		auto nvxc_ = 0.0;
+		if (spin_density.set_size() == 4) {
+			basis::field_set<basis::real_space, double> vxc(spin_density.skeleton());
+			vxc.fill(0.0);
+			gpu::run(vfunc.basis().local_size(),
+						 [spi = begin(spin_density.matrix()), vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto ip){
+							auto b = 0.5*(vxi[ip][0] - vxi[ip][1]);
+							auto v = 0.5*(vxi[ip][0] + vxi[ip][1]);
+							auto mag = observables::local_magnetization(spi[ip], 4);
+							auto dpol = mag.length();
+							if (fabs(dpol) > 1.e-7) {
+								auto e_mag = mag/dpol;
+								// Vxc = [vxc+bxc^z, bxc^-; bxc^+, vxc-bxc^z]
+								vxf[ip][0] = v + b*e_mag[2];
+								vxf[ip][1] = v - b*e_mag[2];
+								vxf[ip][2] = 2.0*b*e_mag[0];
+								vxf[ip][3] = 2.0*b*e_mag[1];
+							}
+							else {
+								vxf[ip][0] = v;
+								vxf[ip][1] = v;
+							}
+						 });
+			basis::field<basis::real_space, double> rfield(spin_density.basis());
+			rfield.fill(0.0);
+			gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
+						[spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), rf = begin(rfield.linear())] GPU_LAMBDA (auto is, auto ip){
+							rf[ip] += vx[ip][is] * spi[ip][is];
+						});
+			nvxc_ += operations::integral(rfield);
+		}
+		else {
+			nvxc_ = operations::integral_product_sum(spin_density, vfunc);
+		}
+		return nvxc_;
+	}
+
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
   template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
@@ -108,8 +176,8 @@ public:
 		auto full_density = process_density(spin_density, core_density);
 		
 		double efunc = 0.0;
-		basis::field_set<basis::real_space, double> vfunc(spin_density.skeleton());
-
+		
+		basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
 		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
 		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
 
@@ -118,8 +186,56 @@ public:
 
 			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
 			exc += efunc;
-			process_potential(vfunc, vks);
-			nvxc += operations::integral_product_sum(spin_density, vfunc); //the core correction does not go here
+			process_potential(spin_density, vfunc, vks);
+
+			nvxc += compute_nvxc(spin_density, vfunc);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename SpinDensityType, typename CoreDensityType, typename VxcType>
+	void compute_vxc(SpinDensityType const & spin_density, CoreDensityType const & core_density, VxcType & vxc) {
+
+		if(not any_true_functional()) return;
+		auto full_density = process_density(spin_density, core_density);
+		double efunc = 0.0;
+		basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
+		vfunc.fill(0.0);
+		vxc.fill(0.0);
+		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
+		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
+
+		for(auto & func : functionals_) {
+			if(not func.true_functional()) continue;
+			evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
+			if (spin_density.set_size() == 4) {
+				gpu::run(vfunc.basis().local_size(),
+				[spi = begin(spin_density.matrix()), vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto ip){
+					auto b = 0.5*(vxi[ip][0] - vxi[ip][1]);
+					auto v = 0.5*(vxi[ip][0] + vxi[ip][1]);
+					auto mag = observables::local_magnetization(spi[ip], 4);
+					auto dpol = mag.length();
+					if (fabs(dpol) > 1.e-7) {
+						auto e_mag = mag / dpol;
+						vxf[ip][0] += v + b*e_mag[2];
+						vxf[ip][1] += v - b*e_mag[2];
+						vxf[ip][2] += b*e_mag[0];
+						vxf[ip][3] += b*e_mag[1];
+					}
+					else {
+						vxf[ip][0] += v;
+						vxf[ip][1] += v;
+					}
+				});
+			}
+			else {
+				assert(spin_density.set_size() == 1 or spin_density.set_size() == 2);
+				gpu::run(vfunc.local_set_size(), vfunc.basis().local_size(),
+					[vxi = begin(vfunc.matrix()), vxf = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
+						vxf[ip][is] += vxi[ip][is];
+					});
+			}
 		}
 	}
 
@@ -131,9 +247,10 @@ public:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto edens = basis::field<basis::real_space, double>(density.basis());
+
+		assert(functional.nspin() == density.set_size());
 		
 		if(functional.family() == XC_FAMILY_LDA){
-			
 			xc_lda_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()),
 										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()));
 			gpu::sync();
