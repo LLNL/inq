@@ -10,10 +10,10 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <systems/ions.hpp>
-#include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
-#include <observables/dipole.hpp>
 #include <observables/current.hpp>
+#include <observables/dipole.hpp>
+#include <observables/forces.hpp>
 #include <perturbations/none.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>
@@ -73,7 +73,7 @@ public:
 	}
 
 	auto forces() {
-		if(forces_.size() == 0) forces_ = hamiltonian::calculate_forces(ions_, electrons_, ham_);
+		if(forces_.size() == 0) forces_ = observables::calculate_forces(ions_, electrons_, ham_);
 		return forces_;
 	}
 

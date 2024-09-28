@@ -1,7 +1,7 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__HAMILTONIAN__FORCES
-#define INQ__HAMILTONIAN__FORCES
+#ifndef INQ__OBSERVABLES__FORCES
+#define INQ__OBSERVABLES__FORCES
 
 // Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
@@ -17,7 +17,7 @@
 #include <utils/raw_pointer_cast.hpp>
 
 namespace inq {
-namespace hamiltonian {
+namespace observables {
 
 template <typename LongRangeType, typename ShortRangeType, typename GDensityType>
 struct loc_pot {
@@ -99,8 +99,8 @@ gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, syst
 }
 #endif
 
-#ifdef INQ_HAMILTONIAN_FORCES_UNIT_TEST
-#undef INQ_HAMILTONIAN_FORCES_UNIT_TEST
+#ifdef INQ_OBSERVABLES_FORCES_UNIT_TEST
+#undef INQ_OBSERVABLES_FORCES_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
