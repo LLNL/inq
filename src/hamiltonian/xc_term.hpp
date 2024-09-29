@@ -177,6 +177,79 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template<class CommType, typename CoreDensityType, typename SpinDensityType, class occupations_array_type, class kpin_type>
+	void eval_psi_vxc_psi(CommType & comm, CoreDensityType const & core_density, SpinDensityType const & spin_density, occupations_array_type const & occupations, kpin_type const & kpin, double & nvx, double & ex) {
+
+		if (not any_true_functional()) {
+			nvx += 0.0;
+			ex += 0.0;
+		}
+		else {
+			auto full_density = process_density(spin_density, core_density);
+			double efunc = 0.0;
+			basis::field_set<basis::real_space, double> vxc(spin_density.skeleton());
+			vxc.fill(0.0);
+
+			basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
+			auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
+			if (any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
+
+			for (auto & func : functionals_){
+				if (not func.true_functional()) continue;
+
+				evaluate_functional(func, full_density, density_gradient, efunc, vfunc);
+				compute_vxc(spin_density, vfunc, vxc);
+				ex += efunc;
+			}
+
+			basis::field<basis::real_space, double> rfield(vxc.basis());
+			rfield.fill(0.0);
+			int iphi = 0;
+			for (auto & phi : kpin) {
+				compute_psi_vxc_psi_ofr(occupations[iphi], phi, vxc, rfield);
+				iphi++;
+			}
+
+			rfield.all_reduce(comm);
+			nvx += operations::integral(rfield);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<class occupations_array_type, class field_set_type, typename VxcType>
+	void compute_psi_vxc_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc, basis::field<basis::real_space, double> & rfield) {
+
+		assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+		assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+
+		if (vxc.set_size() == 1) {
+			gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+				[ph = begin(phi.matrix()), rf = begin(rfield.linear()), vx=begin(vxc.matrix()), occ=begin(occupations)] GPU_LAMBDA (auto ist, auto ip) {
+					rf[ip] += occ[ist] * vx[ip][0] * norm(ph[ip][ist]);
+				});
+		}
+		else if (vxc.set_size() == 2) {
+			gpu::run(phi.local_set_size(), phi.basis().local_size(),
+				[ph = begin(phi.matrix()), rf = begin(rfield.linear()), vx = begin(vxc.matrix()), occ = begin(occupations), spi = phi.spin_index()] GPU_LAMBDA (auto ist, auto ip) {
+					rf[ip] += occ[ist] * vx[ip][spi] * norm(ph[ip][ist]);
+				});
+		}
+		else {
+			assert(vxc.set_size() == 4);
+			gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+				[ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), vx = begin(vxc.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip) {
+					auto offdiag = vx[ip][2] + complex{0.0, 1.0}*vx[ip][3];
+					auto cross = 2.0*occ[ist]*real(offdiag*ph[ip][1][ist]*conj(ph[ip][0][ist]));
+					rf[ip] += occ[ist]*vx[ip][0]*norm(ph[ip][0][ist]);
+					rf[ip] += occ[ist]*vx[ip][1]*norm(ph[ip][1][ist]);
+					rf[ip] += cross;
+				});
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename DensityType, typename DensityGradientType>
 	static void evaluate_functional(hamiltonian::xc_functional const & functional, DensityType const & density, DensityGradientType const & density_gradient,
 																	double & efunctional, basis::field_set<basis::real_space, double> & vfunctional){
@@ -416,6 +489,68 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(pbe.any_true_functional() == true);
 
 	}
-	
+
+	SECTION("nvxc calculation unpolarized") {
+		auto par = input::parallelization(comm);
+		auto ions = systems::ions(systems::cell::cubic(10.0_b));
+		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
+		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_unpolarized());
+		ground_state::initial_guess(ions, electrons);
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto nvxc = result.energy.nvxc();
+		auto exc = result.energy.xc();
+		Approx target = Approx(nvxc).epsilon(1.e-10);
+		Approx target2= Approx(exc).epsilon(1.e-10);
+
+		hamiltonian::xc_term xc_(options::theory{}.lda(), electrons.spin_density().set_size());
+		auto core_density_ = electrons.atomic_pot().nlcc_density(electrons.states_comm(), electrons.spin_density().basis(), ions);
+		auto nvxc2 = 0.0;
+		auto exc2 = 0.0;
+		xc_.eval_psi_vxc_psi(electrons.kpin_states_comm(), core_density_, electrons.spin_density(), electrons.occupations(), electrons.kpin(), nvxc2, exc2);
+		CHECK(nvxc2 == target);
+		CHECK(exc2 == target2);
+	}
+
+	SECTION("nvxc calculation spin polarized") {
+		auto par = input::parallelization(comm);
+		auto ions = systems::ions(systems::cell::cubic(10.0_b));
+		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
+		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_polarized());
+		ground_state::initial_guess(ions, electrons);
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto nvxc = result.energy.nvxc();
+		auto exc = result.energy.xc();
+		Approx target = Approx(nvxc).epsilon(1.e-10);
+		Approx target2 = Approx(exc).epsilon(1.e-10);
+
+		hamiltonian::xc_term xc_(options::theory{}.lda(), electrons.spin_density().set_size());
+		auto core_density_ = electrons.atomic_pot().nlcc_density(electrons.states_comm(), electrons.spin_density().basis(), ions);
+		auto nvxc2 = 0.0;
+		auto exc2 = 0.0;
+		xc_.eval_psi_vxc_psi(electrons.kpin_states_comm(), core_density_, electrons.spin_density(), electrons.occupations(), electrons.kpin(), nvxc2, exc2);
+		CHECK(nvxc2 == target);
+		CHECK(exc2 == target2);
+	}
+
+	SECTION("nvxc calculation spin non collinear") {
+		auto par = input::parallelization(comm);
+		auto ions = systems::ions(systems::cell::cubic(10.0_b));
+		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
+		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
+		ground_state::initial_guess(ions, electrons);
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto nvxc = result.energy.nvxc();
+		auto exc = result.energy.xc();
+		Approx target = Approx(nvxc).epsilon(1.e-10);
+		Approx target2 = Approx(exc).epsilon(1.e-10);
+
+		hamiltonian::xc_term xc_(options::theory{}.lda(), electrons.spin_density().set_size());
+		auto core_density_ = electrons.atomic_pot().nlcc_density(electrons.states_comm(), electrons.spin_density().basis(), ions);
+		auto nvxc2 = 0.0;
+		auto exc2 = 0.0;
+		xc_.eval_psi_vxc_psi(electrons.kpin_states_comm(), core_density_, electrons.spin_density(), electrons.occupations(), electrons.kpin(), nvxc2, exc2);
+		CHECK(nvxc2 == target);
+		CHECK(exc2 == target2);
+	}
 }
 #endif
