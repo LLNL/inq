@@ -150,13 +150,14 @@ public:
 								vxf[ip][1] = v;
 							}
 						 });
-			basis::field<basis::real_space, double> rfield(spin_density.basis());
-			rfield.fill(0.0);
-			gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
-						[spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), rf = begin(rfield.linear())] GPU_LAMBDA (auto is, auto ip){
-							rf[ip] += vx[ip][is] * spi[ip][is];
-						});
-			nvxc_ += operations::integral(rfield);
+			//basis::field<basis::real_space, double> rfield(spin_density.basis());
+			//rfield.fill(0.0);
+			//gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
+			//			[spi = begin(spin_density.matrix()), vx = begin(vxc.matrix()), rf = begin(rfield.linear())] GPU_LAMBDA (auto is, auto ip){
+			//				rf[ip] += vx[ip][is] * spi[ip][is];
+			//			});
+			nvxc_ += operations::integral_product_sum(spin_density, vxc);
+			//nvxc_ += operations::integral(rfield);
 		}
 		else {
 			nvxc_ = operations::integral_product_sum(spin_density, vfunc);
