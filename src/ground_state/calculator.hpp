@@ -246,7 +246,7 @@ public:
 		auto normres = res.energy.calculate(ham_, electrons);
 			
 		if(solver_.calc_forces() and electrons.states().spinor_dim() == 1) {
-			res.forces = observables::calculate_forces(ions_, electrons, ham_);
+			res.forces = observables::forces_stress{ions_, electrons, ham_}.forces;
 		}
 
 		if(solver_.calc_forces() and electrons.states().spinor_dim() == 2) {

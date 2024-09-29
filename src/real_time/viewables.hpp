@@ -73,7 +73,7 @@ public:
 	}
 
 	auto forces() {
-		if(forces_.size() == 0) forces_ = observables::calculate_forces(ions_, electrons_, ham_);
+		if(forces_.size() == 0) forces_ = observables::forces_stress{ions_, electrons_, ham_}.forces;
 		return forces_;
 	}
 
