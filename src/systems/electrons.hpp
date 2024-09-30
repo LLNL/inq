@@ -77,8 +77,6 @@ private:
 	basis::field_set<basis::real_space, double> spin_density_;
 	std::shared_ptr<spdlog::logger> logger_;
 	parallel::partition kpin_part_;
-	parallel::arbitrary_partition kpin_states_part_;
-	parallel::arbitrary_partition kpin_spinor_states_part_;
 	
 public:
 	
@@ -180,9 +178,6 @@ public:
 			}
 		}
 
-		kpin_states_part_ = parallel::arbitrary_partition(kpin_part_.local_size()*max_local_set_size_, kpin_states_comm_);
-		kpin_spinor_states_part_ = parallel::arbitrary_partition(kpin_part_.local_size()*max_local_spinor_set_size_, kpin_states_comm_);
-		
 		assert(long(kpin_.size()) == kpin_part_.local_size());
 		assert(max_local_set_size_ > 0);
 		
@@ -405,14 +400,6 @@ public:
 		return kpin_part_;
 	}
 
-	auto & kpin_states_part() const {
-		return kpin_states_part_;
-	}
-
-	auto & kpin_spinor_states_part() const {
-		return kpin_spinor_states_part_;
-	}
-	
 	auto & max_local_set_size() const {
 		return max_local_set_size_;
 	}
@@ -533,12 +520,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(electrons.states().num_electrons() == 38.0_a);
 	CHECK(electrons.states().num_states() == 19);
 
-	CHECK(electrons.kpin_part().local_size()*electrons.max_local_set_size() == electrons.kpin_states_part().local_size());
-	
 	int iphi = 0;
 	for(auto & phi : electrons.kpin()) {
-
-		CHECK(electrons.kpin_part().local_size()*phi.local_set_size() == electrons.kpin_states_part().local_size());
 		
 		for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 			auto istg = phi.set_part().local_to_global(ist);
@@ -616,12 +599,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(electrons.states().num_electrons() == 38.0_a);
 		CHECK(electrons.states().num_states() == 19);
 		
-		CHECK(electrons.kpin_part().local_size()*electrons.max_local_set_size() == electrons.kpin_states_part().local_size());
-		
 		for(auto & phi : electrons.kpin()) {
 			
-			CHECK(electrons.kpin_part().local_size()*phi.local_set_size() == electrons.kpin_states_part().local_size());
-
 			auto kpoint_index = electrons.kpoint_index(phi);
 
 			CHECK(phi.kpoint()[0] == electrons.brillouin_zone().kpoint(kpoint_index)[0]);
