@@ -9,6 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <parallel/arbitrary_partition.hpp>
 #include <parallel/communicator.hpp>
 #include <mpi3/environment.hpp>
 #include <mpi3/detail/datatype.hpp>
@@ -47,6 +48,16 @@ auto gather(ArrayType const & array, PartType const & part, CommType & comm, int
   }
 }
 
+template <class ArrayType, class CommType>
+auto gather(ArrayType const & array, CommType & comm, int root) {
+	if(comm.size() == 1) {
+    return array;
+  } else {
+		auto part = parallel::arbitrary_partition(array.size(), comm);
+		return gather(array, part, comm, root);
+	}
+}
+
 }
 }
 
@@ -73,17 +84,37 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
   gpu::array<double, 1> local_array(part.local_size(), double(comm.rank() + 1.0));
 
-  auto array = gather(local_array, part, comm, comm.size() - 1);
+	SECTION("Gather with partition") {
+	
+		auto array = gather(local_array, part, comm, comm.size() - 1);
+		
+		if(comm.rank() == comm.size() - 1) {
+			int index = 0;
+			for(int ipart = 0; ipart < comm.size(); ipart++){
+				for(int ii = 0; ii < nn*(ipart + 1); ii++){
+					CHECK(array[index] == ipart + 1.0);
+					index++;
+				}
+			}
+		}
 
-  if(comm.rank() == comm.size() - 1){
-    int index = 0;
-    for(int ipart = 0; ipart < comm.size(); ipart++){
-      for(int ii = 0; ii < nn*(ipart + 1); ii++){
-        CHECK(array[index] == ipart + 1.0);
-        index++;
-      }
-    }
-  }
+	}
+
+	SECTION("Gather with partition") {
+	
+		auto array = gather(local_array, comm, 0);
+		
+		if(comm.rank() == 0) {
+			int index = 0;
+			for(int ipart = 0; ipart < comm.size(); ipart++){
+				for(int ii = 0; ii < nn*(ipart + 1); ii++){
+					CHECK(array[index] == ipart + 1.0);
+					index++;
+				}
+			}
+		}
+
+	}
   
 }
 #endif
