@@ -64,7 +64,7 @@ public:
 
 		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
 		if(el.kpin_states_comm().root()){
-			for(auto index : all_kpoint_index) assert(index >= 0 and index < electrons_.brillouin_zone().size());
+			for([[maybe_unused]] auto index : all_kpoint_index) assert(index >= 0 and index < electrons_.brillouin_zone().size());
 		}
 		
 		all_spin_index = parallel::gather(+spin_index.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
