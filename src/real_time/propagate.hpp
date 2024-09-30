@@ -10,9 +10,9 @@
 
 #include <systems/ions.hpp>
 #include <hamiltonian/self_consistency.hpp>
-#include <hamiltonian/forces.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
+#include <observables/forces_stress.hpp>
 #include <options/real_time.hpp>
 #include <perturbations/none.hpp>
 #include <ionic/propagator.hpp>
@@ -72,8 +72,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		energy.calculate(ham, electrons);
 		energy.ion(ionic::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
-		auto forces = decltype(hamiltonian::calculate_forces(ions, electrons, ham)){};
-		if(ion_propagator.needs_force()) forces = hamiltonian::calculate_forces(ions, electrons, ham);
+	auto forces = decltype(observables::forces_stress{ions, electrons, ham}.forces){};
+	if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham}.forces;
 
 		auto current = vector3<double, covariant>{0.0, 0.0, 0.0};
 		if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
@@ -98,8 +98,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			energy.calculate(ham, electrons);
 			
-			if(ion_propagator.needs_force()) forces = hamiltonian::calculate_forces(ions, electrons, ham);
-
+	if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham}.forces;
+	
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);
 

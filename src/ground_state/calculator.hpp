@@ -18,7 +18,6 @@
 #include <hamiltonian/ks_hamiltonian.hpp>
 #include <hamiltonian/self_consistency.hpp>
 #include <hamiltonian/energy.hpp>
-#include <hamiltonian/forces.hpp>
 #include <basis/field_set.hpp>
 #include <operations/randomize.hpp>
 #include <operations/overlap.hpp>
@@ -26,6 +25,7 @@
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
 #include <observables/density.hpp>
+#include <observables/forces_stress.hpp>
 #include <parallel/gather.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/broyden.hpp>
@@ -246,7 +246,7 @@ public:
 		auto normres = res.energy.calculate(ham_, electrons);
 			
 		if(solver_.calc_forces() and electrons.states().spinor_dim() == 1) {
-			res.forces = hamiltonian::calculate_forces(ions_, electrons, ham_);
+			res.forces = observables::forces_stress{ions_, electrons, ham_}.forces;
 		}
 
 		if(solver_.calc_forces() and electrons.states().spinor_dim() == 2) {
