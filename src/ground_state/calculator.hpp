@@ -25,7 +25,7 @@
 #include <operations/preconditioner.hpp>
 #include <operations/integral.hpp>
 #include <observables/density.hpp>
-#include <observables/forces.hpp>
+#include <observables/forces_stress.hpp>
 #include <parallel/gather.hpp>
 #include <mixers/linear.hpp>
 #include <mixers/broyden.hpp>

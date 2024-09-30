@@ -13,7 +13,7 @@
 #include <operations/overlap_diagonal.hpp>
 #include <observables/current.hpp>
 #include <observables/dipole.hpp>
-#include <observables/forces.hpp>
+#include <observables/forces_stress.hpp>
 #include <perturbations/none.hpp>
 #include <systems/electrons.hpp>
 #include <real_time/crank_nicolson.hpp>

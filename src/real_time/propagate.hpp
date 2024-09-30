@@ -12,7 +12,7 @@
 #include <hamiltonian/self_consistency.hpp>
 #include <operations/overlap_diagonal.hpp>
 #include <observables/dipole.hpp>
-#include <observables/forces.hpp>
+#include <observables/forces_stress.hpp>
 #include <options/real_time.hpp>
 #include <perturbations/none.hpp>
 #include <ionic/propagator.hpp>

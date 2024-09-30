@@ -1,9 +1,9 @@
 /* -*- indent-tabs-mode: t -*- */
 
-#ifndef INQ__OBSERVABLES__FORCES
-#define INQ__OBSERVABLES__FORCES
+#ifndef INQ__OBSERVABLES__FORCES_STRESS
+#define INQ__OBSERVABLES__FORCES_STRESS
 
-// Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
+// Copyright (C) 2019-2024 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,16 +39,17 @@ struct forces_stress {
 
 	template <typename HamiltonianType>
 	forces_stress(systems::ions const & ions, systems::electrons const & electrons, HamiltonianType const & ham):
+		forces(ions.size()),
 		stress({3, 3}, 0.0)
 	{
-		forces = calculate_forces(ions, electrons, ham);
+		calculate(ions, electrons, ham);
 	}
 
 private:
 	
 	template <typename HamiltonianType>
-	gpu::array<vector3<double>, 1> calculate_forces(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
-		
+	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
+	
 		CALI_CXX_MARK_FUNCTION;
 		
 		basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
@@ -100,14 +101,12 @@ private:
 			}
 		}
 		
-		gpu::array<vector3<double>, 1> forces(ions.size());
+		
 		for(int iatom = 0; iatom < ions.size(); iatom++){
 			forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
 		}
 		
 		// MISSING: the non-linear core correction term
-		
-		return forces;
 	}
 	
 };
@@ -116,8 +115,8 @@ private:
 }
 #endif
 
-#ifdef INQ_OBSERVABLES_FORCES_UNIT_TEST
-#undef INQ_OBSERVABLES_FORCES_UNIT_TEST
+#ifdef INQ_OBSERVABLES_FORCES_STRESS_UNIT_TEST
+#undef INQ_OBSERVABLES_FORCES_STRESS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
