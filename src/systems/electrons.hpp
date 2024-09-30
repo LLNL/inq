@@ -78,6 +78,7 @@ private:
 	std::shared_ptr<spdlog::logger> logger_;
 	parallel::partition kpin_part_;
 	parallel::arbitrary_partition kpin_states_part_;
+	parallel::arbitrary_partition kpin_spinor_states_part_;
 	
 public:
 	
@@ -180,6 +181,7 @@ public:
 		}
 
 		kpin_states_part_ = parallel::arbitrary_partition(kpin_part_.local_size()*max_local_set_size_, kpin_states_comm_);
+		kpin_spinor_states_part_ = parallel::arbitrary_partition(kpin_part_.local_size()*max_local_spinor_set_size_, kpin_states_comm_);
 		
 		assert(long(kpin_.size()) == kpin_part_.local_size());
 		assert(max_local_set_size_ > 0);
@@ -405,6 +407,10 @@ public:
 
 	auto & kpin_states_part() const {
 		return kpin_states_part_;
+	}
+
+	auto & kpin_spinor_states_part() const {
+		return kpin_spinor_states_part_;
 	}
 	
 	auto & max_local_set_size() const {
