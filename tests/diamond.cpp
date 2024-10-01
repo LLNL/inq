@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
 		energy_match.check("XC density integral", result.energy.nvxc(),           -5.032540803244);
 		energy_match.check("ion-ion energy",      result.energy.ion(),           -10.734724128603);
 
-		auto all_eigenvalues = parallel::gather(+electrons.eigenvalues().flatted(), electrons.kpin_states_part(), electrons.kpin_states_comm(), 0);
+		auto all_eigenvalues = parallel::gather(+electrons.eigenvalues().flatted(), electrons.kpin_states_comm(), 0);
 
 		if(electrons.kpin_states_comm().root()){
 			energy_match.check("gamma homo",          all_eigenvalues[3],  0.303880260047);

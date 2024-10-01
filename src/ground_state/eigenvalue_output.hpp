@@ -62,16 +62,18 @@ public:
 			iphi++;
 		}
 
-		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
+		auto part = parallel::arbitrary_partition(el.kpin_part().local_size()*el.max_local_spinor_set_size(), el.kpin_states_comm());
+		
+		all_kpoint_index = parallel::gather(+kpoint_index.flatted(), part, el.kpin_states_comm(), 0);
 		if(el.kpin_states_comm().root()){
 			for([[maybe_unused]] auto index : all_kpoint_index) assert(index >= 0 and index < electrons_.brillouin_zone().size());
 		}
 		
-		all_spin_index = parallel::gather(+spin_index.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
-		all_states_index = parallel::gather(+state_index.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
-		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
-		all_occupations = parallel::gather(+occs.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
-		all_normres = parallel::gather(+normres.flatted(), el.kpin_spinor_states_part(), el.kpin_states_comm(), 0);
+		all_spin_index = parallel::gather(+spin_index.flatted(), part, el.kpin_states_comm(), 0);
+		all_states_index = parallel::gather(+state_index.flatted(), part, el.kpin_states_comm(), 0);
+		all_eigenvalues = parallel::gather(+el.eigenvalues().flatted(), part, el.kpin_states_comm(), 0);
+		all_occupations = parallel::gather(+occs.flatted(), part, el.kpin_states_comm(), 0);
+		all_normres = parallel::gather(+normres.flatted(), part, el.kpin_states_comm(), 0);
 	}
 
 	static std::string spin_string(int index){
