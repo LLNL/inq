@@ -25,6 +25,7 @@ struct results {
   vector3<double> magnetization;
   energy_type energy;
   forces_type forces;
+	gpu::array<double, 2> stress;
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the ground_state::results to directory '" + dirname + "'.";
