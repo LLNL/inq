@@ -51,12 +51,16 @@ int main(int argc, char** argv){
 	
 	utils::match energy_match(1.0e-5);
 
-    auto const result = total_energy(env, 10.0_b);
+    auto const lat1_in_bohr = 10.0;
+    auto const vol1_in_bohr3 = std::pow(lat1_in_bohr, 3);
 
-    energy_match.check("total energy",        result.energy.total()    , -0.567967321401);
-    energy_match.check("kinetic energy",      result.energy.kinetic()  ,  2.485678165423);
+    auto const result1 = total_energy(env, lat1_in_bohr*1.0_b);
 
-    // energy_match.check("hartree",             result.energy.hartree    ,  0.000000732036);	
-    // energy_match.check("XC energy",           result.energy.xc         , -3.053646218860);
+    energy_match.check("total energy",        result1.energy.total()    , -0.567967321401);
+    energy_match.check("kinetic energy",      result1.energy.kinetic()  ,  2.485678165423);
 
+    auto const lat2_in_bohr = 10.01;
+    auto const vol2_in_bohr3 = std::pow(lat2_in_bohr, 3);
+
+    auto const result2 = total_energy(env, lat2_in_bohr*1.0_b);
 }
