@@ -21,14 +21,13 @@ namespace observables {
 
 struct forces_stress {
 	gpu::array<vector3<double>, 1> forces;
-	gpu::array<double, 2>          stress;
+	vector3<vector3<double>> stress;
 
 	forces_stress() = default;
 
 	template <typename HamiltonianType, typename Energy>
 	forces_stress(systems::ions const & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy):
-		forces(ions.size()),
-		stress({3, 3}, 0.0)
+		forces(ions.size())
 	{
 		calculate(ions, electrons, ham, energy);
 	}
@@ -63,6 +62,13 @@ private:
 		
 		CALI_CXX_MARK_FUNCTION;
 
+		// SET THE STRESS TO ZERO
+		for(auto alpha = 0; alpha < 3; alpha++){
+			for(auto beta = 0; beta < 3; beta++){
+				stress[alpha][beta] = 0.0;
+			}
+		}
+		
 		basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
 		gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 		
@@ -138,7 +144,7 @@ private:
 
 		// THE XC CONTRIBUTION TO THE STRESS
 		for(int alpha = 0; alpha < 3; alpha++) {
-			stress(alpha, alpha) += energy.xc() - energy.nvxc();
+			stress[alpha][alpha] += energy.xc() - energy.nvxc();
 		}
 
 		//missing: the XC gradient term
