@@ -72,8 +72,8 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 		energy.calculate(ham, electrons);
 		energy.ion(ionic::interaction_energy(ions.cell(), ions, electrons.atomic_pot()));
 
-	auto forces = decltype(observables::forces_stress{ions, electrons, ham}.forces){};
-	if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham}.forces;
+	auto forces = decltype(observables::forces_stress{ions, electrons, ham, energy}.forces){};
+	if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham, energy}.forces;
 
 		auto current = vector3<double, covariant>{0.0, 0.0, 0.0};
 		if(sc.has_induced_vector_potential()) current = observables::current(ions, electrons, ham);
@@ -98,7 +98,7 @@ void propagate(systems::ions & ions, systems::electrons & electrons, ProcessFunc
 
 			energy.calculate(ham, electrons);
 			
-	if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham}.forces;
+		if(ion_propagator.needs_force()) forces = observables::forces_stress{ions, electrons, ham, energy}.forces;
 	
 			//propagate ionic velocities to t + dt
 			ion_propagator.propagate_velocities(dt, ions, forces);

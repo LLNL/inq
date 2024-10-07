@@ -25,12 +25,12 @@ struct forces_stress {
 
 	forces_stress() = default;
 
-	template <typename HamiltonianType>
-	forces_stress(systems::ions const & ions, systems::electrons const & electrons, HamiltonianType const & ham):
+	template <typename HamiltonianType, typename Energy>
+	forces_stress(systems::ions const & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy):
 		forces(ions.size()),
 		stress({3, 3}, 0.0)
 	{
-		calculate(ions, electrons, ham);
+		calculate(ions, electrons, ham, energy);
 	}
 
 #ifndef ENABLE_GPU
@@ -54,8 +54,8 @@ private:
 		}
 	}
 	
-	template <typename HamiltonianType>
-	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
+	template <typename HamiltonianType, typename Energy>
+	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy){
 	
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -72,6 +72,7 @@ private:
 			
 			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], ham.uniform_vector_potential(), forces_non_local);
 
+			//STRESS KINETIC
 			auto stress_kinetic = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
 																		 [gph = begin(gphi.matrix()), occ = begin(electrons.occupations()[iphi])] GPU_LAMBDA (auto index, auto ist, auto ip) {
 																			 int alpha, beta;
