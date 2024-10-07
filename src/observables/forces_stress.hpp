@@ -58,7 +58,7 @@ private:
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy){
 	
 		CALI_CXX_MARK_FUNCTION;
-		
+
 		basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
 		gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 		
@@ -130,7 +130,15 @@ private:
 			forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
 		}
 		
-		// MISSING: the non-linear core correction term
+		// MISSING: the non-linear core correction term to the force
+
+		// THE XC CONTRIBUTION TO THE STRESS
+		for(int alpha = 0; alpha < 3; alpha++) {
+			stress(alpha, alpha) += energy.xc() - energy.nvxc();
+		}
+
+		//missing: the XC gradient term
+		
 	}
 	
 };
