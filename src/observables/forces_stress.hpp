@@ -36,6 +36,23 @@ struct forces_stress {
 #ifndef ENABLE_GPU
 private:
 #endif
+
+	GPU_FUNCTION static void stress_component(int const index, int & alpha, int & beta) {
+		alpha = index;
+		beta = index;
+		if(index == 3) {
+			alpha = 0;
+			beta = 1;
+		}
+		if(index == 4) {
+			alpha = 1;
+			beta = 2;
+		}
+		if(index == 5) {
+			alpha = 0;
+			beta = 2;
+		}
+	}
 	
 	template <typename HamiltonianType>
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
@@ -46,7 +63,7 @@ private:
 		gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 		
 		gpu::array<vector3<double>, 1> forces_non_local(ions.size(), {0.0, 0.0, 0.0});
-		
+
 		auto iphi = 0;
 		for(auto & phi : electrons.kpin()){
 			
@@ -54,6 +71,23 @@ private:
 			observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 			
 			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], ham.uniform_vector_potential(), forces_non_local);
+
+			auto stress_kinetic = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
+																		 [gph = begin(gphi.matrix()), occ = begin(electrons.occupations()[iphi])] GPU_LAMBDA (auto index, auto ist, auto ip) {
+																			 int alpha, beta;
+																			 stress_component(index, alpha, beta);
+																			 return occ[ist]*conj(gph[ip][ist][alpha])*gph[ip][ist][beta];
+																		 });
+
+			if(gphi.full_comm().size() > 1){
+				gphi.full_comm().all_reduce_n(raw_pointer_cast(stress_kinetic.data_elements()), 6);;
+			}
+			
+			for(auto index = 0; index < 6; index++) {
+				int alpha, beta;
+				stress_component(index, alpha, beta);
+				stress[alpha][beta] += -2.0/gphi.basis().cell().volume()*real(stress_kinetic[index]);
+			}
 			
 			iphi++;
 		}
