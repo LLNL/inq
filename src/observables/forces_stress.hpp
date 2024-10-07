@@ -91,7 +91,7 @@ private:
 			for(auto index = 0; index < 6; index++) {
 				int alpha, beta;
 				stress_component(index, alpha, beta);
-				stress[alpha][beta] += -2.0/gphi.basis().cell().volume()*real(stress_kinetic[index]);
+				stress[alpha][beta] += -2.0*real(stress_kinetic[index]);
 			}
 			
 			iphi++;
@@ -142,6 +142,22 @@ private:
 		}
 
 		//missing: the XC gradient term
+
+		//MISSING: stress electrostatic term
+		
+		// Divide by the cell volume
+		for(auto alpha = 0; alpha < 3; alpha++){
+			for(auto beta = 0; beta < 3; beta++){
+				stress[alpha][beta] /= electrons.density_basis().cell().volume();
+			}
+		}
+
+		//symmetrize
+		for(auto alpha = 0; alpha < 3; alpha++){
+			for(auto beta = alpha + 1; beta < 3; beta++){
+				stress[alpha][beta] = stress[beta][alpha];
+			}
+		}
 		
 	}
 	
