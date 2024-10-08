@@ -51,6 +51,7 @@
 namespace inq {
 namespace ground_state {
 
+template <typename Perturbation = perturbations::none>
 class calculator {
 
 public:
@@ -60,7 +61,7 @@ private:
 	systems::ions const & ions_;
 	options::theory inter_;
 	options::ground_state solver_;
-	hamiltonian::self_consistency<> sc_;
+	hamiltonian::self_consistency<Perturbation> sc_;
 	hamiltonian::ks_hamiltonian<double> ham_;
 
 #ifdef ENABLE_CUDA
@@ -98,11 +99,11 @@ public:
 
 public:
 
-	calculator(systems::ions const & ions, systems::electrons const & electrons, const options::theory & inter = {}, options::ground_state const & solver = {})
+	calculator(systems::ions const & ions, systems::electrons const & electrons, const options::theory & inter = {}, options::ground_state const & solver = {}, Perturbation const & pert = {})
 		:ions_(ions),
 		 inter_(inter),
 		 solver_(solver),
-		 sc_(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components()),
+		 sc_(inter, electrons.states_basis(), electrons.density_basis(), electrons.states().num_density_components(), pert),
 		 ham_(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions_, sc_.exx_coefficient(), /* use_ace = */ true)
 	{
 	}
