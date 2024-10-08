@@ -84,10 +84,11 @@ private:
 
 			//STRESS KINETIC
 			auto stress_kinetic = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
-																		 [gph = begin(gphi.matrix()), occ = begin(electrons.occupations()[iphi])] GPU_LAMBDA (auto index, auto ist, auto ip) {
+																		 [metric = ions.cell().metric(), gph = begin(gphi.matrix()), occ = begin(electrons.occupations()[iphi])] GPU_LAMBDA (auto index, auto ist, auto ip) {
 																			 int alpha, beta;
 																			 stress_component(index, alpha, beta);
-																			 return occ[ist]*conj(gph[ip][ist][alpha])*gph[ip][ist][beta];
+																			 auto grad_cart = metric.to_cartesian(gph[ip][ist]);
+																			 return occ[ist]*conj(grad_cart[alpha])*grad_cart[beta];
 																		 });
 
 			if(gphi.full_comm().size() > 1){
