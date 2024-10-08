@@ -65,7 +65,17 @@ public:
 		perta_.potential(time, potential);
 		pertb_.potential(time, potential);
 	}
+	
+	auto has_magnetic_field() const {
+		return perta_.has_magnetic_field() or pertb_.has_magnetic_field();
+	}
 
+	template<typename MagneticField>
+	void magnetic_field(const double time, MagneticField & magnetic) const {
+		perta_.magnetic_field(time, magnetic);
+		pertb_.magnetic_field(time, magnetic);
+	}
+	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, sum const & self){
 		out << self.perta_;

@@ -47,7 +47,7 @@ public:
 	void potential(const double time, PotentialType & potential) const {
 	}
 
-	bool has_magnetic_field() const {
+	auto has_magnetic_field() const {
 		return false;
 	}
 
