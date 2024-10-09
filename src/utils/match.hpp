@@ -29,17 +29,19 @@ namespace utils {
 		}
 
     template <class Type>
-    auto check(const std::string & match_name, const Type & value, const Type & reference){
+    auto check(const std::string & match_name, const Type & value, const Type & reference, double tol = 0.0){
 
+			if(tol == 0.0) tol = tol_;
+			
       auto diff = fabs(reference - value);
       
-      if(diff > tol_){
+      if(diff > tol){
 				
         tfm::format(std::cout, "\nMatch '%s': FAILED\n", match_name);
         tfm::format(std::cout, "  calculated value = %.12f\n", value);
         tfm::format(std::cout, "  reference value  = %.12f\n", reference);
         tfm::format(std::cout, "  difference       = %.1e\n", diff);
-				tfm::format(std::cout, "  tolerance        = %.1e\n\n", tol_);
+				tfm::format(std::cout, "  tolerance        = %.1e\n\n", tol);
         ok_ = false;
         return false;
       } else {

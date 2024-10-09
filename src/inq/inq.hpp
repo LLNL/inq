@@ -19,6 +19,7 @@
 #include <perturbations/kick.hpp>
 #include <perturbations/laser.hpp>
 #include <perturbations/ramplaser.hpp>
+#include <perturbations/simple_electric_field.hpp>
 #include <perturbations/sum.hpp>
 #include <observables/kinetic_energy_density.hpp>
 #include <observables/magnetization.hpp>
