@@ -124,6 +124,21 @@ public:
 		}
 	}
 
+	auto has_magnetic_field() const {
+		for(auto & pert : perts_){
+			auto has = std::visit([&](auto per) { return per.has_magnetic_field(); }, pert);
+			if(has) return true;
+		}
+		return false;
+	}
+	
+	template<typename MagneticField>
+	void magnetic_field(double const time, MagneticField & magnetic) const {
+		for(auto & pert : perts_){
+			std::visit([&](auto per) { per.magnetic_field(time, magnetic); }, pert);
+		}
+	}
+
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the perturbations::blend to directory '" + dirname + "'.";
 

@@ -158,6 +158,9 @@ public:
 		if(has_induced_vector_potential()){
 			hamiltonian.uniform_vector_potential_ += induced_vector_potential_;
 		}
+
+		//the magnetic perturbation is not implemented yet
+		assert(not pert_.has_magnetic_field());
 		
 	}
 

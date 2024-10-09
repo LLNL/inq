@@ -47,6 +47,14 @@ public:
 	void potential(const double time, PotentialType & potential) const {
 	}
 
+	auto has_magnetic_field() const {
+		return false;
+	}
+
+	template<typename MagneticField>
+	void magnetic_field(const double time, MagneticField & magnetic) const {
+	}
+	
 	template<class OStream>
 	friend OStream & operator<<(OStream & out, none const & self){
 		return out;
