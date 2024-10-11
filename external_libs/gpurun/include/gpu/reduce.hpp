@@ -171,7 +171,10 @@ auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> declty
 	
 	gpu::array<type, 2> result({nblockx, nblocky});
 
-  reduce_kernel_rr<<<{nblockx, nblocky}, {bsizex, bsizey}, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
+	struct dim3 dg{nblockx, nblocky};
+	struct dim3 db{bsizex, bsizey};
+
+	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));
   check_error(last_error());
 	
   if(nblockx*nblocky == 1) {
@@ -256,7 +259,10 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 
 	gpu::array<type, 3> result({nblockx, nblocky, nblockz});
 
-	reduce_kernel_rrr<<<{nblockx, nblocky, nblockz}, {bsizex, bsizey, bsizez}, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
+	struct dim3 dg{nblockx, nblocky, nblockz};
+	struct dim3 db{bsizex, bsizey, bsizez};
+
+	reduce_kernel_rrr<<<dg, db, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
 	check_error(last_error());
 
   if(nblockx*nblocky*nblockz == 1) {
