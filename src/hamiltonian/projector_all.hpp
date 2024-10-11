@@ -306,10 +306,11 @@ public:
 #endif
 
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_),
-											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations)]
+											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size()]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+												 auto ist_spinor = ist%spinor_size;
 												 auto pp = proj[iproj][ilm][ist];
-												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist];
+												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
 											 });
 		
 		if(phi.basis().comm().size() > 1) {
