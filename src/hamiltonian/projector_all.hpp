@@ -244,6 +244,85 @@ public:
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename KpointType, typename Occupations>
+	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations) const {
+    
+		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
+
+		{ CALI_CXX_MARK_SCOPE("projector::gather");
+				
+			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
+							 [sgr = begin(sphere_phi_all), gr = begin(phi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint] GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
+								 if(poi[iproj][ipoint][0] >= 0){
+									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
+									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
+								 } else {
+									 sgr[iproj][ipoint][ist] = complex(0.0, 0.0);
+								 }
+							 });
+		}
+
+#ifndef ENABLE_CUDA
+		for(auto iproj = 0; iproj < nprojs_; iproj++){
+			CALI_CXX_MARK_SCOPE("projector_gemm_1");
+
+			if(locally_empty_[iproj]) continue;
+			
+			namespace blas = boost::multi::blas;
+			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
+		}
+#else
+		if(max_sphere_size_ > 0) {
+			CALI_CXX_MARK_SCOPE("projector_gemm_1");			
+
+			const double zero = 0.0;
+			const double vol = phi.basis().volume_element();
+
+			auto status = cublasDgemmStridedBatched(/*cublasHandle_t handle = */ boost::multi::cuda::cublas::context::get_instance().get(),
+																							/*cublasOperation_t transa = */ CUBLAS_OP_N,
+																							/*cublasOperation_t transb = */ CUBLAS_OP_N,
+																							/*int m = */ 2*phi.local_set_size(),
+																							/*int n = */ max_nlm_,
+																							/*int k = */ max_sphere_size_,
+																							/*const double *alpha = */ &vol,
+																							/*const double *A = */ reinterpret_cast<double const *>(raw_pointer_cast(sphere_phi_all.data_elements())),
+																							/*int lda = */ 2*phi.local_set_size(),
+																							/*long long int strideA = */ 2*max_sphere_size_*phi.local_set_size(),
+																							/*const double *B = */ raw_pointer_cast(matrices_.data_elements()),
+																							/*int ldb = */ max_sphere_size_,
+																							/*long long int strideB =*/ max_nlm_*max_sphere_size_,
+																							/*const double *beta = */ &zero,
+																							/*double *C = */ reinterpret_cast<double *>(raw_pointer_cast(projections_all.data_elements())),
+																							/*int ldc = */ 2*phi.local_set_size(),
+																							/*long long int strideC = */ 2*max_nlm_*phi.local_set_size(),
+																							/*int batchCount = */ nprojs_);
+			gpu::sync();
+			
+			assert(status == CUBLAS_STATUS_SUCCESS);
+			
+		}
+#endif
+
+		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_),
+											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations)]
+											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+												 auto pp = proj[iproj][ilm][ist];
+												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist];
+											 });
+		
+		if(phi.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
+			phi.basis().comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
+		}
+
+		return en;
+			
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	
 	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType>
 	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric,

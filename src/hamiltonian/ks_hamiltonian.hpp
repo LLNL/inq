@@ -157,8 +157,12 @@ public:
 
 		CALI_CXX_MARK_FUNCTION;
 
-		auto nl_me = operations::overlap_diagonal_normalized(non_local(phi), phi);
-		return occ_sum(occupations, nl_me);
+		if(non_local_in_fourier_) {
+			auto nl_me = operations::overlap_diagonal_normalized(non_local(phi), phi);
+			return occ_sum(occupations, nl_me);
+		} else {
+			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations);
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
