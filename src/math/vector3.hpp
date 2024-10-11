@@ -345,6 +345,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		vector3<int> vv; (void)vv;
 	}
 
+	SECTION("Zero by default constructor"){
+		vector3<int> vv{};
+		
+		CHECK(vv[0] == 0.0);
+		CHECK(vv[1] == 0.0);
+		CHECK(vv[2] == 0.0);
+	}
+
 	SECTION("Scalar"){
 		vector3<double> vv(-45.677);
 		

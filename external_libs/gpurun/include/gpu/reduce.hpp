@@ -12,6 +12,7 @@
 #include <inq_config.h>
 
 #include <cassert>
+#include <numeric>
 
 #include <gpu/run.hpp>
 #include <gpu/array.hpp>
@@ -80,15 +81,10 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 	auto const size = red.size;
 	
   using type = decltype(kernel(0));
-  
+
 #ifndef ENABLE_GPU
-
-  type accumulator(0.0);
-  for(long ii = 0; ii < size; ii++){
-    accumulator += kernel(ii);
-  }
-  return accumulator;
-
+	auto range = boost::multi::extension_t{0l, size};
+	return std::transform_reduce(range.begin(), range.end(), type{}, std::plus<>{}, kernel);
 #else
 
 	const int blocksize = 1024;
@@ -144,7 +140,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, kernel_type kernel, arr
 #endif
 
 template <class kernel_type>
-auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> decltype(kernel(0, 0)) {
+auto run(gpu::reduce const & redx, gpu::reduce const & redy, kernel_type kernel) -> decltype(kernel(0, 0)) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;	
