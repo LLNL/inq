@@ -78,12 +78,8 @@ public:
 					eigenvalues_ += occ_sum(el.occupations()[iphi], el.eigenvalues()[iphi]);
 				}
 
-				{
-					CALI_CXX_MARK_SCOPE("energy::calculate::non_local");
-					auto nl_me = operations::overlap_diagonal_normalized(ham.non_local(phi), phi);
-					non_local_ += occ_sum(el.occupations()[iphi], nl_me);
-				}
-
+				non_local_ += ham.non_local_energy(phi, el.occupations()[iphi]);
+				
 				if(ham.exchange().enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
 					auto exchange_me = operations::overlap_diagonal_normalized(ham.exchange()(phi), phi);
