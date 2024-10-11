@@ -116,12 +116,12 @@ public:
 					
 		} else {
 				
-			auto proj = projectors_all_.project(phi, phi.kpoint());
+			auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_);
 				
 			states::orbital_set<basis::real_space, complex> vnlphi(phi.skeleton());
 			vnlphi.fill(0.0);
 
-			projectors_all_.apply(proj, vnlphi, phi.kpoint());
+			projectors_all_.apply(proj, vnlphi, phi.kpoint() + uniform_vector_potential_);
 			
 			return vnlphi;
 		}
