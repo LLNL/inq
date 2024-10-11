@@ -12,7 +12,13 @@
 #include <inq_config.h>
 
 #include <cassert>
+
+#ifndef ENABLE_GPU
 #include <numeric>
+#else
+#include <thrust/execution_policy.h>
+#include <thrust/transform_reduce.h>
+#endif
 
 #include <gpu/run.hpp>
 #include <gpu/array.hpp>
@@ -26,40 +32,6 @@ struct reduce {
 	}
 	long size;
 };
-
-
-#ifdef ENABLE_GPU
-template <class kernel_type, class array_type>
-__global__ void reduce_kernel_r(long size, kernel_type kernel, array_type odata) {
-
-	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem;
-	
-	// each thread loads one element from global to shared mem
-	unsigned int tid = threadIdx.x;
-	unsigned int ii = blockIdx.x*blockDim.x + threadIdx.x;
-
-	if(ii < size){
-		reduction_buffer[tid] = kernel(ii);
-	} else {
-		reduction_buffer[tid] = (typename array_type::element) 0.0;
-	}
-
-	__syncthreads();
-
-	// do reduction in shared mem
-	for (unsigned int s = blockDim.x/2; s > 0; s >>= 1){
-		if (tid < s) {
-			reduction_buffer[tid] += reduction_buffer[tid + s];
-		}
-		__syncthreads();
-	}
-	
-	// write result for this block to global mem
-	if (tid == 0) odata[blockIdx.x] = reduction_buffer[0];
-
-}
-#endif
 
 template <typename array_type>
 struct array_access {
@@ -81,27 +53,12 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 	auto const size = red.size;
 	
   using type = decltype(kernel(0));
+	auto range = boost::multi::extension_t{0l, size};
 
 #ifndef ENABLE_GPU
-	auto range = boost::multi::extension_t{0l, size};
 	return std::transform_reduce(range.begin(), range.end(), type{}, std::plus<>{}, kernel);
 #else
-
-	const int blocksize = 1024;
-
-	unsigned nblock = (size + blocksize - 1)/blocksize;
-	gpu::array<type, 1> result(nblock);
-
-  reduce_kernel_r<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
-  check_error(last_error());
-	
-  if(nblock == 1) {
-    gpu::sync();
-    return result[0];
-  } else {
-    return run(gpu::reduce(nblock), array_access<decltype(begin(result))>{begin(result)});
-  }
-  
+	return thrust::transform_reduce(thrust::device, range.begin(), range.end(), kernel, type{}, std::plus<>{});
 #endif
 }
 
