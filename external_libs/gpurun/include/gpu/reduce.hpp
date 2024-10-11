@@ -97,10 +97,10 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 	gpu::array<type, 1> result(nblock);
 
   reduce_kernel_r<<<nblock, blocksize, blocksize*sizeof(type)>>>(size, kernel, begin(result));	
-  check_error(cudaGetLastError());
+  check_error(last_error());
 	
   if(nblock == 1) {
-    cudaDeviceSynchronize();
+    gpu::sync();
     return result[0];
   } else {
     return run(gpu::reduce(nblock), array_access<decltype(begin(result))>{begin(result)});
@@ -172,10 +172,10 @@ auto run(reduce const & redx, reduce const & redy, kernel_type kernel) -> declty
 	gpu::array<type, 2> result({nblockx, nblocky});
 
   reduce_kernel_rr<<<{nblockx, nblocky}, {bsizex, bsizey}, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));	
-  check_error(cudaGetLastError());
+  check_error(last_error());
 	
   if(nblockx*nblocky == 1) {
-    cudaDeviceSynchronize();
+    gpu::sync();
     return result[0][0];
   } else {
     return run(gpu::reduce(nblockx*nblocky), array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
@@ -244,9 +244,8 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	
 #else
 
-	int mingridsize, blocksize;
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<gpu::array<type, 3>&>()))>));
-
+	auto blocksize = max_blocksize(reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<gpu::array<type, 3>&>()))>);
+	
 	const unsigned bsizex = blocksize;
 	const unsigned bsizey = 1;
 	const unsigned bsizez = 1;
@@ -258,10 +257,10 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	gpu::array<type, 3> result({nblockx, nblocky, nblockz});
 
 	reduce_kernel_rrr<<<{nblockx, nblocky, nblockz}, {bsizex, bsizey, bsizez}, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
-	check_error(cudaGetLastError());
+	check_error(last_error());
 
   if(nblockx*nblocky*nblockz == 1) {
-    cudaDeviceSynchronize();
+    gpu::sync();
     return initial_value + result[0][0][0];
   } else {
     return run(gpu::reduce(nblockx*nblocky*nblockz), array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
@@ -330,10 +329,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> gpu::array<decl
 
 	gpu::array<type, 2> result;
 	
-	int mingridsize = 0;
-	int blocksize = 0;
-
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_vr<kernel_type, decltype(begin(result))>));
+	auto blocksize = max_blocksize(reduce_kernel_vr<kernel_type, decltype(begin(result))>);
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -354,10 +350,10 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> gpu::array<decl
   assert(shared_mem_size <= 48*1024);
   
   reduce_kernel_vr<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));	
-  check_error(cudaGetLastError());
+  check_error(last_error());
 	
   if(nblocky == 1) {
-    cudaDeviceSynchronize();
+    gpu::sync();
 
 		assert(result[0].size() == sizex);
 		
@@ -432,10 +428,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
 	gpu::array<type, 3> result;
 	
-	int mingridsize = 0;
-	int blocksize = 0;
-
-	check_error(cudaOccupancyMaxPotentialBlockSize(&mingridsize, &blocksize, reduce_kernel_vrr<kernel_type, decltype(begin(result))>));
+	auto blocksize = max_blocksize(reduce_kernel_vrr<kernel_type, decltype(begin(result))>);
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -459,10 +452,10 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
   assert(shared_mem_size <= 48*1024);
   
   reduce_kernel_vrr<<<dg, db, shared_mem_size>>>(sizex, sizey, sizez, kernel, begin(result));	
-  check_error(cudaGetLastError());
+  check_error(last_error());
 	
   if(nblocky*nblockz == 1) {
-    cudaDeviceSynchronize();
+    gpu::sync();
 
 		assert(result[0][0].size() == sizex);
 		
