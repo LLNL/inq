@@ -496,7 +496,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
 		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_unpolarized());
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000));
 		auto nvxc = result.energy.nvxc();
 		auto exc = result.energy.xc();
 		Approx target = Approx(nvxc).epsilon(1.e-10);
@@ -517,7 +517,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
 		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_polarized());
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000));
 		auto nvxc = result.energy.nvxc();
 		auto exc = result.energy.xc();
 		Approx target = Approx(nvxc).epsilon(1.e-10);
@@ -538,7 +538,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
 		auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
 		ground_state::initial_guess(ions, electrons);
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(100));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000));
 		auto nvxc = result.energy.nvxc();
 		auto exc = result.energy.xc();
 		Approx target = Approx(nvxc).epsilon(1.e-10);
