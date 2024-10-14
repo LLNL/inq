@@ -52,6 +52,32 @@ private:
 			beta = 2;
 		}
 	}
+
+	template <typename Density>
+	auto stress_electrostatic(Density const & density) {
+
+		auto potential = solvers::poisson::solve(density);
+		auto efield = operations::gradient(potential);
+
+		auto stress1d = gpu::run(6, gpu::reduce(efield.basis().local_size()),
+														 [metric = efield.basis().cell().metric(), ef = begin(efield.linear())] GPU_LAMBDA (auto index, auto ip) {
+															 int alpha, beta;
+															 stress_component(index, alpha, beta);
+															 auto ef_cart = metric.to_cartesian(ef[ip]);
+															 return ef_cart[alpha]*ef_cart[beta];
+														 });
+
+		vector3<vector3<double>> stress;
+
+		for(auto index = 0; index < 6; index++) {
+			int alpha, beta;
+			stress_component(index, alpha, beta);
+			stress[alpha][beta] = stress1d[index]/(4.0*M_PI);
+			if(beta /= alpha) stress[beta][alpha] = stress1d[index]/(4.0*M_PI);
+		}
+
+		return stress;
+	}
 	
 	template <typename HamiltonianType, typename Energy>
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy){
@@ -150,7 +176,7 @@ private:
 
 		//missing: the XC gradient term
 
-		//MISSING: stress electrostatic term
+		stress += stress_electrostatic(electrons.density());
 		
 		// Divide by the cell volume
 		for(auto alpha = 0; alpha < 3; alpha++){
