@@ -153,16 +153,21 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename Occupations>
-	auto non_local_energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations) const {
+	auto non_local_energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations, bool const reduce_states = true) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
 		if(non_local_in_fourier_) {
+			
 			auto nl_me = operations::overlap_diagonal_normalized(non_local(phi), phi);
-			return occ_sum(occupations, nl_me);
+			auto en = occ_sum(occupations, nl_me);
+			if(reduce_states and phi.set_comm().size() > 1) phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
+			return en;
+
 		} else {
-			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations);
+			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
 		}
+		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

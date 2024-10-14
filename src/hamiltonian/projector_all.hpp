@@ -263,7 +263,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename KpointType, typename Occupations>
-	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations) const {
+	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations, bool const reduce_states = true) const {
     
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
@@ -323,7 +323,7 @@ public:
 #endif
 
 		if(phi.basis().comm().size() > 1) {
-			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
+			CALI_CXX_MARK_SCOPE("projector_all::energy::reduce_basis");
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 		
@@ -331,8 +331,8 @@ public:
 											 energy_reduction<decltype(begin(projections_all)), decltype(begin(coeff_)), decltype(begin(occupations))>
 											 {begin(projections_all), begin(coeff_), begin(occupations), phi.local_spinor_set_size()});
 		
-		if(phi.set_comm().size() > 1) {
-			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
+		if(reduce_states and phi.set_comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector_all::energy::reduce_states");
 			phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
 		}
 

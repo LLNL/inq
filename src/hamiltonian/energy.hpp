@@ -78,7 +78,7 @@ public:
 					eigenvalues_ += occ_sum(el.occupations()[iphi], el.eigenvalues()[iphi]);
 				}
 
-				non_local_ += ham.non_local_energy(phi, el.occupations()[iphi]);
+				non_local_ += ham.non_local_energy(phi, el.occupations()[iphi], /*reduce_states = */ false);
 				
 				if(ham.exchange().enabled()){
 					CALI_CXX_MARK_SCOPE("energy::calculate::exchange");
