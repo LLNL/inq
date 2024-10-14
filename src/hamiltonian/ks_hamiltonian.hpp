@@ -49,7 +49,30 @@ private:
 	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
 	states::ks_states states_;
-	
+
+#ifdef ENABLE_CUDA
+public:
+#endif
+		
+		template <typename OccType, typename ArrayType>
+		struct occ_sum_func {
+			OccType   occ;
+			ArrayType arr;
+
+			GPU_FUNCTION double operator()(long ip) const {
+				return occ[ip]*real(arr[ip]);
+			}
+		};
+		
+		template <typename OccType, typename ArrayType>
+		static double occ_sum(OccType const & occupations, ArrayType const & array) {
+			CALI_CXX_MARK_FUNCTION;
+			
+			assert(occupations.size() == array.size());
+			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
+			return gpu::run(gpu::reduce(array.size()), func);
+		}
+
 public:
 	
 	void update_projectors(const basis::real_space & basis, const atomic_potential & pot, systems::ions const & ions){
@@ -98,7 +121,7 @@ public:
 			it->second(phi, vnlphi);
 		}
 	}
-		
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 		
 	auto non_local(const states::orbital_set<basis::real_space, complex> & phi) const {
@@ -127,6 +150,26 @@ public:
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename Occupations>
+	auto non_local_energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations, bool const reduce_states = true) const {
+
+		CALI_CXX_MARK_FUNCTION;
+
+		if(non_local_in_fourier_) {
+			
+			auto nl_me = operations::overlap_diagonal_normalized(non_local(phi), phi);
+			auto en = occ_sum(occupations, nl_me);
+			if(reduce_states and phi.set_comm().size() > 1) phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
+			return en;
+
+		} else {
+			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
+		}
+		
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	auto operator()(const states::orbital_set<basis::real_space, complex> & phi) const {
