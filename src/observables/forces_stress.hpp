@@ -81,11 +81,9 @@ private:
 		
 		{ CALI_CXX_MARK_SCOPE("forces_local");
 			
-			solvers::poisson poisson_solver;
-			
 			//the force from the local potential
 			for(int iatom = 0; iatom < ions.size(); iatom++){
-				auto ionic_long_range = poisson_solver(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions, iatom));
+				auto ionic_long_range = solvers::poisson::solve(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions, iatom));
 				auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions, iatom);
 				
 				auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()),
