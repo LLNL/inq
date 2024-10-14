@@ -16,6 +16,7 @@
 #include <operations/integral.hpp>
 #include <hamiltonian/xc_term.hpp>
 #include <hamiltonian/atomic_potential.hpp>
+#include <hamiltonian/zeeman_coupling.hpp>
 #include <options/theory.hpp>
 #include <perturbations/none.hpp>
 #include <solvers/velocity_verlet.hpp>
@@ -155,8 +156,12 @@ public:
 			hamiltonian.uniform_vector_potential_ += induced_vector_potential_;
 		}
 
-		//the magnetic perturbation is not implemented yet
-		assert(not pert_.has_magnetic_field());
+		// THE MAGNETIC FIELD
+		
+		if (pert_.has_magnetic_field()) {
+			std::cout << "MAGNETIC FIELD ACTIVE" << std::endl;
+			zeeman_coupling zc_(spin_density.set_size(), pert_.uniform_magnetic_field(time));
+		}
 		
 	}
 
