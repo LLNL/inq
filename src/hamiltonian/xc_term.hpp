@@ -102,8 +102,16 @@ public:
 
 	template <typename SpinDensityType, typename VXC>
 	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vxc) const {
-
+		
 		auto nvxc_ = 0.0;
+		if (spin_density.set_size() == 4) {
+			gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
+					[v = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
+						if (is >= 2){
+							v[ip][is] = 2.0*v[ip][is];
+						}
+					});
+		}
 		nvxc_ += operations::integral_product_sum(spin_density, vxc);
 		return nvxc_;
 	}
