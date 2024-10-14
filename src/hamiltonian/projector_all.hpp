@@ -322,13 +322,18 @@ public:
 		}
 #endif
 
+		if(phi.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
+		}
+		
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_),
 											 energy_reduction<decltype(begin(projections_all)), decltype(begin(coeff_)), decltype(begin(occupations))>
 											 {begin(projections_all), begin(coeff_), begin(occupations), phi.local_spinor_set_size()});
 		
-		if(phi.basis().comm().size() > 1) {
+		if(phi.set_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
-			phi.basis().comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
+			phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
 		}
 
 		return en;
