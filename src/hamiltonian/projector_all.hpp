@@ -245,6 +245,23 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template <typename Projections, typename Coeff, typename Occupations>
+	struct energy_reduction {
+		Projections proj;
+		Coeff coe;
+		Occupations occ;
+		long spinor_size;
+
+		GPU_FUNCTION auto operator()(long ist, long ilm, long iproj) const {
+			auto ist_spinor = ist%spinor_size;
+			auto pp = proj[iproj][ilm][ist];
+			return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
+		}
+		
+	};
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename KpointType, typename Occupations>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations) const {
     
@@ -306,12 +323,8 @@ public:
 #endif
 
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_),
-											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size()]
-											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-												 auto ist_spinor = ist%spinor_size;
-												 auto pp = proj[iproj][ilm][ist];
-												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
-											 });
+											 energy_reduction<decltype(begin(projections_all)), decltype(begin(coeff_)), decltype(begin(occupations))>
+											 {begin(projections_all), begin(coeff_), begin(occupations), phi.local_spinor_set_size()});
 		
 		if(phi.basis().comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
