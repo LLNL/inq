@@ -136,10 +136,8 @@ public:
 			electrons_.emplace(systems::electrons(ions, els_));
 			ground_state::initial_guess(ions, *electrons_);
 		}
-
-		solvers::poisson poisson_solver;
-		
-		auto ionic_long_range = poisson_solver(electrons_->atomic_pot().ionic_density(electrons_->kpin_states_comm(), electrons_->density_basis(), ions));
+	
+		auto ionic_long_range = solvers::poisson::solve(electrons_->atomic_pot().ionic_density(electrons_->kpin_states_comm(), electrons_->density_basis(), ions));
 		auto ionic_short_range = electrons_->atomic_pot().local_potential(electrons_->kpin_states_comm(), electrons_->density_basis(), ions);
 		auto vion = operations::add(ionic_long_range, ionic_short_range);
 		

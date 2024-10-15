@@ -34,7 +34,6 @@ namespace hamiltonian {
 		gpu::array<int, 1> kpoint_indices_;
 		std::optional<basis::field_set<basis::real_space, complex, parallel::arbitrary_partition>> orbitals_;
 		std::vector<states::orbital_set<basis::real_space, complex>> ace_orbitals_;
-		solvers::poisson poisson_solver_;
 		double exchange_coefficient_;
 		bool use_ace_;
 		singularity_correction sing_;
@@ -142,7 +141,7 @@ namespace hamiltonian {
 									 });
 				}
 
-				poisson_solver_.in_place(rhoij, -phi.kpoint() + kpt[jj], sing_(idx[jj]));
+				solvers::poisson::in_place(rhoij, -phi.kpoint() + kpt[jj], sing_(idx[jj]));
 				
 				{ CALI_CXX_MARK_SCOPE("exchange_operator::mulitplication");
 					gpu::run(nst, exxphi.basis().local_size(),

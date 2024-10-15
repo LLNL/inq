@@ -74,9 +74,7 @@ public:
 		
 		CALI_CXX_MARK_FUNCTION;
 		
-		solvers::poisson poisson_solver;
-		
-		auto ionic_long_range = poisson_solver(atomic_pot.ionic_density(comm, density_basis_, ions));
+		auto ionic_long_range = solvers::poisson::solve(atomic_pot.ionic_density(comm, density_basis_, ions));
 		auto ionic_short_range = atomic_pot.local_potential(comm, density_basis_, ions);
 		vion_ = operations::add(ionic_long_range, ionic_short_range);
 		
@@ -97,8 +95,6 @@ public:
 			
 		energy.external(operations::integral_product(total_density, vion_));
 
-		solvers::poisson poisson_solver;
-
 		//IONIC POTENTIAL
 		auto vscalar = vion_;
 
@@ -117,7 +113,7 @@ public:
 		
 		// Hartree
 		if(theory_.hartree_potential()){
-			auto vhartree = poisson_solver(total_density);
+			auto vhartree = solvers::poisson::solve(total_density);
 			energy.hartree(0.5*operations::integral_product(total_density, vhartree));
 			operations::increment(vscalar, vhartree);
 		} else {
