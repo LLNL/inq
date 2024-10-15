@@ -20,7 +20,7 @@
 namespace inq {
 
 template <typename Type>
-GPU_FUNCTION auto zero(){
+GPU_FUNCTION constexpr auto zero(){
   return Type{};
 }
 
