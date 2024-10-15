@@ -77,7 +77,7 @@ namespace basis {
 			linear_ = parallel::get_remote_points(old, rem_points);
 		}
 		
-		explicit field(const field & coeff) = default; 		//avoid unadverted copies
+		explicit field(const field & coeff) = default;      //avoid unadverted copies
 		field(field && coeff) = default;
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
@@ -134,7 +134,7 @@ namespace basis {
 		// emulate a field_set
 
 		auto hypercubic() const {
-			return cubic().template reinterpret_array_cast<Type const>(1);
+			return cubic().template reinterpret_array_cast<Type>(1);
 		}
 		
 		auto hypercubic() {
@@ -193,7 +193,7 @@ namespace basis {
 
 
 field<basis::real_space, complex> complex_field(field<basis::real_space, double> const & rfield) {
-	field<basis::real_space, complex> cfield(rfield.skeleton());		
+	field<basis::real_space, complex> cfield(rfield.skeleton());        
 
 	gpu::run(rfield.basis().part().local_size(),
 					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto ip){
@@ -216,14 +216,14 @@ field<basis::real_space, vector3<inq::complex, VectorSpace>> complex_field(field
 }
 
 field<basis::real_space, double> real_field(field<basis::real_space, complex> const & cfield) {
-	field<basis::real_space, double> rfield(cfield.skeleton());		
+	field<basis::real_space, double> rfield(cfield.skeleton());     
 	rfield.linear() = boost::multi::blas::real(cfield.linear());
 	return rfield;
 }
 
 template <class VectorSpace>
 field<basis::real_space, vector3<double, VectorSpace>> real_field(field<basis::real_space, vector3<complex, VectorSpace>> const & cfield) {
-	field<basis::real_space, vector3<double, VectorSpace>> rfield(cfield.skeleton());		
+	field<basis::real_space, vector3<double, VectorSpace>> rfield(cfield.skeleton());       
 	
 	gpu::run(3, cfield.basis().part().local_size(),
 					 [rp = begin(rfield.linear()), cp = begin(cfield.linear())] GPU_LAMBDA (auto idir, auto ip){
@@ -248,7 +248,7 @@ field<basis::real_space, vector3<double, VectorSpace>> real_field(field<basis::r
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
-	using namespace inq::magnitude;	
+	using namespace inq::magnitude; 
 	using namespace Catch::literals;
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
@@ -276,7 +276,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	ff.fill(12.2244);
 
-	for(int ii = 0; ii < rs.part().local_size(); ii++) CHECK(ff.linear()[ii] == 12.2244_a);	
+	for(int ii = 0; ii < rs.part().local_size(); ii++) CHECK(ff.linear()[ii] == 12.2244_a); 
 
 	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
 
@@ -299,7 +299,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
 	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
-	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);	
+	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);    
 
 	//Make sure the hypercubic array is correctly ordered, so it can be flattened
 	auto strd = strides(ff.hypercubic());
