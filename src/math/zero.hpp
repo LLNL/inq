@@ -21,37 +21,7 @@ namespace inq {
 
 template <typename Type>
 GPU_FUNCTION auto zero(){
-  return Type{0.0};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<double>>(){
-  return vector3<double>{0.0, 0.0, 0.0};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<double, covariant>>(){
-  return vector3<double, covariant>{0.0, 0.0, 0.0};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<double, contravariant>>(){
-  return vector3<double, contravariant>{0.0, 0.0, 0.0};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<complex>>(){
-  return vector3<complex>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<complex, covariant>>(){
-  return vector3<complex, covariant>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<complex, contravariant>>(){
-  return vector3<complex, contravariant>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
+  return Type{};
 }
 
 }
