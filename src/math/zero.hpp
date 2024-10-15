@@ -31,9 +31,17 @@ auto zero() {
 	return zero_t{};
 }
 
+auto operator==(complex const & aa, zero_t) {
+	return aa == zero<complex>();
+}
+
 template <typename Type>
 auto operator==(Type const & aa, zero_t) {
 	return aa == zero<Type>();
+}
+
+auto operator==(zero_t z, complex const & aa) {
+	return aa == z;
 }
 
 template <typename Type>
