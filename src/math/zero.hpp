@@ -33,6 +33,11 @@ GPU_FUNCTION auto zero(){
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-  
+	using namespace inq;
+	
+	CHECK(zero<double>() == 0.0);
+	CHECK(zero<complex>() == complex{0.0, 0.0});
+	CHECK(zero<vector3<double>>() == vector3<double>{0.0, 0.0, 0.0});
+	CHECK(zero<vector3<complex>>() == vector3<complex>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}});
 }
 #endif
