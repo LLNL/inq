@@ -53,6 +53,31 @@ private:
 		}
 	}
 
+	template <typename GPhi, typename Occupations>
+	vector3<vector3<double>> stress_kinetic(GPhi const & gphi, Occupations const & occupations) {
+
+		auto stress1d = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
+														 [metric = gphi.basis().cell().metric(), gph = begin(gphi.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto index, auto ist, auto ip) {
+															 int alpha, beta;
+															 stress_component(index, alpha, beta);
+															 auto grad_cart = metric.to_cartesian(gph[ip][ist]);
+															 return occ[ist]*real(conj(grad_cart[alpha])*grad_cart[beta]);
+														 });
+		
+		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);;
+
+		vector3<vector3<double>> stress;
+
+		for(auto index = 0; index < 6; index++) {
+			int alpha, beta;
+			stress_component(index, alpha, beta);
+			stress[alpha][beta] = stress1d[index];
+			if(beta != alpha) stress[beta][alpha] = stress1d[index];
+		}
+
+		return -2.0*stress;
+	}
+	
 	template <typename Density>
 	vector3<vector3<double>> stress_electrostatic(Density const & density) {
 
@@ -108,25 +133,8 @@ private:
 			
 			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], ham.uniform_vector_potential(), forces_non_local);
 
-			//STRESS KINETIC
-			auto stress_kinetic = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
-																		 [metric = ions.cell().metric(), gph = begin(gphi.matrix()), occ = begin(electrons.occupations()[iphi])] GPU_LAMBDA (auto index, auto ist, auto ip) {
-																			 int alpha, beta;
-																			 stress_component(index, alpha, beta);
-																			 auto grad_cart = metric.to_cartesian(gph[ip][ist]);
-																			 return occ[ist]*conj(grad_cart[alpha])*grad_cart[beta];
-																		 });
+			stress += stress_kinetic(gphi, electrons.occupations()[iphi]);
 
-			if(gphi.full_comm().size() > 1){
-				gphi.full_comm().all_reduce_n(raw_pointer_cast(stress_kinetic.data_elements()), 6);;
-			}
-			
-			for(auto index = 0; index < 6; index++) {
-				int alpha, beta;
-				stress_component(index, alpha, beta);
-				stress[alpha][beta] += -2.0*real(stress_kinetic[index]);
-			}
-			
 			iphi++;
 		}
 		
