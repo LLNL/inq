@@ -20,38 +20,33 @@
 namespace inq {
 
 template <typename Type>
-GPU_FUNCTION auto zero(){
-  return Type{0.0};
+GPU_FUNCTION constexpr auto zero(){
+  return Type{};
 }
 
-template <>
-GPU_FUNCTION auto zero<vector3<double>>(){
-  return vector3<double>{0.0, 0.0, 0.0};
+struct zero_t {
+};
+
+auto zero() {
+	return zero_t{};
 }
 
-template <>
-GPU_FUNCTION auto zero<vector3<double, covariant>>(){
-  return vector3<double, covariant>{0.0, 0.0, 0.0};
+auto operator==(complex const & aa, zero_t) {
+	return aa == zero<complex>();
 }
 
-template <>
-GPU_FUNCTION auto zero<vector3<double, contravariant>>(){
-  return vector3<double, contravariant>{0.0, 0.0, 0.0};
+template <typename Type>
+auto operator==(Type const & aa, zero_t) {
+	return aa == zero<Type>();
 }
 
-template <>
-GPU_FUNCTION auto zero<vector3<complex>>(){
-  return vector3<complex>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
+auto operator==(zero_t z, complex const & aa) {
+	return aa == z;
 }
 
-template <>
-GPU_FUNCTION auto zero<vector3<complex, covariant>>(){
-  return vector3<complex, covariant>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
-}
-
-template <>
-GPU_FUNCTION auto zero<vector3<complex, contravariant>>(){
-  return vector3<complex, contravariant>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}};
+template <typename Type>
+auto operator==(zero_t z, Type const & aa) {
+	return aa == z;
 }
 
 }
@@ -63,6 +58,21 @@ GPU_FUNCTION auto zero<vector3<complex, contravariant>>(){
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-  
+	using namespace inq;
+	
+	CHECK(zero<double>() == 0.0);
+	CHECK(zero<complex>() == complex{0.0, 0.0});
+	CHECK(zero<vector3<double>>() == vector3<double>{0.0, 0.0, 0.0});
+	CHECK(zero<vector3<complex>>() == vector3<complex>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}});
+	
+	CHECK(zero() == 0.0);
+	CHECK(zero() == complex{0.0, 0.0});
+	CHECK(zero() == vector3<double>{0.0, 0.0, 0.0});
+	CHECK(zero() == vector3<complex>{complex{0.0, 0.0}, complex{0.0, 0.0}, complex{0.0, 0.0}});
+
+	//	double aa = zero();
+	//	CHECK(aa == 0.0);
+	
 }
+
 #endif
