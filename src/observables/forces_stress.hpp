@@ -53,6 +53,20 @@ private:
 		}
 	}
 
+	template <typename Stress1D>
+	auto tensor(Stress1D const & stress1d) {
+		vector3<vector3<double>> stress;
+
+		for(auto index = 0; index < 6; index++) {
+			int alpha, beta;
+			stress_component(index, alpha, beta);
+			stress[alpha][beta] = stress1d[index];
+			if(beta != alpha) stress[beta][alpha] = stress1d[index];
+		}
+
+		return stress;
+	}
+	
 	template <typename GPhi, typename Occupations>
 	vector3<vector3<double>> stress_kinetic(GPhi const & gphi, Occupations const & occupations) {
 
@@ -66,16 +80,7 @@ private:
 		
 		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);;
 
-		vector3<vector3<double>> stress;
-
-		for(auto index = 0; index < 6; index++) {
-			int alpha, beta;
-			stress_component(index, alpha, beta);
-			stress[alpha][beta] = stress1d[index];
-			if(beta != alpha) stress[beta][alpha] = stress1d[index];
-		}
-
-		return -2.0*stress;
+		return -2.0*tensor(stress1d);
 	}
 	
 	template <typename Density>
@@ -92,16 +97,7 @@ private:
 															 return ef_cart[alpha]*ef_cart[beta];
 														 });
 
-		vector3<vector3<double>> stress;
-
-		for(auto index = 0; index < 6; index++) {
-			int alpha, beta;
-			stress_component(index, alpha, beta);
-			stress[alpha][beta] = stress1d[index]/(4.0*M_PI);
-			if(beta != alpha) stress[beta][alpha] = stress1d[index]/(4.0*M_PI);
-		}
-
-		return stress;
+		return tensor(stress1d)/(4.0*M_PI);
 	}
 	
 	template <typename HamiltonianType, typename Energy>
