@@ -73,7 +73,7 @@ private:
 			int alpha, beta;
 			stress_component(index, alpha, beta);
 			stress[alpha][beta] = stress1d[index]/(4.0*M_PI);
-			if(beta /= alpha) stress[beta][alpha] = stress1d[index]/(4.0*M_PI);
+			if(beta != alpha) stress[beta][alpha] = stress1d[index]/(4.0*M_PI);
 		}
 
 		return stress;
