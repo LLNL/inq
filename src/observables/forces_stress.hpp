@@ -54,7 +54,7 @@ private:
 	}
 
 	template <typename Density>
-	auto stress_electrostatic(Density const & density) {
+	vector3<vector3<double>> stress_electrostatic(Density const & density) {
 
 		auto potential = solvers::poisson::solve(density);
 		auto efield = operations::gradient(potential);
