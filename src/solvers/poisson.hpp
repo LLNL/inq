@@ -26,6 +26,8 @@ class poisson {
 
 public:
 
+	poisson() = delete;
+	
 	struct poisson_kernel_3d {
 		GPU_FUNCTION auto operator()(vector3<double, cartesian> gg, double const zeroterm) const {
 			auto g2 = norm(gg);
@@ -67,7 +69,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KernelType, typename FieldSetType>
-	void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) const {
+	static void poisson_apply_kernel(KernelType const kernel, FieldSetType & density, vector3<double> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) {
 
 		static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only makes sense in fourier_space");
 
@@ -87,7 +89,7 @@ public:
 
 private:
 	
-	auto poisson_solve_3d(basis::field<basis::real_space, complex> const & density) const {
+	static auto poisson_solve_3d(basis::field<basis::real_space, complex> const & density) {
 
 		CALI_CXX_MARK_FUNCTION;
 		
@@ -98,7 +100,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
+	static void poisson_solve_in_place_3d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -109,7 +111,7 @@ private:
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	basis::field<basis::real_space, complex> poisson_solve_2d(basis::field<basis::real_space, complex> const & density) const {
+	static basis::field<basis::real_space, complex> poisson_solve_2d(basis::field<basis::real_space, complex> const & density) {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -127,7 +129,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
+	static void poisson_solve_in_place_2d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -143,7 +145,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field<basis::real_space, complex> poisson_solve_0d(basis::field<basis::real_space, complex> const & density) const {
+	static basis::field<basis::real_space, complex> poisson_solve_0d(basis::field<basis::real_space, complex> const & density) {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -161,7 +163,7 @@ private:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) const {
+	static void poisson_solve_in_place_0d(basis::field_set<basis::real_space, complex> & density, vector3<double> const & gshift, double const zeroterm) {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -179,7 +181,7 @@ private:
 	
 public:
 	
-	auto operator()(const basis::field<basis::real_space, complex> & density) const {
+	static auto solve(const basis::field<basis::real_space, complex> & density) {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 		
@@ -195,7 +197,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename Space = cartesian>
-	void in_place(basis::field_set<basis::real_space, complex> & density, vector3<double, Space> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) const {
+	static void in_place(basis::field_set<basis::real_space, complex> & density, vector3<double, Space> const & gshift = {0.0, 0.0, 0.0}, double const zeroterm = 0.0) {
 
 		CALI_CXX_MARK_SCOPE("poisson(complex)");
 
@@ -212,11 +214,11 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	basis::field<basis::real_space, double> operator()(const basis::field<basis::real_space, double> & density) const {
+	static basis::field<basis::real_space, double> solve(const basis::field<basis::real_space, double> & density) {
 
 		CALI_CXX_MARK_SCOPE("poisson(real)");
 		
-		auto complex_potential = operator()(complex_field(density));
+		auto complex_potential = solve(complex_field(density));
 		return real_field(complex_potential);
 	}
 		
@@ -234,8 +236,6 @@ public:
 #include <operations/integral.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
-
-
 	using namespace inq;
 	using namespace inq::magnitude;
 	using namespace Catch::literals;
@@ -262,7 +262,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		field<real_space, complex> density(rs);
 		field_set<real_space, complex> density_set(rs, nst);
-		solvers::poisson psolver;
 		
 		SECTION("Point charge"){
 		
@@ -284,8 +283,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				}
 			}
 		
-			auto potential = psolver(density);
-			psolver.in_place(density_set);
+			auto potential = solvers::poisson::solve(density);
+			solvers::poisson::in_place(density_set);
 			
 			double sum[2] = {0.0, 0.0};
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -332,8 +331,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				}
 			}
 
-			auto potential = psolver(density);
-			psolver.in_place(density_set);
+			auto potential = solvers::poisson::solve(density);
+			solvers::poisson::in_place(density_set);
 			
 			double diff = 0.0;
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -372,7 +371,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				}
 			}
 
-			auto rpotential = psolver(rdensity);
+			auto rpotential = solvers::poisson::solve(rdensity);
 
 			double diff = 0.0;
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
@@ -395,8 +394,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	{
 		basis::real_space rs(systems::cell::cubic(8.0_b).finite(), /*spacing =*/ 0.09, comm);
-
-		solvers::poisson psolver;
 
 		SECTION("Grid finite"){		
 
@@ -430,8 +427,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(real(operations::integral(density)) == -1.0_a);
 			
-			auto potential = psolver(density);
-			psolver.in_place(density_set);
+			auto potential = solvers::poisson::solve(density);
+			solvers::poisson::in_place(density_set);
 
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -476,8 +473,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		basis::real_space rs(systems::cell::orthorhombic(6.0_b, 6.0_b, 9.0_b).periodicity(2), /*spacing =*/ 0.12, comm);
 		
-		solvers::poisson psolver;
-		
 		CHECK(rs.cell().periodicity() == 2);
 		
 		CHECK(rs.sizes()[0] == 50);
@@ -504,8 +499,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(real(operations::integral(density)) == -1.0_a);
 		
-		auto potential = psolver(density);
-		psolver.in_place(density_set);
+		auto potential = solvers::poisson::solve(density);
+		solvers::poisson::in_place(density_set);
 
 		auto & part = potential.basis().part();
 	
