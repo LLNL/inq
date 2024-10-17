@@ -188,13 +188,6 @@ private:
 				stress[alpha][beta] /= electrons.density_basis().cell().volume();
 			}
 		}
-
-		//symmetrize
-		for(auto alpha = 0; alpha < 3; alpha++){
-			for(auto beta = alpha + 1; beta < 3; beta++){
-				stress[alpha][beta] = stress[beta][alpha];
-			}
-		}
 		
 	}
 	
