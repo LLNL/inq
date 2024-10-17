@@ -3,6 +3,8 @@
 #ifndef ZEEMAN_COUPLING_HPP
 #define ZEEMAN_COUPLING_HPP
 
+#include <inq_config.h>
+
 namespace inq {
 namespace hamiltonian {
 
@@ -18,7 +20,18 @@ public:
         spin_components_(spin_components)
     {
         assert(spin_components_ > 1);
-        std::cout << "SPIN COMPONENTS : " << spin_components_ << std::endl;   
+        std::cout << "SPIN COMPONENTS : " << spin_components_ << std::endl;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename SpinDensityType, typename MagneticField, typename VKSType>
+    void operator()(SpinDensityType const & spin_density, MagneticField const & B, VKSType & vks, double & nvz) const {
+
+        basis::field_set<basis::real_space, double> vz(vks.skeleton());
+        vz.fill(0.0);
+
+        assert(vz.set_size() == spin_components_);
     }
 
 };
