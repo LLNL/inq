@@ -164,6 +164,9 @@ public:
 			B.fill(vector3 {0.0, 0.0, 0.0});
 			pert_.magnetic_field(time, B);
 			zeeman_coupling zc_(spin_density.set_size());
+			auto nvz = 0.0;
+			zc_(spin_density, B, hamiltonian.scalar_potential_, nvz);
+			std::cout << " nvz -> " << nvz << std::endl;
 		}
 		
 	}
