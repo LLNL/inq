@@ -160,7 +160,10 @@ public:
 		
 		if (pert_.has_magnetic_field()) {
 			std::cout << "MAGNETIC FIELD ACTIVE" << std::endl;
-			zeeman_coupling zc_(spin_density.set_size(), pert_.uniform_magnetic_field(time));
+			basis::field<basis::real_space, vector3<double>> B(spin_density.basis());
+			B.fill(vector3 {0.0, 0.0, 0.0});
+			pert_.magnetic_field(time, B);
+			zeeman_coupling zc_(spin_density.set_size());
 		}
 		
 	}
