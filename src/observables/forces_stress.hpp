@@ -80,7 +80,7 @@ private:
 		
 		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);;
 
-		return -2.0*gphi.basis().volume_element()*tensor(stress1d);
+		return -gphi.basis().volume_element()*tensor(stress1d);
 	}
 	
 	template <typename Density>
