@@ -80,7 +80,7 @@ private:
 		
 		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);;
 
-		return -2.0*tensor(stress1d);
+		return -2.0*gphi.basis().volume_element()*tensor(stress1d);
 	}
 	
 	template <typename Density>
@@ -97,7 +97,7 @@ private:
 															 return ef_cart[alpha]*ef_cart[beta];
 														 });
 
-		return tensor(stress1d)/(4.0*M_PI);
+		return density.basis().volume_element()/(4.0*M_PI)*tensor(stress1d);
 	}
 	
 	template <typename HamiltonianType, typename Energy>
