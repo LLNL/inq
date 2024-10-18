@@ -32,8 +32,57 @@ public:
         vz.fill(0.0);
 
         assert(vz.set_size() == spin_components_);
+
+        compute_vz(B, vz);
+
+        process_potential(vz, vks);
+
+        nvz += compute_nvz(spin_density, vz);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename MagneticField, typename VZType>
+    void compute_vz(MagneticField const & B, VZType & vz) const {
+
+        if (vz.set_size() == 4) {
+        }
+        else {
+            assert(vz.set_size() == 2);
+            gpu::run(vz.basis().local_size(),
+                [v = begin(vz.matrix()), b = begin(B.linear())] GPU_LAMBDA (auto ip) {
+                    v[ip][0] +=-b[ip][2];
+                    v[ip][1] += b[ip][2];
+                });
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template <typename SpinDensityType, typename VZType>
+    double compute_nvz(SpinDensityType const & spin_density, VZType & vz) const {
+
+        auto nvz_ = 0.0;
+        if (spin_density.set_size() == 4) {
+            gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
+                [v = begin(vz.matrix())] GPU_LAMBDA (auto is, auto ip) {
+                    if (is >= 2) v[ip][is] = 2.0*v[ip][is];
+                });
+        }
+        nvz_ += operations::integral_product_sum(spin_density, vz);
+        return nvz_;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename VZType, typename VKSType>
+    void process_potential(VZType const & vz, VKSType & vks) const {
+
+        gpu::run(vz.local_set_size(), vz.basis().local_size(),
+            [v = begin(vz.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip) {
+                vk[ip][is] += v[ip][is];
+            });
+    }
 };
 
 }
