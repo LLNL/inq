@@ -58,22 +58,18 @@ int main(int argc, char **argv) {
 
   input::environment env;
 
-  utils::match energy_match(1.0e-5);
+  utils::match match(1.0e-5);
 
   auto const lat1_in_bohr = 10.0;
   auto const vol1_in_bohr3 = std::pow(lat1_in_bohr, 3);
 
-  auto const result1 = total_energy(env, lat1_in_bohr * 1.0_b);
-
-  energy_match.check("total energy", result1.energy.total(), -0.567967321401);
-  energy_match.check("kinetic energy", result1.energy.kinetic(),
-                     2.485678165423);
+  auto const result1 = total_energy(env, lat1_in_bohr*1.0_b);
 
   auto const lat2_in_bohr = 10.01;
   auto const vol2_in_bohr3 = std::pow(lat2_in_bohr, 3);
 
-  auto const result2 = total_energy(env, lat2_in_bohr * 1.0_b);
-
+  auto const result2 = total_energy(env, lat2_in_bohr*1.0_b);
+							
   auto const stress = result1.stress;
   std::cout << "stress" << std::endl;
   std::cout << stress[0][0] << " " << stress[0][1] << " " << stress[0][2]
@@ -89,7 +85,25 @@ int main(int argc, char **argv) {
             << std::endl;
 
   std::cout << "(energy(2) - energy(1) ) / (vo2 - vol1) = "
-            << (result2.energy.total() - result1.energy.total()) /
-                   (vol2_in_bohr3 - vol1_in_bohr3)
+            << (result2.energy.total() - result1.energy.total())/(vol2_in_bohr3 - vol1_in_bohr3)
             << std::endl;
+
+
+  match.check("total energy 1",   result1.energy.total(),  -0.684940553454);
+	match.check("total energy 2",   result2.energy.total(),  -0.686911961588);
+	match.check("finite diff pressure", (result2.energy.total() - result1.energy.total())/(vol2_in_bohr3 - vol1_in_bohr3), -0.000656479347, 1e-7);
+
+	match.check("stress xx", stress[0][0], -0.000658598015, 1e-8);	
+	match.check("stress yy", stress[1][1], -0.000658598015, 1e-8);
+	match.check("stress zz", stress[2][2], -0.000658598015, 1e-8);
+
+	match.check("stress xy", stress[0][1], 0.0, 1e-8);	
+	match.check("stress xz", stress[0][2], 0.0, 1e-8);
+	match.check("stress yz", stress[1][2], 0.0, 1e-8);
+
+	match.check("stress yx", stress[1][0], 0.0, 1e-8);	
+	match.check("stress zx", stress[2][0], 0.0, 1e-8);
+	match.check("stress zy", stress[2][1], 0.0, 1e-8);
+	
+	return match.fail();
 }
