@@ -46,6 +46,13 @@ public:
     void compute_vz(MagneticField const & B, VZType & vz) const {
 
         if (vz.set_size() == 4) {
+            gpu::run(vz.basis().local_size(),
+                [v = begin(vz.matrix()), b = begin(B.linear())] GPU_LAMBDA (auto ip) {
+                    v[ip][0] +=-b[ip][2];
+                    v[ip][1] += b[ip][2];
+                    v[ip][2] +=-b[ip][0];
+                    v[ip][3] +=-b[ip][1];
+                });
         }
         else {
             assert(vz.set_size() == 2);
@@ -83,6 +90,54 @@ public:
                 vk[ip][is] += v[ip][is];
             });
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<class occupations_array_type, class field_set_type, typename VZType, typename RFType>
+    void compute_psi_vz_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VZType const & vz, RFType & rfield) {
+
+        assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+        assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+
+        if (vz.set_size() == 2){
+            gpu::run(phi.local_set_size(), phi.basis().local_size(),
+                [ph = begin(phi.matrix()), rf = begin(rfield.linear()), v = begin(vz.matrix()), occ = begin(occupations), spi = phi.spin_index()] GPU_LAMBDA (auto ist, auto ip) {
+                    rf[ip] += occ[ist]*v[ip][spi]*norm(ph[ip][ist]);
+                });
+        }
+        else {
+            assert(vz.set_size() == 4);
+            gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
+                [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), v = begin(vz.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip) {
+                    auto offdiag = v[ip][2] + complex{0.0, 1.0}*v[ip][3];
+                    auto cross = 2.0*occ[ist]*real(offdiag*ph[ip][1][ist]*conj(ph[ip][0][ist]));
+                    rf[ip] += occ[ist]*v[ip][0]*norm(ph[ip][0][ist]);
+                    rf[ip] += occ[ist]*v[ip][1]*norm(ph[ip][1][ist]);
+                    rf[ip] += cross;
+                });
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<class CommType, typename SpinDensityType, typename MagneticField, class occupations_array_type, class kpin_type>
+    void eval_psi_vz_psi(CommType & comm, SpinDensityType const & spin_density, MagneticField const & B, occupations_array_type const & occupations, kpin_type const & kpin, double & nvz) {
+        
+        basis::field_set<basis::real_space, double> vz(spin_density.skeleton());
+        vz.fill(0.0);
+        compute_vz(B, vz);
+
+        basis::field<basis::real_space, double> rfield(vz.basis());
+        rfield.fill(0.0);
+        int iphi = 0;
+        for (auto & phi : kpin) {
+            compute_psi_vz_psi_ofr(occupations[iphi], phi, vz, rfield);
+            iphi++;
+        }
+
+        rfield.all_reduce(comm);
+        nvz += operations::integral(rfield);
+    }
 };
 
 }
@@ -93,11 +148,13 @@ public:
 #undef INQ_HAMILTONIAN_ZEEMAN_COUPLING_UNIT_TEST
 
 #include <perturbations/magnetic.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     using namespace inq;
     using namespace inq::magnitude;
+    using Catch::Approx;
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
@@ -109,6 +166,48 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         ground_state::initial_guess(ions, electrons);
         perturbations::magnetic B{{0.0, 0.0, -1.0}};
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000).mixing(0.1), B);
+        auto mag = observables::total_magnetization(electrons.spin_density());
+        CHECK(mag[0]/mag.length()   == 0.0);
+        CHECK(mag[1]/mag.length()   == 0.0);
+        CHECK(mag[2]/mag.length()   ==-1.0);
+        auto nvz = result.energy.nvz();
+        Approx target = Approx(nvz).epsilon(1.e-10);
+
+        hamiltonian::zeeman_coupling zc_(electrons.states().num_density_components());
+        basis::field<basis::real_space, vector3<double>> Bfield(electrons.spin_density().basis());
+        Bfield.fill(vector3 {0.0, 0.0, 0.0});
+        B.magnetic_field(0.0, Bfield);
+        auto nvz2 = 0.0;
+        zc_.eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), Bfield, electrons.occupations(), electrons.kpin(), nvz2);
+        CHECK(nvz2 == target);
+    }
+
+    SECTION("Spin non collinear zeeman calculation") {
+        auto par = input::parallelization(comm);
+        auto ions = systems::ions(systems::cell::cubic(10.0_b));
+        ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
+        auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
+        ground_state::initial_guess(ions, electrons);
+        perturbations::magnetic B{{0.0, 0.0, -1.0}};
+
+        auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(10000).mixing(0.01), B);
+        auto mag = observables::total_magnetization(electrons.spin_density());
+        auto mx = mag[0]/mag.length();
+        auto my = mag[1]/mag.length();
+        auto mz = mag[2]/mag.length();
+        CHECK(abs(mx) < 1.e-7);
+        CHECK(abs(my) < 1.e-7);
+        CHECK(abs(mz + 1.0) < 1.e-7);
+
+        auto nvz = result.energy.nvz();
+        Approx target = Approx(nvz).epsilon(1.e-10);
+        hamiltonian::zeeman_coupling zc_(electrons.states().num_density_components());
+        basis::field<basis::real_space, vector3<double>> Bfield(electrons.spin_density().basis());
+        Bfield.fill(vector3 {0.0, 0.0, 0.0});
+        B.magnetic_field(0.0, Bfield);
+        auto nvz2 = 0.0;
+        zc_.eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), Bfield, electrons.occupations(), electrons.kpin(), nvz2);
+        CHECK(nvz2 == target);
     }
 }
 #endif
