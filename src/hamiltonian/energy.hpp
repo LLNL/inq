@@ -27,6 +27,7 @@ namespace hamiltonian {
 		double xc_ = 0.0;
 		double nvxc_ = 0.0;
 		double exact_exchange_ = 0.0;
+		double nvz_ = 0.0;
 
 #ifdef ENABLE_CUDA
 public:
@@ -149,6 +150,14 @@ public:
 			nvxc_ = val;
 		}
 
+		auto & nvz() const {
+			return nvz_;
+		}
+
+		void nvz(double const & val) {
+			nvz_ = val;
+		}
+
 		auto & exact_exchange() const {
 			return exact_exchange_;
 		}
@@ -186,6 +195,7 @@ public:
 			utils::save_value(comm, dirname + "/xc",             xc_,          error_message);
 			utils::save_value(comm, dirname + "/nvxc",           nvxc_,        error_message);
 			utils::save_value(comm, dirname + "/exact_exchange", exact_exchange_, error_message);
+			utils::save_value(comm, dirname + "/nvz",            nvz_,         error_message);
 		}
 
 		static auto load(std::string const & dirname) {
@@ -201,6 +211,7 @@ public:
 			utils::load_value(dirname + "/xc",              en.xc_,             error_message);
 			utils::load_value(dirname + "/nvxc",            en.nvxc_,           error_message);
 			utils::load_value(dirname + "/exact_exchange",  en.exact_exchange_, error_message);
+			utils::load_value(dirname + "/nvz",             en.nvz_,            error_message);
 			
 			return en;
 		}
@@ -219,6 +230,7 @@ public:
 			tfm::format(out, "  nvxc           = %20.12f Ha\n", self.nvxc());
 			tfm::format(out, "  exact-exchange = %20.12f Ha\n", self.exact_exchange());
 			tfm::format(out, "  ion            = %20.12f Ha\n", self.ion());
+			tfm::format(out, "  nvz            = %20.12f Ha\n", self.nvz());
 			tfm::format(out, "\n");
 
 			return out;
