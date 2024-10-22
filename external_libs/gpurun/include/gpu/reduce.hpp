@@ -171,20 +171,18 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType
 }
 #endif
 
-template <typename KernelType>
-auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelType kernel, decltype(kernel(0, 0, 0)) initial_value = {0} ) -> decltype(kernel(0, 0, 0)) {
+template <typename Type, typename KernelType>
+Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type const & init, KernelType kernel) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;
 	
-  using type = decltype(kernel(0, 0, 0));
-
-	if(sizex == 0 or sizey == 0 or sizez == 0) return initial_value;
+	if(sizex == 0 or sizey == 0 or sizez == 0) return init;
 	
 #ifndef ENABLE_GPU
 
-  type accumulator = initial_value;
+  auto accumulator = init;
 	for(long iy = 0; iy < sizey; iy++){
 		for(long ix = 0; ix < sizex; ix++){
 			for(long iz = 0; iz < sizez; iz++){
@@ -196,7 +194,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelTy
 	
 #else
 
-	auto blocksize = max_blocksize(reduce_kernel_rrr<KernelType, decltype(begin(std::declval<gpu::array<type, 3>&>()))>);
+	auto blocksize = max_blocksize(reduce_kernel_rrr<KernelType, decltype(begin(std::declval<gpu::array<Type, 3>&>()))>);
 	
 	const unsigned bsizex = blocksize;
 	const unsigned bsizey = 1;
@@ -206,19 +204,19 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelTy
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
 	unsigned nblockz = (sizez + bsizez - 1)/bsizez;
 
-	gpu::array<type, 3> result({nblockx, nblocky, nblockz});
+	gpu::array<Type, 3> result({nblockx, nblocky, nblockz});
 
 	struct dim3 dg{nblockx, nblocky, nblockz};
 	struct dim3 db{bsizex, bsizey, bsizez};
 
-	reduce_kernel_rrr<<<dg, db, bsizex*bsizey*bsizez*sizeof(type)>>>(sizex, sizey, sizez, kernel, begin(result));
+	reduce_kernel_rrr<<<dg, db, bsizex*bsizey*bsizez*sizeof(Type)>>>(sizex, sizey, sizez, kernel, begin(result));
 	check_error(last_error());
 
   if(nblockx*nblocky*nblockz == 1) {
     gpu::sync();
-    return initial_value + result[0][0][0];
+    return init + result[0][0][0];
   } else {
-    return run(gpu::reduce(nblockx*nblocky*nblockz), type{}, array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
+    return run(gpu::reduce(nblockx*nblocky*nblockz), init, array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
   }
   
 #endif
@@ -497,10 +495,10 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), prod3{});
+					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), 17.89, prod3{});
 					
 					CHECK(typeid(decltype(res)) == typeid(double));
-					CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
+					CHECK(res == Approx(17.89 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0));
 					rank++;
 				}
 			}
