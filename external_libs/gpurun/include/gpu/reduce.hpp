@@ -47,8 +47,8 @@ struct array_access {
   
 };
 
-template <class kernel_type>
-auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
+template <class KernelType>
+auto run(reduce const & red, KernelType kernel) -> decltype(kernel(0)) {
 
 	auto const size = red.size;
 	
@@ -63,8 +63,8 @@ auto run(reduce const & red, kernel_type kernel) -> decltype(kernel(0)) {
 }
 
 #ifdef ENABLE_GPU
-template <class kernel_type, class array_type>
-__global__ void reduce_kernel_rr(long sizex, long sizey, kernel_type kernel, array_type odata) {
+template <class KernelType, class array_type>
+__global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem;
@@ -96,8 +96,8 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, kernel_type kernel, arr
 }
 #endif
 
-template <class kernel_type>
-auto run(gpu::reduce const & redx, gpu::reduce const & redy, kernel_type kernel) -> decltype(kernel(0, 0)) {
+template <class KernelType>
+auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) -> decltype(kernel(0, 0)) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;	
@@ -141,8 +141,8 @@ auto run(gpu::reduce const & redx, gpu::reduce const & redy, kernel_type kernel)
 }
 
 #ifdef ENABLE_GPU
-template <class kernel_type, class array_type>
-__global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, kernel_type kernel, array_type odata) {
+template <class KernelType, class array_type>
+__global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem;
@@ -175,8 +175,8 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, kernel_typ
 }
 #endif
 
-template <typename kernel_type>
-auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_type kernel, decltype(kernel(0, 0, 0)) initial_value = {0} ) -> decltype(kernel(0, 0, 0)) {
+template <typename KernelType>
+auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelType kernel, decltype(kernel(0, 0, 0)) initial_value = {0} ) -> decltype(kernel(0, 0, 0)) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;
@@ -200,7 +200,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 	
 #else
 
-	auto blocksize = max_blocksize(reduce_kernel_rrr<kernel_type, decltype(begin(std::declval<gpu::array<type, 3>&>()))>);
+	auto blocksize = max_blocksize(reduce_kernel_rrr<KernelType, decltype(begin(std::declval<gpu::array<type, 3>&>()))>);
 	
 	const unsigned bsizex = blocksize;
 	const unsigned bsizey = 1;
@@ -229,8 +229,8 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, kernel_t
 }
 
 #ifdef ENABLE_GPU
-template <class kernel_type, class array_type>
-__global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, array_type odata) {
+template <class KernelType, class array_type>
+__global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
@@ -265,8 +265,8 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, arr
 #endif
 
 
-template <class kernel_type>
-auto run(long sizex, reduce const & redy, kernel_type kernel) -> gpu::array<decltype(kernel(0, 0)), 1> {
+template <class KernelType>
+auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<decltype(kernel(0, 0)), 1> {
 
 	auto const sizey = redy.size;	
 	
@@ -288,7 +288,7 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> gpu::array<decl
 
 	gpu::array<type, 2> result;
 	
-	auto blocksize = max_blocksize(reduce_kernel_vr<kernel_type, decltype(begin(result))>);
+	auto blocksize = max_blocksize(reduce_kernel_vr<KernelType, decltype(begin(result))>);
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -326,8 +326,8 @@ auto run(long sizex, reduce const & redy, kernel_type kernel) -> gpu::array<decl
 }
 
 #ifdef ENABLE_GPU
-template <class kernel_type, class array_type>
-__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, kernel_type kernel, array_type odata) {
+template <class KernelType, class array_type>
+__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
@@ -361,8 +361,8 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, kernel_type
 }
 #endif
 
-template <class kernel_type>
-auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kernel) -> gpu::array<decltype(kernel(0, 0, 0)), 1> {
+template <class KernelType>
+auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel) -> gpu::array<decltype(kernel(0, 0, 0)), 1> {
 
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;	
@@ -387,7 +387,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, kernel_type kerne
 
 	gpu::array<type, 3> result;
 	
-	auto blocksize = max_blocksize(reduce_kernel_vrr<kernel_type, decltype(begin(result))>);
+	auto blocksize = max_blocksize(reduce_kernel_vrr<KernelType, decltype(begin(result))>);
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
