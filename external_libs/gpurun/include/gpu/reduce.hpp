@@ -265,16 +265,14 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, Arra
 #endif
 
 
-template <typename KernelType>
-auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<decltype(kernel(0, 0)), 1> {
+template <typename Type, typename KernelType>
+gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const & init, KernelType kernel) { 
 
 	auto const sizey = redy.size;	
-	
-  using type = decltype(kernel(0, 0));
 
 #ifndef ENABLE_GPU
 
-  gpu::array<type, 1> accumulator(sizex, 0.0);
+  gpu::array<Type, 1> accumulator(sizex, init);
 
   for(long iy = 0; iy < sizey; iy++){
     for(long ix = 0; ix < sizex; ix++){
@@ -286,7 +284,7 @@ auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<declt
   
 #else
 
-	gpu::array<type, 2> result;
+	gpu::array<Type, 2> result;
 	
 	auto blocksize = max_blocksize(reduce_kernel_vr<KernelType, decltype(begin(result))>);
 	
@@ -304,7 +302,7 @@ auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<declt
 	struct dim3 dg{nblockx, nblocky};
   struct dim3 db{bsizex, bsizey};
 
-  auto shared_mem_size = blocksize*sizeof(type);
+  auto shared_mem_size = blocksize*sizeof(Type);
 
   assert(shared_mem_size <= 48*1024);
   
@@ -315,10 +313,14 @@ auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<declt
     gpu::sync();
 
 		assert(result[0].size() == sizex);
-		
+
+		gpu::run(result[0].size(), [res = begin(result[0]), init] GPU_LAMBDA (auto ii) {
+			res[ii] += init;
+		});
+			
     return result[0];
   } else {
-    return run(sizex, reduce(nblocky), array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});
+    return run(sizex, reduce(nblocky), init, array_access<decltype(begin(result.transposed()))>{begin(result.transposed())});
   }
   
 #endif
@@ -361,17 +363,15 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 }
 #endif
 
-template <typename KernelType>
-auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel) -> gpu::array<decltype(kernel(0, 0, 0)), 1> {
+template <typename Type, typename KernelType>
+gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, Type const & init, KernelType kernel) {
 
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;	
 	
-  using type = decltype(kernel(0, 0, 0));
-
 #ifndef ENABLE_GPU
 
-  gpu::array<type, 1> accumulator(sizex, 0.0);
+  gpu::array<Type, 1> accumulator(sizex, init);
 
 	for(long iz = 0; iz < sizez; iz++){
 		for(long iy = 0; iy < sizey; iy++){
@@ -385,7 +385,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel
   
 #else
 
-	gpu::array<type, 3> result;
+	gpu::array<Type, 3> result;
 	
 	auto blocksize = max_blocksize(reduce_kernel_vrr<KernelType, decltype(begin(result))>);
 	
@@ -406,7 +406,7 @@ auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel
 	struct dim3 dg{nblockx, nblocky, nblockz};
   struct dim3 db{bsizex, bsizey, bsizez};
 
-  auto shared_mem_size = blocksize*sizeof(type);
+  auto shared_mem_size = blocksize*sizeof(Type);
 
   assert(shared_mem_size <= 48*1024);
   
@@ -417,11 +417,15 @@ auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel
     gpu::sync();
 
 		assert(result[0][0].size() == sizex);
-		
+
+		gpu::run(result[0][0].size(), [res = begin(result[0][0]), init] GPU_LAMBDA (auto ii) {
+			res[ii] += init;
+		});
+				
     return result[0][0];
   } else {
 		auto && reduce_buffer = result.flatted().transposed();
-    return run(sizex, reduce(nblocky*nblockz), array_access<decltype(begin(reduce_buffer))>{begin(reduce_buffer)});
+    return run(sizex, reduce(nblocky*nblockz), init, array_access<decltype(begin(reduce_buffer))>{begin(reduce_buffer)});
   }
   
 #endif
@@ -448,7 +452,7 @@ struct prod {
     return double(ix)*double(iy);
   }
 };
-	
+  
 struct prod3 {
   GPU_FUNCTION auto operator()(long ix, long iy, long iz) const {
     return double(ix)*double(iy)*double(iz);
@@ -515,11 +519,11 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		for(long nx = 1; nx <= 10000; nx *= 10){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
-				auto res = gpu::run(nx, gpu::reduce(ny), prod{});
+				auto res = gpu::run(nx, gpu::reduce(ny), -7.7, [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);});
 					
 				CHECK(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
 				CHECK(res.size() == nx);
-				for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0);
+				for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == -7.7 + double(ix)*ny*(ny - 1.0)/2.0);
 				rank++;
 			}
 		}
@@ -535,12 +539,12 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), prod3{});
+					auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), 10.0, prod3{});
 					
 					CHECK(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
 					
 					CHECK(res.size() == nx);
-					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
+					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == 10.0 + double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
 					rank++;
 				}
 			}
