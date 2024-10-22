@@ -399,7 +399,7 @@ public:
 			if(locally_empty_[iproj]) continue;
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
-				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_),
+				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
 																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
 		}
 

@@ -94,17 +94,15 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, Arra
 }
 #endif
 
-template <typename KernelType>
-auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) -> decltype(kernel(0, 0)) {
+template <typename Type, typename KernelType>
+Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const & init, KernelType kernel) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;	
-	
-  using type = decltype(kernel(0, 0));
   
 #ifndef ENABLE_GPU
 
-  type accumulator(0.0);
+  auto accumulator = init;
 	for(long iy = 0; iy < sizey; iy++){
 		for(long ix = 0; ix < sizex; ix++){
 			accumulator += kernel(ix, iy);
@@ -120,19 +118,19 @@ auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) 
 	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
 	
-	gpu::array<type, 2> result({nblockx, nblocky});
+	gpu::array<Type, 2> result({nblockx, nblocky});
 
 	struct dim3 dg{nblockx, nblocky};
 	struct dim3 db{bsizex, bsizey};
 
-	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(type)>>>(sizex, sizey, kernel, begin(result));
+	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(Type)>>>(sizex, sizey, kernel, begin(result));
   check_error(last_error());
 	
   if(nblockx*nblocky == 1) {
     gpu::sync();
-    return result[0][0];
+    return init + result[0][0];
   } else {
-    return run(gpu::reduce(nblockx*nblocky), type{}, array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
+    return run(gpu::reduce(nblockx*nblocky), init, array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
   }
   
 #endif
@@ -460,13 +458,14 @@ struct prod3 {
 TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
   
 	using namespace Catch::literals;
+	using Catch::Approx;
 
 	SECTION("r"){
 		const long maxsize = 129140163;
 		
 		int rank = 0;
 		for(long nn = 1; nn <= maxsize; nn *= 3){
-			CHECK(gpu::run(gpu::reduce(nn), -232.8, ident{}) == -232.8 + (nn*(nn - 1.0)/2.0));
+			CHECK(gpu::run(gpu::reduce(nn), -232.8, ident{}) == Approx(-232.8 + (nn*(nn - 1.0)/2.0)));
 			rank++;
 		}
 	}
@@ -479,10 +478,10 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		for(long nx = 1; nx <= maxsize; nx *= 5){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
-				auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), prod{});
+				auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), 2.23, prod{});
 				
 				CHECK(typeid(decltype(res)) == typeid(double));
-				CHECK(res == nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0);
+				CHECK(res == Approx(2.23 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0));
 				rank++;
 			}
 		}
