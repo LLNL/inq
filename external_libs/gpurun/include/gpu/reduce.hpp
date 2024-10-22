@@ -47,18 +47,16 @@ struct array_access {
   
 };
 
-template <typename KernelType>
-auto run(reduce const & red, KernelType kernel) -> decltype(kernel(0)) {
+template <typename Type, typename KernelType>
+Type run(reduce const & red, Type const & init, KernelType kernel) {
 
 	auto const size = red.size;
-	
-  using type = decltype(kernel(0));
 	auto range = boost::multi::extension_t{0l, size};
 
 #ifndef ENABLE_GPU
-	return std::transform_reduce(range.begin(), range.end(), type{}, std::plus<>{}, kernel);
+	return std::transform_reduce(range.begin(), range.end(), init, std::plus<>{}, kernel);
 #else
-	return thrust::transform_reduce(thrust::device, range.begin(), range.end(), kernel, type{}, std::plus<>{});
+	return thrust::transform_reduce(thrust::device, range.begin(), range.end(), kernel, init, std::plus<>{});
 #endif
 }
 
@@ -134,7 +132,7 @@ auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) 
     gpu::sync();
     return result[0][0];
   } else {
-    return run(gpu::reduce(nblockx*nblocky), array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
+    return run(gpu::reduce(nblockx*nblocky), type{}, array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
   }
   
 #endif
@@ -222,7 +220,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelTy
     gpu::sync();
     return initial_value + result[0][0][0];
   } else {
-    return run(gpu::reduce(nblockx*nblocky*nblockz), array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
+    return run(gpu::reduce(nblockx*nblocky*nblockz), type{}, array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
   }
   
 #endif
@@ -468,7 +466,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		
 		int rank = 0;
 		for(long nn = 1; nn <= maxsize; nn *= 3){
-			CHECK(gpu::run(gpu::reduce(nn), ident{}) == (nn*(nn - 1.0)/2.0));
+			CHECK(gpu::run(gpu::reduce(nn), -232.8, ident{}) == -232.8 + (nn*(nn - 1.0)/2.0));
 			rank++;
 		}
 	}

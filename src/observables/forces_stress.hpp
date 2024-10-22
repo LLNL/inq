@@ -86,7 +86,7 @@ private:
 				auto ionic_long_range = solvers::poisson::solve(electrons.atomic_pot().ionic_density(electrons.states_comm(), electrons.density_basis(), ions, iatom));
 				auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions, iatom);
 				
-				auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()),
+				auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()), zero<vector3<double, inq::covariant>>(),
 																	 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
 																	 {begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
 				

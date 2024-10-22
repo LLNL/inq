@@ -88,7 +88,7 @@ public:
 			assert(el.occupations()[iphi].size() == normres[iphi].size());
 
 			auto func = state_conv_func<decltype(begin(el.occupations()[iphi])), decltype(begin(normres[iphi]))>{begin(el.occupations()[iphi]), begin(normres[iphi])};
-			state_conv += gpu::run(gpu::reduce(normres[iphi].size()), func);
+			state_conv += gpu::run(gpu::reduce(normres[iphi].size()), 0.0, func);
 		}
 		
 		el.kpin_states_comm().all_reduce_n(&state_conv, 1);
