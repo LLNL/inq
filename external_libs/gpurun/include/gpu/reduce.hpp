@@ -47,7 +47,7 @@ struct array_access {
   
 };
 
-template <class KernelType>
+template <typename KernelType>
 auto run(reduce const & red, KernelType kernel) -> decltype(kernel(0)) {
 
 	auto const size = red.size;
@@ -63,7 +63,7 @@ auto run(reduce const & red, KernelType kernel) -> decltype(kernel(0)) {
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class ArrayType>
+template <typename KernelType, typename ArrayType>
 __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
@@ -96,7 +96,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, Arra
 }
 #endif
 
-template <class KernelType>
+template <typename KernelType>
 auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) -> decltype(kernel(0, 0)) {
 
 	auto const sizex = redx.size;	
@@ -141,7 +141,7 @@ auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) 
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class ArrayType>
+template <typename KernelType, typename ArrayType>
 __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
@@ -229,7 +229,7 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelTy
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class ArrayType>
+template <typename KernelType, typename ArrayType>
 __global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
@@ -265,7 +265,7 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, Arra
 #endif
 
 
-template <class KernelType>
+template <typename KernelType>
 auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<decltype(kernel(0, 0)), 1> {
 
 	auto const sizey = redy.size;	
@@ -326,7 +326,7 @@ auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<declt
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class ArrayType>
+template <typename KernelType, typename ArrayType>
 __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
@@ -361,7 +361,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 }
 #endif
 
-template <class KernelType>
+template <typename KernelType>
 auto run(long sizex, reduce const & redy, reduce const & redz, KernelType kernel) -> gpu::array<decltype(kernel(0, 0, 0)), 1> {
 
 	auto const sizey = redy.size;
