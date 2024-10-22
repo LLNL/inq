@@ -33,9 +33,9 @@ struct reduce {
 	long size;
 };
 
-template <typename array_type>
+template <typename ArrayType>
 struct array_access {
-  array_type array;
+  ArrayType array;
 
   GPU_FUNCTION auto operator()(long ii) const {
     return array[ii];
@@ -63,11 +63,11 @@ auto run(reduce const & red, KernelType kernel) -> decltype(kernel(0)) {
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class array_type>
-__global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, array_type odata) {
+template <class KernelType, class ArrayType>
+__global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem;
+	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
 	
 	// each thread loads one element from global to shared mem
 	unsigned int tid = threadIdx.x;
@@ -77,7 +77,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, arra
 	if(ix < sizex and iy < sizey){
 		reduction_buffer[tid] = kernel(ix, iy);
 	} else {
-		reduction_buffer[tid] = (typename array_type::element) 0.0;
+		reduction_buffer[tid] = (typename ArrayType::element) 0.0;
 	}
 
 	__syncthreads();
@@ -141,11 +141,11 @@ auto run(gpu::reduce const & redx, gpu::reduce const & redy, KernelType kernel) 
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class array_type>
-__global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType kernel, array_type odata) {
+template <class KernelType, class ArrayType>
+__global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem;
+	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
 	
 	// each thread loads one element from global to shared mem
 	unsigned int tid = threadIdx.x;
@@ -156,7 +156,7 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType
 	if(ix < sizex and iy < sizey and iz < sizez){
 		reduction_buffer[tid] = kernel(ix, iy, iz);
 	} else {
-		reduction_buffer[tid] = (typename array_type::element) 0.0;
+		reduction_buffer[tid] = (typename ArrayType::element) 0.0;
 	}
 
 	__syncthreads();
@@ -229,11 +229,11 @@ auto run(reduce const & redx, reduce const & redy, reduce const & redz, KernelTy
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class array_type>
-__global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, array_type odata) {
+template <class KernelType, class ArrayType>
+__global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
+	auto reduction_buffer = (typename ArrayType::element *) shared_mem; // {blockDim.x, blockDim.y}
 	
 	// each thread loads one element from global to shared mem
   unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -245,7 +245,7 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, arra
 	if(iy < sizey){
 		reduction_buffer[threadIdx.x + blockDim.x*tid] = kernel(ix, iy);
 	} else {
-		reduction_buffer[threadIdx.x + blockDim.x*tid] = (typename array_type::element) 0.0;
+		reduction_buffer[threadIdx.x + blockDim.x*tid] = (typename ArrayType::element) 0.0;
 	}
 
 	__syncthreads();
@@ -326,11 +326,11 @@ auto run(long sizex, reduce const & redy, KernelType kernel) -> gpu::array<declt
 }
 
 #ifdef ENABLE_GPU
-template <class KernelType, class array_type>
-__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType kernel, array_type odata) {
+template <class KernelType, class ArrayType>
+__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename array_type::element *) shared_mem; // {blockDim.x, blockDim.y}
+	auto reduction_buffer = (typename ArrayType::element *) shared_mem; // {blockDim.x, blockDim.y}
 	
 	// each thread loads one element from global to shared mem
   unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -343,7 +343,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 	if(iy < sizey and iz < sizez){
 		reduction_buffer[threadIdx.x + blockDim.x*tid] = kernel(ix, iy, iz);
 	} else {
-		reduction_buffer[threadIdx.x + blockDim.x*tid] = (typename array_type::element) 0.0;
+		reduction_buffer[threadIdx.x + blockDim.x*tid] = (typename ArrayType::element) 0.0;
 	}
 	__syncthreads();
 
