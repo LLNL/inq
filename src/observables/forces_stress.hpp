@@ -78,7 +78,7 @@ private:
 															 return occ[ist]*real(conj(grad_cart[alpha])*grad_cart[beta]);
 														 });
 		
-		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);;
+		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);
 
 		return -gphi.basis().volume_element()*tensor(stress1d);
 	}
@@ -96,6 +96,8 @@ private:
 															 auto ef_cart = metric.to_cartesian(ef[ip]);
 															 return ef_cart[alpha]*ef_cart[beta];
 														 });
+
+		if(efield.basis().comm().size() > 1) efield.basis().comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);
 
 		return density.basis().volume_element()/(4.0*M_PI)*tensor(stress1d);
 	}
