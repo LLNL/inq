@@ -68,16 +68,6 @@ private:
 public:
 #endif
 
-	template <typename OccType, typename ArrayType>
-	struct state_conv_func {
-		OccType   occ;
-		ArrayType arr;
-		
-		GPU_FUNCTION double operator()(long ip) const {
-			return fabs(occ[ip]*arr[ip]);
-		}
-	};
-	
 	template <typename NormResType>
 	static double state_convergence(systems::electrons & el, NormResType const & normres) {
 		CALI_CXX_MARK_FUNCTION;
@@ -87,8 +77,9 @@ public:
 		for(int iphi = 0; iphi < el.kpin_size(); iphi++){
 			assert(el.occupations()[iphi].size() == normres[iphi].size());
 
-			auto func = state_conv_func<decltype(begin(el.occupations()[iphi])), decltype(begin(normres[iphi]))>{begin(el.occupations()[iphi]), begin(normres[iphi])};
-			state_conv += gpu::run(gpu::reduce(normres[iphi].size()), 0.0, func);
+			state_conv += gpu::run(gpu::reduce(normres[iphi].size()), 0.0, [occ = begin(el.occupations()[iphi]), arr = begin(normres[iphi])] GPU_LAMBDA (auto ip) {
+				return fabs(occ[ip]*arr[ip]);
+			});
 		}
 		
 		el.kpin_states_comm().all_reduce_n(&state_conv, 1);
