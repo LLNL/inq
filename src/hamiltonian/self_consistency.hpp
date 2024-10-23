@@ -159,15 +159,13 @@ public:
 		// THE MAGNETIC FIELD
 		
 		if (pert_.has_magnetic_field()) {
-			std::cout << "MAGNETIC FIELD ACTIVE" << std::endl;
 			basis::field<basis::real_space, vector3<double>> B(spin_density.basis());
 			B.fill(vector3 {0.0, 0.0, 0.0});
 			pert_.magnetic_field(time, B);
 			zeeman_coupling zc_(spin_density.set_size());
-			auto nvz = 0.0;
-			zc_(spin_density, B, hamiltonian.scalar_potential_, nvz);
-			energy.nvz(nvz);
-			std::cout << " nvz -> " << energy.nvz() << std::endl;
+			auto zeeman_ener = 0.0;
+			zc_(spin_density, B, hamiltonian.scalar_potential_, zeeman_ener);
+			energy.zeeman_energy(zeeman_ener);
 		}
 		
 	}
