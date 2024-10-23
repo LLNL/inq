@@ -155,7 +155,7 @@ namespace systems {
 				for(int ii = 0; ii < 3; ii++){
 					for(int jj = 0; jj < 3; jj++){
 						lat_[ii][jj] = aa[ii][jj];
-						rlat_[ii][jj] = bb[ii][jj];
+						rlat_[ii][jj] = bb[ii][jj]/(2.0*M_PI);
 					}
 				}
 
@@ -203,7 +203,7 @@ namespace systems {
 
 			template <class Type>
 			GPU_FUNCTION auto to_contravariant(vector3<Type, cartesian> const & vv) const {
-				return vector3<Type, contravariant>{rlat_[0].dot(vv), rlat_[1].dot(vv), rlat_[2].dot(vv)}/(2.0*M_PI);
+				return vector3<Type, contravariant>{rlat_[0].dot(vv), rlat_[1].dot(vv), rlat_[2].dot(vv)};
 			}
 
 			template <class Type>
@@ -218,7 +218,7 @@ namespace systems {
 			
 			template <class Type>
 			GPU_FUNCTION auto to_cartesian(vector3<Type, covariant> const & vv) const {
-				return (rlat_[0]*vv[0] + rlat_[1]*vv[1] + rlat_[2]*vv[2])/(2.0*M_PI);
+				return (rlat_[0]*vv[0] + rlat_[1]*vv[1] + rlat_[2]*vv[2]);
 			}
 			
 		};
