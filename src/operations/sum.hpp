@@ -28,7 +28,7 @@ typename array_type::element sum(const array_type & phi){
 	CALI_CXX_MARK_SCOPE("sum(1arg)");
 	auto init = zero<typename array_type::element>();
 	if(phi.size() == 0) return init;
-	return gpu::run(gpu::reduce(phi.size()), init, gpu::array_access<decltype(begin(phi))>{begin(phi)});
+	return gpu::run(gpu::reduce(phi.size()), init, [ph = begin(phi)] GPU_LAMBDA (auto ii) { return ph[ii]; });
 }
 
 template <class ArrayType, class UnaryOp>

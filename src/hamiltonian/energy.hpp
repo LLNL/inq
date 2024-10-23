@@ -33,22 +33,13 @@ public:
 #endif
 		
 		template <typename OccType, typename ArrayType>
-		struct occ_sum_func {
-			OccType   occ;
-			ArrayType arr;
-
-			GPU_FUNCTION double operator()(long ip) const {
-				return occ[ip]*real(arr[ip]);
-			}
-		};
-		
-		template <typename OccType, typename ArrayType>
 		static double occ_sum(OccType const & occupations, ArrayType const & array) {
 			CALI_CXX_MARK_FUNCTION;
 			
 			assert(occupations.size() == array.size());
-			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
-			return gpu::run(gpu::reduce(array.size()), 0.0, func);
+			return gpu::run(gpu::reduce(array.size()), 0.0, [occ = begin(occupations), arr = begin(array)] GPU_LAMBDA (auto ip) {
+				return occ[ip]*real(arr[ip]);
+			});
 		}
 
 public:

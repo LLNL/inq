@@ -22,18 +22,6 @@
 namespace inq {
 namespace operations {
 
-template <class mat_type>
-struct overlap_diagonal_mult {
-
-	double factor;
-	mat_type mat1;
-	mat_type mat2;
-	
-	GPU_FUNCTION auto operator()(long ist, long ip) const {
-		return factor*conj(mat1[ip][ist])*mat2[ip][ist];
-	}
-};
-
 template <class Basis, class PhiMatrix>
 gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis const & basis, PhiMatrix const & phi1_matrix, PhiMatrix const & phi2_matrix){
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
@@ -51,7 +39,9 @@ gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis cons
 		overlap_vector[0] *= basis.volume_element();
 	} else {
 		overlap_vector = gpu::run(nn, gpu::reduce(phi1_matrix.size()), zero<type>(),
-															overlap_diagonal_mult<decltype(begin(phi1_matrix))>{basis.volume_element(), begin(phi1_matrix), begin(phi2_matrix)});
+															[factor = basis.volume_element(), mat1 = begin(phi1_matrix), mat2 = begin(phi2_matrix)] GPU_LAMBDA (auto ist, auto ip) {
+																return factor*conj(mat1[ip][ist])*mat2[ip][ist];
+															});
 	}
 
 	if(basis.comm().size() > 1){
@@ -115,18 +105,6 @@ struct value_and_norm {
 	Type norm;
 };
 
-template <class mat_type>
-struct overlap_diagonal_normalized_mult {
-
-	mat_type mat1;
-	mat_type mat2;
-	
-	GPU_FUNCTION auto operator()(long ist, long ip) const {
-		return value_and_norm<decltype(conj(mat1[0][0])*mat2[0][0])>{conj(mat1[ip][ist])*mat2[ip][ist], conj(mat2[ip][ist])*mat2[ip][ist]};
-	}
-	
-};
-
 struct identity {
 	template <typename Type>
 	GPU_FUNCTION auto operator()(Type const tt) const {
@@ -153,7 +131,9 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, PhiMatrix const & phi
 	using type = typename PhiMatrix::element_type;
 
 	auto overlap_and_norm = gpu::run(nn, gpu::reduce(phi1_matrix.size()), zero<value_and_norm<type>>(),
-																	 overlap_diagonal_normalized_mult<decltype(begin(phi1_matrix))>{begin(phi1_matrix), begin(phi2_matrix)});
+																	 [mat1 = begin(phi1_matrix), mat2 = begin(phi2_matrix)] GPU_LAMBDA (auto ist, auto ip) {
+																		 return value_and_norm<type>{conj(mat1[ip][ist])*mat2[ip][ist], conj(mat2[ip][ist])*mat2[ip][ist]};
+																	 });
 	
 	if(basis.comm().size() > 1){
 		CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized::reduce");

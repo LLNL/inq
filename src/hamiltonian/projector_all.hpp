@@ -233,35 +233,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename OcType, typename PhiType, typename GPhiType>
-	struct force_term {
-		OcType oc;
-		PhiType phi;
-		GPhiType gphi;
-		constexpr auto operator()(int ist, int ip) const {
-			return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
-		}
-	};
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-
-	template <typename Projections, typename Coeff, typename Occupations>
-	struct energy_reduction {
-		Projections proj;
-		Coeff coe;
-		Occupations occ;
-		long spinor_size;
-
-		GPU_FUNCTION auto operator()(long ist, long ilm, long iproj) const {
-			auto ist_spinor = ist%spinor_size;
-			auto pp = proj[iproj][ilm][ist];
-			return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
-		}
-		
-	};
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-
 	template <typename KpointType, typename Occupations>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations, bool const reduce_states = true) const {
     
@@ -328,8 +299,12 @@ public:
 		}
 		
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
-											 energy_reduction<decltype(begin(projections_all)), decltype(begin(coeff_)), decltype(begin(occupations))>
-											 {begin(projections_all), begin(coeff_), begin(occupations), phi.local_spinor_set_size()});
+											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size()]
+											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+												 auto ist_spinor = ist%spinor_size;
+												 auto pp = proj[iproj][ilm][ist];
+												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
+											 });
 		
 		if(reduce_states and phi.set_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("projector_all::energy::reduce_states");
@@ -400,7 +375,9 @@ public:
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
 				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
+																[oc = begin(occs), phi = begin(sphere_phi_all[iproj]), gphi = begin(sphere_gphi_all[iproj])] GPU_LAMBDA (auto ist, auto ip) {
+																	return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+																});
 		}
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {

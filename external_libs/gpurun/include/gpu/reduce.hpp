@@ -435,24 +435,6 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 #include <mpi3/environment.hpp>
 #include <catch2/catch_all.hpp>
 
-struct ident {
-  GPU_FUNCTION auto operator()(long ii) const {
-    return double(ii);
-  }
-};
-
-struct prod {
-  GPU_FUNCTION auto operator()(long ix, long iy) const {
-    return double(ix)*double(iy);
-  }
-};
-  
-struct prod3 {
-  GPU_FUNCTION auto operator()(long ix, long iy, long iz) const {
-    return double(ix)*double(iy)*double(iz);
-  }
-};
-
 TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
   
 	using namespace Catch::literals;
@@ -463,7 +445,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		
 		int rank = 0;
 		for(long nn = 1; nn <= maxsize; nn *= 3){
-			CHECK(gpu::run(gpu::reduce(nn), -232.8, ident{}) == Approx(-232.8 + (nn*(nn - 1.0)/2.0)));
+			CHECK(gpu::run(gpu::reduce(nn), -232.8, [] GPU_LAMBDA (auto ii) { return double(ii);} ) == Approx(-232.8 + (nn*(nn - 1.0)/2.0)));
 			rank++;
 		}
 	}
@@ -476,7 +458,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		for(long nx = 1; nx <= maxsize; nx *= 5){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
-				auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), 2.23, prod{});
+				auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), 2.23,  [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);});
 				
 				CHECK(typeid(decltype(res)) == typeid(double));
 				CHECK(res == Approx(2.23 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0));
@@ -495,7 +477,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), 17.89, prod3{});
+					auto res = gpu::run(gpu::reduce(nx), gpu::reduce(ny), gpu::reduce(nz), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);});
 					
 					CHECK(typeid(decltype(res)) == typeid(double));
 					CHECK(res == Approx(17.89 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0));
@@ -518,7 +500,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 					
 				CHECK(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
 				CHECK(res.size() == nx);
-				for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == -7.7 + double(ix)*ny*(ny - 1.0)/2.0);
+				for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == Approx(-7.7 + double(ix)*ny*(ny - 1.0)/2.0));
 				rank++;
 			}
 		}
@@ -534,12 +516,12 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
 					
-					auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), 10.0, prod3{});
+					auto res = gpu::run(nx, gpu::reduce(ny), gpu::reduce(nz), 10.0, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);});
 					
 					CHECK(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
 					
 					CHECK(res.size() == nx);
-					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == 10.0 + double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0);
+					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == Approx(10.0 + double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0));
 					rank++;
 				}
 			}
