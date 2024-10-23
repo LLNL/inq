@@ -233,18 +233,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename OcType, typename PhiType, typename GPhiType>
-	struct force_term {
-		OcType oc;
-		PhiType phi;
-		GPhiType gphi;
-		constexpr auto operator()(int ist, int ip) const {
-			return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
-		}
-	};
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-
 	template <typename KpointType, typename Occupations>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations, bool const reduce_states = true) const {
     
@@ -387,7 +375,9 @@ public:
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
 				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
+																[oc = begin(occs), phi = begin(sphere_phi_all[iproj]), gphi = begin(sphere_gphi_all[iproj])] GPU_LAMBDA (auto ist, auto ip) {
+																	return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+																});
 		}
 
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
