@@ -70,7 +70,7 @@ private:
 	template <typename GPhi, typename Occupations>
 	vector3<vector3<double>> stress_kinetic(GPhi const & gphi, Occupations const & occupations) {
 
-		auto stress1d = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()),
+		auto stress1d = gpu::run(6, gpu::reduce(gphi.local_set_size()), gpu::reduce(gphi.basis().local_size()), 0.0,
 														 [metric = gphi.basis().cell().metric(), gph = begin(gphi.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto index, auto ist, auto ip) {
 															 int alpha, beta;
 															 stress_component(index, alpha, beta);
@@ -89,7 +89,7 @@ private:
 		auto potential = solvers::poisson::solve(density);
 		auto efield = operations::gradient(potential);
 
-		auto stress1d = gpu::run(6, gpu::reduce(efield.basis().local_size()),
+		auto stress1d = gpu::run(6, gpu::reduce(efield.basis().local_size()), 0.0,
 														 [metric = efield.basis().cell().metric(), ef = begin(efield.linear())] GPU_LAMBDA (auto index, auto ip) {
 															 int alpha, beta;
 															 stress_component(index, alpha, beta);
