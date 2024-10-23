@@ -48,7 +48,7 @@ struct array_access {
 };
 
 template <typename Type, typename KernelType>
-Type run(reduce const & red, Type const & init, KernelType kernel) {
+Type run(reduce const & red, Type const init, KernelType kernel) {
 
 	auto const size = red.size;
 	auto range = boost::multi::extension_t{0l, size};
@@ -95,7 +95,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, Arra
 #endif
 
 template <typename Type, typename KernelType>
-Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const & init, KernelType kernel) {
+Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, KernelType kernel) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;	
@@ -172,7 +172,7 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType
 #endif
 
 template <typename Type, typename KernelType>
-Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type const & init, KernelType kernel) {
+Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type const init, KernelType kernel) {
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;
@@ -260,7 +260,7 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, KernelType kernel, Arra
 
 
 template <typename Type, typename KernelType>
-gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const & init, KernelType kernel) { 
+gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const init, KernelType kernel) { 
 
 	auto const sizey = redy.size;	
 
@@ -358,7 +358,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 #endif
 
 template <typename Type, typename KernelType>
-gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, Type const & init, KernelType kernel) {
+gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, Type const init, KernelType kernel) {
 
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;	
