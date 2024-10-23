@@ -19,18 +19,6 @@
 namespace inq {
 namespace observables {
 
-template <typename LongRangeType, typename ShortRangeType, typename GDensityType>
-struct loc_pot {
-	
-	LongRangeType v1;
-	ShortRangeType v2;
-	GDensityType gdensityp;
-	
-	GPU_FUNCTION auto operator()(long ip) const {
-		return (v1[ip] + v2[ip])*gdensityp[ip];
-	}
-};
-
 struct forces_stress {
 	gpu::array<vector3<double>, 1> forces;
 	gpu::array<double, 2>          stress;
@@ -45,7 +33,9 @@ struct forces_stress {
 		calculate(ions, electrons, ham);
 	}
 
+#ifndef ENABLE_GPU
 private:
+#endif
 	
 	template <typename HamiltonianType>
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham){
@@ -87,9 +77,10 @@ private:
 				auto ionic_short_range = electrons.atomic_pot().local_potential(electrons.states_comm(), electrons.density_basis(), ions, iatom);
 				
 				auto force_cov = -gpu::run(gpu::reduce(electrons.density_basis().local_size()), zero<vector3<double, inq::covariant>>(),
-																	 loc_pot<decltype(begin(ionic_long_range.linear())), decltype(begin(ionic_short_range.linear())), decltype(begin(gdensity.linear()))>
-																	 {begin(ionic_long_range.linear()), begin(ionic_short_range.linear()), begin(gdensity.linear())});
-				
+																	 [v1 = begin(ionic_long_range.linear()), v2 = begin(ionic_short_range.linear()), gdensityp = begin(gdensity.linear())] GPU_LAMBDA (auto ip) {
+																		 return (v1[ip] + v2[ip])*gdensityp[ip];
+																	 });
+
 				forces_local[iatom] = electrons.density_basis().volume_element()*ions.cell().metric().to_cartesian(force_cov);
 			}
 			
