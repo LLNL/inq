@@ -48,7 +48,7 @@ public:
 			
 			assert(occupations.size() == array.size());
 			auto func = occ_sum_func<decltype(begin(occupations)), decltype(begin(array))>{begin(occupations), begin(array)};
-			return gpu::run(gpu::reduce(array.size()), func);
+			return gpu::run(gpu::reduce(array.size()), 0.0, func);
 		}
 
 public:

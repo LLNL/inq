@@ -50,7 +50,7 @@ gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis cons
 		overlap_vector[0] = blas::dot(blas::C(phi1_matrix.rotated()[0]), phi2_matrix.rotated()[0]);
 		overlap_vector[0] *= basis.volume_element();
 	} else {
-		overlap_vector = gpu::run(nn, gpu::reduce(phi1_matrix.size()),
+		overlap_vector = gpu::run(nn, gpu::reduce(phi1_matrix.size()), zero<type>(),
 															overlap_diagonal_mult<decltype(begin(phi1_matrix))>{basis.volume_element(), begin(phi1_matrix), begin(phi2_matrix)});
 	}
 
@@ -152,7 +152,7 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, PhiMatrix const & phi
 
 	using type = typename PhiMatrix::element_type;
 
-	auto overlap_and_norm = gpu::run(nn, gpu::reduce(phi1_matrix.size()),
+	auto overlap_and_norm = gpu::run(nn, gpu::reduce(phi1_matrix.size()), zero<value_and_norm<type>>(),
 																	 overlap_diagonal_normalized_mult<decltype(begin(phi1_matrix))>{begin(phi1_matrix), begin(phi2_matrix)});
 	
 	if(basis.comm().size() > 1){

@@ -327,7 +327,7 @@ public:
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 		
-		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_),
+		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
 											 energy_reduction<decltype(begin(projections_all)), decltype(begin(coeff_)), decltype(begin(occupations))>
 											 {begin(projections_all), begin(coeff_), begin(occupations), phi.local_spinor_set_size()});
 		
@@ -399,7 +399,7 @@ public:
 			if(locally_empty_[iproj]) continue;
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
-				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_),
+				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
 																force_term<decltype(begin(occs)), decltype(begin(sphere_phi_all[iproj])), decltype(begin(sphere_gphi_all[iproj]))>{begin(occs), begin(sphere_phi_all[iproj]), begin(sphere_gphi_all[iproj])});
 		}
 
