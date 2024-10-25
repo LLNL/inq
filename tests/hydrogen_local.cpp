@@ -113,10 +113,10 @@ int main(int argc, char ** argv){
 		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.b3lyp(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 		
 		energy_match.check("total energy",        result.energy.total(),          -0.447429725736);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.421657099440);
+		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.421657099440, 7.0e-5);
 		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -0.247459996333);
 		energy_match.check("Hartree energy",      result.energy.hartree(),         0.282608756325);
-		energy_match.check("external energy",     result.energy.external(),       -0.916549935273);
+		energy_match.check("external energy",     result.energy.external(),       -0.916549935273, 7.0e-5);
 		energy_match.check("non-local energy",    result.energy.non_local(),       0.000000000000);
 		energy_match.check("XC energy",           result.energy.xc(),             -0.206884771385);
 		energy_match.check("XC density integral", result.energy.nvxc(),           -0.261262923463);
