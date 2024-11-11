@@ -110,7 +110,7 @@ int main(int argc, char ** argv){
 	// B3LYP
 	{
 
-		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.b3lyp(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
+		auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.b3lyp(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha).max_steps(300));
 		
 		energy_match.check("total energy",        result.energy.total(),          -0.447429725736);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.421657099440, 7.0e-5);
