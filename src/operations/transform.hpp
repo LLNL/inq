@@ -117,7 +117,9 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
+	using std::get;
+
+	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_GPU
