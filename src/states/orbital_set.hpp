@@ -73,7 +73,7 @@ public:
 	
 	template <typename ScalarType>
 	auto fill(ScalarType const & scalar){
-		fields_.fill(scalar);			
+		fields_.fill(scalar);     
 	}
 
 	auto & spinor_dim() const {
@@ -191,7 +191,7 @@ public:
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
 	using namespace inq;
-	using namespace inq::magnitude;	
+	using namespace inq::magnitude; 
 	using namespace Catch::literals;
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
@@ -199,7 +199,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto set_comm = basis::set_subcomm(cart_comm);
-	auto basis_comm = basis::basis_subcomm(cart_comm);	
+	auto basis_comm = basis::basis_subcomm(cart_comm);  
 
   basis::real_space rs(systems::cell::orthorhombic(10.0_b, 4.0_b, 7.0_b), /*spacing =*/ 0.35124074, basis_comm);
 
@@ -268,16 +268,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	if(cart_comm.size() == 1){
 		CHECK(sporb.matrix().size() == sporb.basis().local_size());
 		CHECK(sporb.matrix().transposed().size() == 24);
-		
-		CHECK(std::get<0>(sizes(sporb.spinor_array())) == sporb.basis().local_size());
-		CHECK(std::get<1>(sizes(sporb.spinor_array())) == 2);
-		CHECK(std::get<2>(sizes(sporb.spinor_array())) == 12);
 
-		CHECK(std::get<0>(strides(sporb.spinor_array())) == 24);
-		CHECK(std::get<1>(strides(sporb.spinor_array())) == 12);
+		using std::get;
 		
-		CHECK(std::get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size()*2);
-		CHECK(std::get<1>(sizes(sporb.spinor_matrix())) == 12);
+		CHECK(get<0>(sizes(sporb.spinor_array())) == sporb.basis().local_size());
+		CHECK(get<1>(sizes(sporb.spinor_array())) == 2);
+		CHECK(get<2>(sizes(sporb.spinor_array())) == 12);
+
+		CHECK(get<0>(strides(sporb.spinor_array())) == 24);
+		CHECK(get<1>(strides(sporb.spinor_array())) == 12);
+		
+		CHECK(get<0>(sizes(sporb.spinor_matrix())) == sporb.basis().local_size()*2);
+		CHECK(get<1>(sizes(sporb.spinor_matrix())) == 12);
 
 		//CHECK THE ORDER IS CORRECT IN THE SPINOR MATRIX
 		for(int ip = 0; ip < sporb.basis().local_size(); ip++){

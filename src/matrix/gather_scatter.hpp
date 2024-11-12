@@ -112,7 +112,7 @@ void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix, 
   assert(sendcounts[matrix.comm().rank()] == matrix.block().num_elements()); 
 	
 	if(matrix.comm().rank() == root) {
-		sendbuffer.reextent(matrix.sizex()*matrix.sizey());			
+		sendbuffer.reextent(matrix.sizex()*matrix.sizey());     
 		
 		for(int iproc = 0; iproc < matrix.comm().size(); iproc++){
       auto coords = matrix.comm().coordinates(iproc);
@@ -141,8 +141,8 @@ auto scatter(parallel::cartesian_communicator<2> comm, ArrayType const & full_ma
 
 	int szs[2];
 	if(comm.rank() == root){
-		szs[0] = std::get<0>(sizes(full_matrix));
-		szs[1] = std::get<1>(sizes(full_matrix));
+		szs[0] = get<0>(sizes(full_matrix));
+		szs[1] = get<1>(sizes(full_matrix));
 	}
 
 	comm.broadcast_n(szs, 2, root);
@@ -184,7 +184,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   for(int ix = 0; ix < mat.sizex(); ix++){
     for(int iy = 0; iy < mat.sizey(); iy++){
       auto ixg = parallel::global_index(ix);
-      auto iyg = parallel::global_index(iy);			
+      auto iyg = parallel::global_index(iy);      
       if(mat.is_local(ixg, iyg)) mat.block()[mat.partx().global_to_local(ixg)][mat.party().global_to_local(iyg)] = element(ix, iy);
     }
   }
@@ -219,10 +219,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-	auto mat2 = matrix::scatter(cart_comm, full_mat, /* root = */ 0);	
+	auto mat2 = matrix::scatter(cart_comm, full_mat, /* root = */ 0); 
 
 	CHECK(mat2.sizex() == mm);
-	CHECK(mat2.sizey() == nn);	
+	CHECK(mat2.sizey() == nn);  
 
 	for(int ix = 0; ix < mat.partx().local_size(); ix++){
 		for(int iy = 0; iy < mat.party().local_size(); iy++){

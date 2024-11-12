@@ -27,9 +27,11 @@ namespace solvers {
 template <class matrix_type, class vector_type>
 void linear_symmetric(matrix_type && matrix, vector_type & vector){
 
-	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+	using std::get;
 
-	int nn = std::get<0>(sizes(matrix));
+	assert(get<0>(sizes(matrix)) == get<1>(sizes(matrix)));
+
+	int nn = get<0>(sizes(matrix));
     
 	int info;
 	dpotrf("U", &nn, raw_pointer_cast(matrix.data_elements()), &nn, &info);

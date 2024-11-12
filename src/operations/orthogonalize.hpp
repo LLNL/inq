@@ -101,8 +101,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		basis::field_set<basis::real_space, complex> phi(pw, 2);
 
 		operations::randomize(phi);
-		
-		int nbasis = std::get<0>(sizes(phi.matrix()));
+
+		using std::get;
+
+		int nbasis = get<0>(sizes(phi.matrix()));
 		
 		for(int ii = 0 ; ii < phi.set_size(); ii++){
 		  for(int jj = 0; jj < nbasis; jj++){
@@ -174,8 +176,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto olap = operations::overlap(phi);
 		auto olap_array = matrix::all_gather(olap);
 
-		assert(std::get<0>(olap_array.sizes()) == phi.spinor_set_size());
-		assert(std::get<1>(olap_array.sizes()) == phi.spinor_set_size());
+		using std::get;
+
+		assert(get<0>(olap_array.sizes()) == phi.spinor_set_size());
+		assert(get<1>(olap_array.sizes()) == phi.spinor_set_size());
 		
 		for(int ii = 0; ii < phi.spinor_set_size(); ii++){
 			for(int jj = 0; jj < phi.spinor_set_size(); jj++){
@@ -217,7 +221,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	SECTION("Two arguments"){
 		basis::field_set<basis::real_space, complex> phi1(pw, 100);
-		basis::field_set<basis::real_space, complex> phi2(pw, 100);		
+		basis::field_set<basis::real_space, complex> phi2(pw, 100);   
 
 		operations::randomize(phi1);
 		operations::orthogonalize(phi1); 

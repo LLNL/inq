@@ -63,7 +63,7 @@ public:
 	}
 
 	//when no communicator is given, use the basis communicator
-	field_set(const basis_type & basis, const int num_vectors)			
+	field_set(const basis_type & basis, const int num_vectors)      
 		:field_set(basis, num_vectors, parallel::cartesian_communicator<2>(basis.comm(), {basis.comm().size(), 1}))
 	{
 	}
@@ -74,7 +74,7 @@ public:
 	}
 		
 	// Avoid the default copy constructor since the multi copy constructor is slow
-	//		field_set(const field_set & coeff) = default;
+	//    field_set(const field_set & coeff) = default;
 	field_set(field_set const & other)
 		:field_set(other.skeleton()){
 		matrix_ = other.matrix_;
@@ -242,7 +242,7 @@ field_set<basis::real_space, double> real_field(field_set<basis::real_space, inq
 	field_set<basis::real_space, double> rfield(field.skeleton());
 	
 	// Multi should be able to do this, but it causes a lot of compilation troubles
-	//			rfield.matrix() = boost::multi::blas::real(matrix());
+	//      rfield.matrix() = boost::multi::blas::real(matrix());
 	
 	gpu::run(field.set_part().local_size(), field.basis().part().local_size(),
 					 [rp = begin(rfield.matrix()), cp = begin(field.matrix())] GPU_LAMBDA (auto ist, auto ii){
@@ -281,7 +281,7 @@ field_set<basis::real_space, vector3<double, VectorSpace>> real_field(field_set<
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
   
 	using namespace inq;
-	using namespace inq::magnitude;	
+	using namespace inq::magnitude; 
 	using namespace Catch::literals;
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
@@ -289,7 +289,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	parallel::cartesian_communicator<2> cart_comm(comm, {});
 
 	auto set_comm = basis::set_subcomm(cart_comm);
-	auto basis_comm = basis::basis_subcomm(cart_comm);	
+	auto basis_comm = basis::basis_subcomm(cart_comm);  
 
 	basis::real_space rs(systems::cell::orthorhombic(10.0_b, 4.0_b, 7.0_b), /*spacing = */ 0.35124074, basis_comm);
 	
@@ -300,23 +300,25 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(sizes(rs)[2] == 20);
 
 	//std::cout << ff.basis().comm().size() << " x " << ff.set_comm().size() << std::endl;
-	//	std::cout << rs.part().comm_size() << std::endl;
+	//  std::cout << rs.part().comm_size() << std::endl;
 
-	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.matrix())) == 6160);
-	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.matrix())) == 6160/2);
-	if(ff.set_comm().size() == 1) CHECK(std::get<1>(sizes(ff.matrix())) == 12);
-	if(ff.set_comm().size() == 2) CHECK(std::get<1>(sizes(ff.matrix())) == 6);
-	if(ff.set_comm().size() == 3) CHECK(std::get<1>(sizes(ff.matrix())) == 4);
-	if(ff.set_comm().size() == 4) CHECK(std::get<1>(sizes(ff.matrix())) == 3);
-	if(ff.set_comm().size() == 6) CHECK(std::get<1>(sizes(ff.matrix())) == 2);
+	using std::get;
 
-	if(ff.basis().comm().size() == 1) CHECK(std::get<0>(sizes(ff.hypercubic())) == 28);
-	if(ff.basis().comm().size() == 2) CHECK(std::get<0>(sizes(ff.hypercubic())) == 14);
-	if(ff.basis().comm().size() == 4) CHECK(std::get<0>(sizes(ff.hypercubic())) == 7);
-	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
-	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
-	if(ff.set_comm().size() == 1) CHECK(std::get<3>(sizes(ff.hypercubic())) == 12);
-	if(ff.set_comm().size() == 2) CHECK(std::get<3>(sizes(ff.hypercubic())) == 6);
+	if(ff.basis().comm().size() == 1) CHECK(get<0>(sizes(ff.matrix())) == 6160);
+	if(ff.basis().comm().size() == 2) CHECK(get<0>(sizes(ff.matrix())) == 6160/2);
+	if(ff.set_comm().size() == 1) CHECK(get<1>(sizes(ff.matrix())) == 12);
+	if(ff.set_comm().size() == 2) CHECK(get<1>(sizes(ff.matrix())) == 6);
+	if(ff.set_comm().size() == 3) CHECK(get<1>(sizes(ff.matrix())) == 4);
+	if(ff.set_comm().size() == 4) CHECK(get<1>(sizes(ff.matrix())) == 3);
+	if(ff.set_comm().size() == 6) CHECK(get<1>(sizes(ff.matrix())) == 2);
+
+	if(ff.basis().comm().size() == 1) CHECK(get<0>(sizes(ff.hypercubic())) == 28);
+	if(ff.basis().comm().size() == 2) CHECK(get<0>(sizes(ff.hypercubic())) == 14);
+	if(ff.basis().comm().size() == 4) CHECK(get<0>(sizes(ff.hypercubic())) == 7);
+	CHECK(get<1>(sizes(ff.hypercubic())) == 11);
+	CHECK(get<2>(sizes(ff.hypercubic())) == 20);
+	if(ff.set_comm().size() == 1) CHECK(get<3>(sizes(ff.hypercubic())) == 12);
+	if(ff.set_comm().size() == 2) CHECK(get<3>(sizes(ff.hypercubic())) == 6);
 
 	ff.fill(12.2244);
 
@@ -329,9 +331,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto zff = complex_field(ff);
 	
 	static_assert(std::is_same<decltype(zff), basis::field_set<basis::real_space, complex>>::value, "complex() should return a complex field");
-		
-	CHECK(std::get<1>(sizes(zff.hypercubic())) == 11);
-	CHECK(std::get<2>(sizes(zff.hypercubic())) == 20);
+
+	CHECK(get<1>(sizes(zff.hypercubic())) == 11);
+	CHECK(get<2>(sizes(zff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){
@@ -344,8 +346,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
 
-	CHECK(std::get<1>(sizes(dff.hypercubic())) == 11);
-	CHECK(std::get<2>(sizes(dff.hypercubic())) == 20);
+	CHECK(get<1>(sizes(dff.hypercubic())) == 11);
+	CHECK(get<2>(sizes(dff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
 		for(int jj = 0; jj < ff.set_part().local_size(); jj++){

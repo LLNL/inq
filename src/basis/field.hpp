@@ -264,15 +264,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(( sizes(rs) == decltype(sizes(rs)){28, 11, 20} ));
 
-	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.linear())) == 6160);
-	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.linear())) == 3080);
-	if(comm.size() == 4) CHECK(std::get<0>(sizes(ff.linear())) == 1540);
+	using std::get;
 
-	if(comm.size() == 1) CHECK(std::get<0>(sizes(ff.cubic())) == 28);
-	if(comm.size() == 2) CHECK(std::get<0>(sizes(ff.cubic())) == 14);
-	if(comm.size() == 4) CHECK(std::get<0>(sizes(ff.cubic())) == 7);
-	CHECK(std::get<1>(sizes(ff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(ff.cubic())) == 20);
+	if(comm.size() == 1) CHECK(get<0>(sizes(ff.linear())) == 6160);
+	if(comm.size() == 2) CHECK(get<0>(sizes(ff.linear())) == 3080);
+	if(comm.size() == 4) CHECK(get<0>(sizes(ff.linear())) == 1540);
+
+	if(comm.size() == 1) CHECK(get<0>(sizes(ff.cubic())) == 28);
+	if(comm.size() == 2) CHECK(get<0>(sizes(ff.cubic())) == 14);
+	if(comm.size() == 4) CHECK(get<0>(sizes(ff.cubic())) == 7);
+
+	CHECK(get<1>(sizes(ff.cubic())) == 11);
+	CHECK(get<2>(sizes(ff.cubic())) == 20);
 
 	ff.fill(12.2244);
 
@@ -280,32 +283,35 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
 
-	CHECK(std::get<1>(sizes(ff_copy.cubic())) == 11);
-	CHECK(std::get<2>(sizes(ff_copy.cubic())) == 20);
+	using std::get;
+
+	CHECK(get<1>(sizes(ff_copy.cubic())) == 11);
+	CHECK(get<2>(sizes(ff_copy.cubic())) == 20);
 
 	auto zff = complex_field(ff);
 	
 	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
 	
-	CHECK(std::get<1>(sizes(zff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(zff.cubic())) == 20);
+	CHECK(get<1>(sizes(zff.cubic())) == 11);
+	CHECK(get<2>(sizes(zff.cubic())) == 20);
 
 	auto dff = real_field(zff);
 
 	static_assert(std::is_same<decltype(dff), basis::field<basis::real_space, double>>::value, "real() should return a double field");
 
-	CHECK(std::get<1>(sizes(dff.cubic())) == 11);
-	CHECK(std::get<2>(sizes(dff.cubic())) == 20);
+	CHECK(get<1>(sizes(dff.cubic())) == 11);
+	CHECK(get<2>(sizes(dff.cubic())) == 20);
 
-	CHECK(std::get<1>(sizes(ff.hypercubic())) == 11);
-	CHECK(std::get<2>(sizes(ff.hypercubic())) == 20);
-	CHECK(std::get<3>(sizes(ff.hypercubic())) == 1);    
+	CHECK(get<1>(sizes(ff.hypercubic())) == 11);
+	CHECK(get<2>(sizes(ff.hypercubic())) == 20);
+	CHECK(get<3>(sizes(ff.hypercubic())) == 1);    
 
 	//Make sure the hypercubic array is correctly ordered, so it can be flattened
 	auto strd = strides(ff.hypercubic());
-	CHECK(std::get<0>(strd) >= std::get<1>(strd));
-	CHECK(std::get<1>(strd) >= std::get<2>(strd));
-	CHECK(std::get<2>(strd) >= std::get<3>(strd));
+
+	CHECK(get<0>(strd) >= get<1>(strd));
+	CHECK(get<1>(strd) >= get<2>(strd));
+	CHECK(get<2>(strd) >= get<3>(strd));
 	
 	basis::field<basis::real_space, double> red(basis::field<basis::real_space, double>(ff), parallel::communicator{boost::mpi3::environment::get_self_instance()});
 

@@ -34,8 +34,11 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 	} else {
 		
 		assert(density.set_size() == 4);
-		assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
-		assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+
+		using std::get;
+
+		assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+		assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 		
 		gpu::run(phi.basis().part().local_size(),
 						 [nst = phi.local_spinor_set_size(), occ = begin(occupations), ph = begin(phi.spinor_array()), den = begin(density.matrix())] GPU_LAMBDA (auto ipoint){
@@ -223,7 +226,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
 
-		CHECK(std::get<1>(sizes(aa.spinor_array())) == 2);
+		using std::get;
+
+		CHECK(get<1>(sizes(aa.spinor_array())) == 2);
 		
 		gpu::array<double, 1> occ(nvec);
 		
@@ -237,7 +242,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 
 		for(int jj = 0; jj < aa.local_spinor_set_size(); jj++) {
-			auto jjg = aa.spinor_set_part().local_to_global(jj).value();			
+			auto jjg = aa.spinor_set_part().local_to_global(jj).value();      
 			occ[jj] = 1.0/(jjg + 1);
 		}
 
@@ -249,7 +254,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		dd.all_reduce(aa.set_comm());
 
 		for(int ii = 0; ii < dd.basis().part().local_size(); ii++) {
-			auto iig = bas.part().local_to_global(ii).value();			
+			auto iig = bas.part().local_to_global(ii).value();      
 			CHECK(dd.matrix()[ii][0] == Approx(0.5*iig*nvec*(nvec + 1)));
 			CHECK(dd.matrix()[ii][1] == Approx(0.5*iig*nvec*(nvec + 1)));
 			CHECK(dd.matrix()[ii][2] == Approx(0.5*iig*nvec*(nvec + 1)));
