@@ -85,9 +85,11 @@ void scatter(ArrayType const & full_matrix, matrix::distributed<Type> & matrix, 
 
 	CALI_CXX_MARK_SCOPE("matrix::scatter");
 
+	using std::get;
+
 	if(matrix.comm().rank() == root){
-		assert(matrix.sizex() == std::get<0>(sizes(full_matrix)));
-		assert(matrix.sizey() == std::get<1>(sizes(full_matrix)));
+		assert(matrix.sizex() == get<0>(sizes(full_matrix)));
+		assert(matrix.sizey() == get<1>(sizes(full_matrix)));
 	}
 	
   using type = Type;
