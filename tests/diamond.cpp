@@ -95,8 +95,10 @@ int main(int argc, char ** argv){
 	if(energy_match.fail()) return energy_match.fail();
 
 	{
-		auto result = ground_state::calculate(ions, electrons, options::theory{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha));
+		auto result = ground_state::calculate(ions, electrons, options::theory{}.hartree_fock(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1e-8_Ha).calculate_forces());
 
+		std::cout << result << std::endl;
+		
 		energy_match.check("total energy",        result.energy.total(),          -9.788709725748);
 		energy_match.check("kinetic energy",      result.energy.kinetic(),         8.151819376871);
 		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -0.249826944617);

@@ -25,6 +25,7 @@ struct results {
   vector3<double> magnetization;
   energy_type energy;
   forces_type forces;
+	vector3<vector3<double>> stress;
 
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the ground_state::results to directory '" + dirname + "'.";
@@ -35,7 +36,8 @@ struct results {
 		utils::save_value(comm, dirname + "/dipole",        dipole,        error_message);
 		utils::save_value(comm, dirname + "/magnetization", magnetization, error_message);
 		utils::save_value(comm, dirname + "/num_atoms",     forces.size(), error_message);
-		utils::save_container(comm, dirname + "/forces",        forces,        error_message);
+		utils::save_value(comm, dirname + "/stress",        stress,        error_message);
+		utils::save_container(comm, dirname + "/forces",    forces,        error_message);
 	}
 	
   static auto load(std::string const & dirname) {
@@ -47,7 +49,8 @@ struct results {
     utils::load_value(dirname + "/total_iter",     res.total_iter,     error_message);
     utils::load_value(dirname + "/dipole",         res.dipole,         error_message);
     utils::load_value(dirname + "/magnetization",  res.magnetization,  error_message);
-
+    utils::load_value(dirname + "/stress",         res.stress,         error_message);
+		
     int num_atoms;
     utils::load_value(dirname + "/num_atoms",      num_atoms,          error_message);
 
@@ -64,8 +67,13 @@ struct results {
     
     std::cout << "Ground-state results:\n";
     std::cout << " iterations     = " << self.total_iter << '\n';
-    std::cout << " dipole         = " << self.dipole << '\n';
+    std::cout << " dipole [a.u.]  = " << self.dipole << '\n';
     std::cout << " magnetization  = " << self.magnetization << '\n';
+		std::cout << " stress [a.u.]  = " << self.stress[0] << '\n';
+		std::cout << "                = " << self.stress[1] << '\n';
+		std::cout << "                = " << self.stress[2] << '\n';
+		auto pressure  = -(self.stress[0][0] + self.stress[1][1] + self.stress[2][2])/3.0;
+		std::cout << " pressure       = " << pressure << " Ha/b^3 | " << pressure*29421.016 << " GPa \n";
     std::cout << " total energy   = "
               << utils::num_to_str("%.8f", self.energy.total()) << " Ha | "
               << utils::num_to_str("%.8f", self.energy.total()/in_atomic_units(1.0_eV)) << " eV \n";
@@ -105,6 +113,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	res.energy.xc(7.55);
 	res.energy.nvxc(8.55);
 	res.energy.exact_exchange(10.55);
+	res.stress[0] = vector3<double>{1.28, 7.62, 5.56};
+	res.stress[1] = vector3<double>{7.62, 3.03, 0.57};
+	res.stress[2] = vector3<double>{5.56, 0.57, 8.88};;
   res.forces = ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}};
 
   CHECK(res.total_iter == 333);
@@ -119,6 +130,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(res.energy.xc() == 7.55);
 	CHECK(res.energy.nvxc() == 8.55);
 	CHECK(res.energy.exact_exchange() == 10.55);
+	CHECK(res.stress[0] == vector3<double>{1.28, 7.62, 5.56});
+	CHECK(res.stress[1] == vector3<double>{7.62, 3.03, 0.57});
+	CHECK(res.stress[2] == vector3<double>{5.56, 0.57, 8.88});
   CHECK(res.forces == ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
   
   res.save(comm, "save_results");
@@ -136,6 +150,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(read_res.energy.xc() == 7.55);
 	CHECK(read_res.energy.nvxc() == 8.55);
 	CHECK(read_res.energy.exact_exchange() == 10.55);
+	CHECK(read_res.stress[0] == vector3<double>{1.28, 7.62, 5.56});
+	CHECK(read_res.stress[1] == vector3<double>{7.62, 3.03, 0.57});
+	CHECK(read_res.stress[2] == vector3<double>{5.56, 0.57, 8.88});
   CHECK(read_res.forces == ground_state::results::forces_type{65, vector3<double>{3.55, 4.55, 5.55}});
 
 }
