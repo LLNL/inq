@@ -89,8 +89,6 @@ namespace basis {
 				//OPTIMIZATION: this iteration should be done only over the local points
 				auto buffer = points_({upper_count, upper_count + cube_size}).partitioned(cube_dims[0]*cube_dims[1]).partitioned(cube_dims[0]);
 
-				using std::get;
-
 				assert(get<0>(sizes(buffer)) == cube_dims[0]);
 				assert(get<1>(sizes(buffer)) == cube_dims[1]);
 				assert(get<2>(sizes(buffer)) == cube_dims[2]);
@@ -178,8 +176,6 @@ namespace basis {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
 
-			using std::get;
-
 			const int nst = get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
@@ -197,8 +193,6 @@ namespace basis {
     template <class array_2d, class array_4d>
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
-
-			using std::get;
 
 			gpu::run(get<1>(sizes(subgrid)), size(),
 							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){

@@ -220,8 +220,6 @@ public:
 	template<class occupations_array_type, class field_set_type, typename VxcType>
 	void compute_psi_vxc_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc, basis::field<basis::real_space, double> & rfield) {
 
-		using std::get;
-
 		assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
 		assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 

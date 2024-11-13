@@ -164,7 +164,7 @@ namespace basis {
 
 			std::array<int, 3> point = {0, 0, 0};
 
-			auto size = std::get<dir>(sizes(fld.cubic()));
+			auto size = get<dir>(sizes(fld.cubic()));
 			
 			for(int ii = 0; ii < size; ii++){
 				auto ip = ii + size/2;
@@ -264,8 +264,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(( sizes(rs) == decltype(sizes(rs)){28, 11, 20} ));
 
-	using std::get;
-
 	if(comm.size() == 1) CHECK(get<0>(sizes(ff.linear())) == 6160);
 	if(comm.size() == 2) CHECK(get<0>(sizes(ff.linear())) == 3080);
 	if(comm.size() == 4) CHECK(get<0>(sizes(ff.linear())) == 1540);
@@ -282,8 +280,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	for(int ii = 0; ii < rs.part().local_size(); ii++) CHECK(ff.linear()[ii] == 12.2244_a); 
 
 	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
-
-	using std::get;
 
 	CHECK(get<1>(sizes(ff_copy.cubic())) == 11);
 	CHECK(get<2>(sizes(ff_copy.cubic())) == 20);

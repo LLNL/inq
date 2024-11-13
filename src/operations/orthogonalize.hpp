@@ -102,8 +102,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		operations::randomize(phi);
 
-		using std::get;
-
 		int nbasis = get<0>(sizes(phi.matrix()));
 		
 		for(int ii = 0 ; ii < phi.set_size(); ii++){
@@ -176,8 +174,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto olap = operations::overlap(phi);
 		auto olap_array = matrix::all_gather(olap);
 
-		using std::get;
-
 		assert(get<0>(olap_array.sizes()) == phi.spinor_set_size());
 		assert(get<1>(olap_array.sizes()) == phi.spinor_set_size());
 		
@@ -203,8 +199,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		auto olap = operations::overlap(phi);
 		auto olap_array = matrix::all_gather(olap);
-
-		using std::get;
 
 		assert(get<0>(olap_array.sizes()) == phi.spinor_set_size());
 		assert(get<1>(olap_array.sizes()) == phi.spinor_set_size());

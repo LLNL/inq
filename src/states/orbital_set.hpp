@@ -269,8 +269,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(sporb.matrix().size() == sporb.basis().local_size());
 		CHECK(sporb.matrix().transposed().size() == 24);
 
-		using std::get;
-		
 		CHECK(get<0>(sizes(sporb.spinor_array())) == sporb.basis().local_size());
 		CHECK(get<1>(sizes(sporb.spinor_array())) == 2);
 		CHECK(get<2>(sizes(sporb.spinor_array())) == 12);

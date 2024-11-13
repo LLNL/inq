@@ -302,8 +302,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	//std::cout << ff.basis().comm().size() << " x " << ff.set_comm().size() << std::endl;
 	//  std::cout << rs.part().comm_size() << std::endl;
 
-	using std::get;
-
 	if(ff.basis().comm().size() == 1) CHECK(get<0>(sizes(ff.matrix())) == 6160);
 	if(ff.basis().comm().size() == 2) CHECK(get<0>(sizes(ff.matrix())) == 6160/2);
 	if(ff.set_comm().size() == 1) CHECK(get<1>(sizes(ff.matrix())) == 12);
