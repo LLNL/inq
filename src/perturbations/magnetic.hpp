@@ -14,8 +14,8 @@ class magnetic : public none {
     
 public:
 
-    magnetic(vector3<double> const & B):
-        magnetic_vector_(B)
+    magnetic(vector3<double> const & value):
+        magnetic_vector_(value)
     {
     }
 
@@ -26,8 +26,8 @@ public:
     template<typename MagneticField>
     void magnetic_field(const double time, MagneticField & magnetic) const {
         gpu::run(magnetic.basis().local_size(),
-            [b = begin(magnetic.linear()), mv = magnetic_vector_] GPU_LAMBDA (auto ip){
-                b[ip] += mv;
+            [magnetic_ = begin(magnetic.linear()), mv = magnetic_vector_] GPU_LAMBDA (auto ip){
+                magnetic_[ip] += mv;
             });
     }
 
@@ -49,18 +49,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-    perturbations::magnetic B{{0.0, 0.0, 1.0}};
+    perturbations::magnetic uniform_magnetic{{0.0, 0.0, 1.0}};
 
     basis::real_space bas(systems::cell::cubic(5.0_b), /*spacing*/ 0.1, comm);
-    basis::field<basis::real_space, vector3<double>> Bfield(bas);
-    Bfield.fill(vector3<double> {0.0, 0.0, 0.0});
+    basis::field<basis::real_space, vector3<double>> mag_field(bas);
+    mag_field.fill(vector3<double> {0.0, 0.0, 0.0});
 
-    CHECK(B.has_magnetic_field());
-    B.magnetic_field(/*time*/ 0.0, Bfield);
-    CHECK(Bfield.linear()[0]     == vector3<double>{0.0, 0.0, 1.0});
-    CHECK(Bfield.linear()[1]     == vector3<double>{0.0, 0.0, 1.0});
+    CHECK(uniform_magnetic.has_magnetic_field());
+    uniform_magnetic.magnetic_field(/*time*/ 0.0, mag_field);
+    CHECK(mag_field.linear()[0]     == vector3<double>{0.0, 0.0, 1.0});
+    CHECK(mag_field.linear()[1]     == vector3<double>{0.0, 0.0, 1.0});
 
-    B.magnetic_field(/*time*/ 1000.0, Bfield);
-    CHECK(Bfield.linear()[0]     == vector3<double>{0.0, 0.0, 2.0});
+    uniform_magnetic.magnetic_field(/*time*/ 1000.0, mag_field);
+    CHECK(mag_field.linear()[0]     == vector3<double>{0.0, 0.0, 2.0});
 }
 #endif
