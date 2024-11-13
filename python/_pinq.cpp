@@ -92,8 +92,6 @@ public:
 
 		auto const & dens = electrons_->spin_density().hypercubic();
 
-		using std::get;
-
 		auto dx = get<0>(sizes(dens));
 		auto dy = get<1>(sizes(dens));
 		auto dz = get<2>(sizes(dens));

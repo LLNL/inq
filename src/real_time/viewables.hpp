@@ -109,8 +109,6 @@ public:
 
 			auto ortho = matrix::all_gather(operations::overlap(electrons_.kpin()[ilot], gs.kpin()[ilot]));
 
-			using std::get;
-
 			for (int it = 0; it < get<0>(sizes(ortho)); it++) {
 				auto start = electrons_.kpin()[ilot].set_part().start();
 				auto finish = electrons_.kpin()[ilot].set_part().end();

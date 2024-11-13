@@ -58,8 +58,6 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	CALI_CXX_MARK_FUNCTION;
 
-	using std::get;
-
 	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	CALI_MARK_BEGIN("heffte_initialization");
@@ -119,8 +117,6 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	CALI_CXX_MARK_FUNCTION;
 
-	using std::get;
-
 	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	namespace multi = boost::multi;
@@ -144,7 +140,6 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		int zblock = fourier_basis.cubic_part(2).max_local_size();
 		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
 
-		using std::get;
 		auto last_dim = get<3>(sizes(array_rs));
 
 		gpu::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
@@ -172,8 +167,6 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 							 });
 		}
 		CALI_MARK_END("fft_forward_transpose");
-
-		using std::get;
 
 		assert(get<4>(sizes(buffer)) == last_dim);
 		
@@ -279,8 +272,6 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 		int xblock = real_basis.cubic_part(0).max_local_size();
 		int zblock = fourier_basis.cubic_part(2).max_local_size();
-
-		using std::get;
 
 		auto last_dim = get<3>(sizes(array_fs));
 		

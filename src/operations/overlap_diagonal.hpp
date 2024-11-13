@@ -28,8 +28,6 @@ gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis cons
 
 	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
 
-	using std::get;
-
 	auto nn = get<1>(phi1_matrix.sizes());
 
 	using type = typename PhiMatrix::element_type;
@@ -129,8 +127,6 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, PhiMatrix const & phi
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
 	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
-
-	using std::get;
 
 	auto nn = get<1>(phi1_matrix.sizes());
 
@@ -254,8 +250,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
 
-			using std::get;
-
 			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 			
 			for(int jj = 0; jj < ff.size(); jj++) {
@@ -283,8 +277,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 
-		using std::get;
-
 		CHECK(get<0>(sizes(dd)) ==  aa.set_part().local_size());
 
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
@@ -308,8 +300,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 
-			using std::get;
-
 			CHECK(get<0>(sizes(ee)) == aa.set_part().local_size());
 				
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
@@ -323,8 +313,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
-
-			using std::get;
 
 			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 				
@@ -386,8 +374,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
 
-			using std::get;
-
 			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 			
 			for(int jj = 0; jj < ff.size(); jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
@@ -412,8 +398,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto dd = operations::overlap_diagonal(aa, bb);
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
-
-		using std::get;
 		
 		CHECK(get<0>(sizes(dd)) == aa.set_part().local_size());
 		
@@ -438,8 +422,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 
-			using std::get;
-
 			CHECK(get<0>(sizes(ee)) == aa.set_part().local_size());
 				
 			for(int jj = 0; jj < ee.size(); jj++) {
@@ -453,8 +435,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
-
-			using std::get;
 
 			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 
@@ -486,8 +466,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 
-		using std::get;
-
 		CHECK(get<0>(sizes(dd)) == aa.spinor_set_part().local_size());
 		
 		for(int jj = 0; jj < dd.size(); jj++){
@@ -512,8 +490,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
 
-			using std::get;
-
 			CHECK(get<0>(sizes(ee)) == aa.spinor_set_part().local_size());
 				
 			for(int jj = 0; jj < ee.size(); jj++) {
@@ -528,7 +504,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
 
-			using std::get;
 			CHECK(get<0>(sizes(ff)) == aa.spinor_set_part().local_size());
 
 			for(int jj = 0; jj < ff.size(); jj++) {

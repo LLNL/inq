@@ -35,8 +35,6 @@ void calculate_add(const occupations_array_type & occupations, field_set_type & 
 		
 		assert(density.set_size() == 4);
 
-		using std::get;
-
 		assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
 		assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 		
@@ -225,8 +223,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	SECTION("spinor"){
 		
 		states::orbital_set<basis::trivial, complex> aa(bas, nvec, 2, vector3<double, covariant>{0.0, 0.0, 0.0}, 0, cart_comm);
-
-		using std::get;
 
 		CHECK(get<1>(sizes(aa.spinor_array())) == 2);
 		
