@@ -28,7 +28,7 @@ namespace hamiltonian {
 
 class xc_term {
 
-	std::vector<hamiltonian::xc_functional> functionals_;	
+	std::vector<hamiltonian::xc_functional> functionals_; 
 
 public:
 	
@@ -113,7 +113,7 @@ public:
   template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
   void operator()(SpinDensityType const & spin_density, CoreDensityType const & core_density, VKSType & vks, double & exc, double & nvxc) const {
     
-    	exc = 0.0;
+      exc = 0.0;
 		nvxc = 0.0;
 		if(not any_true_functional()) return;
 		
@@ -220,8 +220,10 @@ public:
 	template<class occupations_array_type, class field_set_type, typename VxcType>
 	void compute_psi_vxc_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc, basis::field<basis::real_space, double> & rfield) {
 
-		assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
-		assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+		using std::get;
+
+		assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+		assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 
 		if (vxc.set_size() == 1) {
 			gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
@@ -328,7 +330,7 @@ public:
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
-	using namespace inq::magnitude;	
+	using namespace inq::magnitude; 
 	using namespace Catch::literals;
 	using namespace operations;
 	using Catch::Approx;
@@ -343,7 +345,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	basis::real_space bas(systems::cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.40557787, comm);
 
-	basis::field_set<basis::real_space, double> density_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> density_unp(bas, 1);  
 	basis::field_set<basis::real_space, double> density_pol(bas, 2);
 	
 	//Define k-vector for test function
@@ -369,7 +371,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	observables::density::normalize(density_pol, 42.0);
 	
 	CHECK(operations::integral_sum(density_unp) == 42.0_a);
-	CHECK(operations::integral_sum(density_pol) == 42.0_a);	
+	CHECK(operations::integral_sum(density_pol) == 42.0_a); 
 	
 	auto grad_unp = std::optional{operations::gradient(density_unp)};
 	auto grad_pol = std::optional{operations::gradient(density_pol)};
@@ -381,7 +383,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(density_pol.matrix()[index][1] == 0.0015433408_a);
 	}
 
-	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);	
+	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);  
 	basis::field_set<basis::real_space, double> vfunc_pol(bas, 2);
 	
 	SECTION("LDA_X"){
