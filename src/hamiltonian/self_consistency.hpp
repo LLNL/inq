@@ -159,12 +159,12 @@ public:
 		// THE MAGNETIC FIELD
 		
 		if (pert_.has_magnetic_field()) {
-			basis::field<basis::real_space, vector3<double>> B(spin_density.basis());
-			B.fill(vector3 {0.0, 0.0, 0.0});
-			pert_.magnetic_field(time, B);
+			basis::field<basis::real_space, vector3<double>> uniform_magnetic(spin_density.basis());
+			uniform_magnetic.fill(vector3 {0.0, 0.0, 0.0});
+			pert_.magnetic_field(time, uniform_magnetic);
 			zeeman_coupling zc_(spin_density.set_size());
 			auto zeeman_ener = 0.0;
-			zc_(spin_density, B, hamiltonian.scalar_potential_, zeeman_ener);
+			zc_(spin_density, uniform_magnetic, hamiltonian.scalar_potential_, zeeman_ener);
 			energy.zeeman_energy(zeeman_ener);
 		}
 		
