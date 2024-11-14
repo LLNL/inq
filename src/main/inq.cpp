@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
 		{ "extraelectrons"s,           "extra-electrons"s          },
 		{ "extrastates"s,              "extra-states"s             },
 		{ "filename"s,                 "file"s                     },
+		{ "force"s,                    "forces"s                   },
 		{ "fraction"s,                 "fractional"s               },
 		{ "freq"s,                     "frequency"s                },
 		{ "functionals"s,              "functional"s               },
