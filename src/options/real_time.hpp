@@ -245,6 +245,11 @@ public:
 		if(not self.num_steps_.has_value()) out << " *";
 		out << "\n";
 
+		auto time = self.num_steps()*self.dt();
+		out << "  propagation time   = " << time << " atu | " << time/in_atomic_units(1.0_fs) << " fs";
+		if(not self.num_steps_.has_value()) out << " *";
+		out << "\n";
+
 		out << "  ion-dynamics       = " << self.ion_dynamics_value();
 		if(not self.ion_dynamics_.has_value()) out << " *";
 		out << "\n";
