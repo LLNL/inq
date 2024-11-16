@@ -43,6 +43,7 @@ auto aliases() {
 		{ "nonlocal"s,                 "non-local"s                },
 		{ "observable"s,               "observables"s              },
 		{ "perturbation"s,             "perturbations"s            },
+		{ "propagationtime"s,          "propagation-time"s         },
 		{ "pseudo-potential"s,         "pseudo"s                   },
 		{ "pseudopotential"s,          "pseudo"s                   },
 		{ "pseudoset"s,                "pseudo-set"s               },
