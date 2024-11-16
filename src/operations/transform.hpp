@@ -58,7 +58,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
+	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	CALI_MARK_BEGIN("heffte_initialization");
  
@@ -117,7 +117,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 	CALI_CXX_MARK_FUNCTION;
 
-	assert(std::get<3>(sizes(array_rs)) == std::get<3>(sizes(array_fs)));
+	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	namespace multi = boost::multi;
 #ifdef ENABLE_GPU
@@ -139,7 +139,8 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		int xblock = real_basis.cubic_part(0).max_local_size();
 		int zblock = fourier_basis.cubic_part(2).max_local_size();
 		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
-    auto last_dim = std::get<3>(sizes(array_rs));
+
+		auto last_dim = get<3>(sizes(array_rs));
 
 		gpu::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
 		
@@ -167,7 +168,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		}
 		CALI_MARK_END("fft_forward_transpose");
 
-		assert(std::get<4>(sizes(buffer)) == last_dim);
+		assert(get<4>(sizes(buffer)) == last_dim);
 		
 		tmp.clear();
 
@@ -271,7 +272,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 		int xblock = real_basis.cubic_part(0).max_local_size();
 		int zblock = fourier_basis.cubic_part(2).max_local_size();
-		auto last_dim = std::get<3>(sizes(array_fs));
+
+		auto last_dim = get<3>(sizes(array_fs));
 		
 		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 		gpu::prefetch(buffer);
@@ -341,7 +343,7 @@ auto to_fourier(const FieldSetType & phi){
 
 	auto fphi = FieldSetType::reciprocal(phi.skeleton());
 
-	assert(phi.local_set_size() == fphi.local_set_size());	
+	assert(phi.local_set_size() == fphi.local_set_size());  
 	
 	using type = typename FieldSetType::element_type;
 	
@@ -361,7 +363,7 @@ auto to_fourier(const FieldSetType & phi){
 	}
 
 	// this is disabled since it causes some issues I need to check, XA
-	//	zero_outside_sphere(fphi);
+	//  zero_outside_sphere(fphi);
 	
 	return fphi;
 }
@@ -375,7 +377,7 @@ auto to_real(const FieldSetType & fphi, bool const normalize = true){
 
 	auto phi = FieldSetType::reciprocal(fphi.skeleton());
 
-	assert(phi.local_set_size() == fphi.local_set_size());	
+	assert(phi.local_set_size() == fphi.local_set_size());  
 	
 	using type = typename FieldSetType::element_type;
 	

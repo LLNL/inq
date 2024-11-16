@@ -27,7 +27,8 @@ gpu::array<typename PhiMatrix::element_type, 1> overlap_diagonal_impl(Basis cons
 	CALI_CXX_MARK_SCOPE("overlap_diagonal(2arg)");
 
 	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
-	auto nn = std::get<1>(phi1_matrix.sizes());
+
+	auto nn = get<1>(phi1_matrix.sizes());
 
 	using type = typename PhiMatrix::element_type;
 		
@@ -64,7 +65,7 @@ auto overlap_diagonal(basis::field_set<Basis, Type> const & phi1, basis::field_s
 
 template <class Basis, class Type>
 auto overlap_diagonal(states::orbital_set<Basis, Type> const & phi1, states::orbital_set<Basis, Type> const & phi2){
-	assert(phi1.basis() == phi2.basis());	
+	assert(phi1.basis() == phi2.basis()); 
 	return overlap_diagonal_impl(phi1.basis(), phi1.spinor_matrix(), phi2.spinor_matrix());
 }
 
@@ -126,7 +127,8 @@ auto overlap_diagonal_normalized_impl(Basis const & basis, PhiMatrix const & phi
 	CALI_CXX_MARK_SCOPE("overlap_diagonal_normalized");
 
 	assert(sizes(phi1_matrix) == sizes(phi2_matrix));
-	auto nn = std::get<1>(phi1_matrix.sizes());
+
+	auto nn = get<1>(phi1_matrix.sizes());
 
 	using type = typename PhiMatrix::element_type;
 
@@ -247,8 +249,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
-			
-			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
+
+			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 			
 			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
@@ -274,9 +276,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto dd = operations::overlap_diagonal(aa, bb);
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
-		
-		CHECK(std::get<0>(sizes(dd)) ==  aa.set_part().local_size());
-		
+
+		CHECK(get<0>(sizes(dd)) ==  aa.set_part().local_size());
+
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj).value();
 			CHECK(fabs(real(dd[jj])) < 1.0e-12);
@@ -297,8 +299,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto ee = operations::overlap_diagonal(cc);
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ee)) == aa.set_part().local_size());
+
+			CHECK(get<0>(sizes(ee)) == aa.set_part().local_size());
 				
 			for(int jj = 0; jj < aa.set_part().local_size(); jj++) {
 				auto jjg = aa.set_part().local_to_global(jj).value();
@@ -311,8 +313,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
+
+			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 				
 			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
@@ -371,8 +373,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 			
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<double, 1>));
-			
-			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
+
+			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
 			
 			for(int jj = 0; jj < ff.size(); jj++) CHECK(ff[jj] == Approx(dd[jj]/gg[jj]));
  
@@ -397,7 +399,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
 		
-		CHECK(std::get<0>(sizes(dd)) == aa.set_part().local_size());
+		CHECK(get<0>(sizes(dd)) == aa.set_part().local_size());
 		
 		for(int jj = 0; jj < aa.set_part().local_size(); jj++){
 			auto jjg = aa.set_part().local_to_global(jj).value();
@@ -419,8 +421,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto ee = operations::overlap_diagonal(cc);
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ee)) == aa.set_part().local_size());
+
+			CHECK(get<0>(sizes(ee)) == aa.set_part().local_size());
 				
 			for(int jj = 0; jj < ee.size(); jj++) {
 				auto jjg = aa.set_part().local_to_global(jj).value();
@@ -433,9 +435,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ff)) == aa.set_part().local_size());
-				
+
+			CHECK(get<0>(sizes(ff)) == aa.set_part().local_size());
+
 			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
 				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));
@@ -463,8 +465,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto dd = operations::overlap_diagonal(aa, bb);
 		
 		CHECK(typeid(decltype(dd)) == typeid(gpu::array<complex, 1>));
-		
-		CHECK(std::get<0>(sizes(dd)) == aa.spinor_set_part().local_size());
+
+		CHECK(get<0>(sizes(dd)) == aa.spinor_set_part().local_size());
 		
 		for(int jj = 0; jj < dd.size(); jj++){
 			auto jjg = aa.spinor_set_part().local_to_global(jj).value();
@@ -479,7 +481,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 				auto jjg = cc.spinor_set_part().local_to_global(jj);
 				auto iig = bas.part().local_to_global(ii);
 				cc.spinor_array()[ii][0][jj] = sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));
-				cc.spinor_array()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));				
+				cc.spinor_array()[ii][1][jj] = 2.0*sqrt(iig.value())*sqrt(jjg.value())*exp(complex(0.0, M_PI/65.0*iig.value()));        
 			}
 		}
 
@@ -487,8 +489,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto ee = operations::overlap_diagonal(cc);
 
 			CHECK(typeid(decltype(ee)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ee)) == aa.spinor_set_part().local_size());
+
+			CHECK(get<0>(sizes(ee)) == aa.spinor_set_part().local_size());
 				
 			for(int jj = 0; jj < ee.size(); jj++) {
 				auto jjg = aa.spinor_set_part().local_to_global(jj).value();
@@ -501,9 +503,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto gg = operations::overlap_diagonal(bb);
 
 			CHECK(typeid(decltype(ff)) == typeid(gpu::array<complex, 1>));
-			
-			CHECK(std::get<0>(sizes(ff)) == aa.spinor_set_part().local_size());
-				
+
+			CHECK(get<0>(sizes(ff)) == aa.spinor_set_part().local_size());
+
 			for(int jj = 0; jj < ff.size(); jj++) {
 				CHECK(fabs(ff[jj]) == Approx(fabs(dd[jj]/gg[jj])));
 				CHECK(imag(ff[jj]) == Approx(imag(dd[jj]/gg[jj])));

@@ -164,9 +164,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc_array = matrix::all_gather(cc);
 			
 			CHECK(typeid(decltype(cc_array[0][0])) == typeid(double));
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
-			
+
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
+
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++) CHECK(cc_array[ii][jj] == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
 			}
@@ -192,9 +193,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc = operations::overlap(aa, bb);
 			auto cc_array = matrix::all_gather(cc);         
 
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
-				
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
+
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++) {
 					CHECK(fabs(real(cc_array[ii][jj])) < 1.0e-14);
@@ -216,9 +217,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc_array = matrix::all_gather(cc);
 			
 			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
-				
+
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
+
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
 					CHECK(real(cc_array[ii][jj]) == Approx(0.5*npoint*(npoint - 1.0)*bas.volume_element()*sqrt(jj)*sqrt(ii)) );
@@ -247,9 +249,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 		auto cc = operations::overlap(aa);
 		auto cc_array = matrix::all_gather(cc);
-			
-		CHECK(std::get<0>(sizes(cc_array)) == nvec);
-		CHECK(std::get<1>(sizes(cc_array)) == nvec);
+
+		CHECK(get<0>(sizes(cc_array)) == nvec);
+		CHECK(get<1>(sizes(cc_array)) == nvec);
 			
 		CHECK(real(cc_array[0][0]) == Approx(400.0*0.5*npoint*(npoint + 1.0)*bas.volume_element()));
 		CHECK(fabs(imag(cc_array[0][0])) < 1e-12);
@@ -273,8 +275,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc = operations::overlap(aa, bb);
 			auto cc_array = matrix::all_gather(cc);
 
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++) {
@@ -297,8 +299,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc_array = matrix::all_gather(cc);
 			
 			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){
@@ -333,8 +336,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc = operations::overlap(aa, bb);
 			auto cc_array = matrix::all_gather(cc);
 
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++) {
@@ -358,8 +361,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto cc_array = matrix::all_gather(cc);
 			
 			CHECK(typeid(decltype(cc_array[0][0])) == typeid(complex));
-			CHECK(std::get<0>(sizes(cc_array)) == nvec);
-			CHECK(std::get<1>(sizes(cc_array)) == nvec);
+
+			CHECK(get<0>(sizes(cc_array)) == nvec);
+			CHECK(get<1>(sizes(cc_array)) == nvec);
 				
 			for(int ii = 0; ii < nvec; ii++){
 				for(int jj = 0; jj < nvec; jj++){

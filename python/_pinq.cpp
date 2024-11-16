@@ -91,11 +91,11 @@ public:
 		assert(electrons_.has_value());
 
 		auto const & dens = electrons_->spin_density().hypercubic();
-			
-		auto dx = std::get<0>(sizes(dens));
-		auto dy = std::get<1>(sizes(dens));
-		auto dz = std::get<2>(sizes(dens));
-		auto dspin = std::get<3>(sizes(dens));		
+
+		auto dx = get<0>(sizes(dens));
+		auto dy = get<1>(sizes(dens));
+		auto dz = get<2>(sizes(dens));
+		auto dspin = get<3>(sizes(dens));    
 		
 		py::array_t<double, py::array::c_style> density_array({dx, dy, dz, dspin});
 		
@@ -194,7 +194,7 @@ PYBIND11_MODULE(_pinq, module) {
 		.def(py::init<py::args, py::kwargs&>())
 		.def("get_potential_energy", &calculator::get_potential_energy)
 		.def("get_forces",           &calculator::get_forces)
-		.def("get_density",          &calculator::get_density)		
+		.def("get_density",          &calculator::get_density)    
 		.def("calculate",            &calculator::calculate)
 		.def("scf_step",             &calculator::scf_step);
 
@@ -202,7 +202,7 @@ PYBIND11_MODULE(_pinq, module) {
 	interface::clear.python_interface(interface_module);
 	interface::cell.python_interface(interface_module);
 	interface::electrons.python_interface(interface_module);
-	interface::ground_state.python_interface(interface_module);	
+	interface::ground_state.python_interface(interface_module); 
 	interface::ions.python_interface(interface_module);
 	interface::kpoints.python_interface(interface_module);
 	interface::real_time.python_interface(interface_module);
@@ -210,7 +210,7 @@ PYBIND11_MODULE(_pinq, module) {
 	interface::run.python_interface(interface_module);
 	interface::species.python_interface(interface_module);
 	interface::spectrum.python_interface(interface_module);
-	interface::util.python_interface(interface_module);	
+	interface::util.python_interface(interface_module); 
 
 	interface_module.def_submodule("units", interface::units.help());
 	auto results_module = interface_module.def_submodule("results", interface::results.help());

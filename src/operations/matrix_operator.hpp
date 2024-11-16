@@ -24,15 +24,15 @@ public:
 	matrix_operator(gpu::array<type, 2> && matrix):
 		matrix_(matrix){
 
-		assert(std::get<0>(sizes(matrix_)) == std::get<1>(sizes(matrix_)));
-      
+		assert(get<0>(sizes(matrix_)) == get<1>(sizes(matrix_)));
+
 	}
-      
+
 	template <class field_set_type>
 	field_set_type operator()(const field_set_type & phi) const {
 
-		assert(std::get<0>(sizes(matrix_)) == phi.basis().size());
-		assert(std::get<1>(sizes(matrix_)) == phi.basis().size());
+		assert(get<0>(sizes(matrix_)) == phi.basis().size());
+		assert(get<1>(sizes(matrix_)) == phi.basis().size());
 
 		namespace blas = boost::multi::blas;
 

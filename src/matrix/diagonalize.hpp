@@ -38,9 +38,9 @@ auto diagonalize_raw(gpu::array<double, 2, Alloc>& matrix){
 	CALI_CXX_MARK_FUNCTION;
 
 	// the matrix must be square
-	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
+	assert(get<0>(sizes(matrix)) == get<1>(sizes(matrix)));
 
-	int nn = std::get<0>(sizes(matrix));
+	int nn = get<0>(sizes(matrix));
     
 	gpu::array<double, 1> eigenvalues(nn);
 
@@ -101,12 +101,12 @@ template<class Alloc>
 auto diagonalize_raw(gpu::array<complex, 2, Alloc>& matrix){
 
 	CALI_CXX_MARK_FUNCTION;
-	
-	// the matrix must be square
-	assert(std::get<0>(sizes(matrix)) == std::get<1>(sizes(matrix)));
 
-	int nn = std::get<0>(sizes(matrix));
-    
+	// the matrix must be square
+	assert(get<0>(sizes(matrix)) == get<1>(sizes(matrix)));
+
+	int nn = get<0>(sizes(matrix));
+
 	gpu::array<double, 1> eigenvalues(nn);
 
 #ifdef ENABLE_CUDA

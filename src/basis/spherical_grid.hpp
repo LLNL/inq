@@ -80,7 +80,7 @@ namespace basis {
 				vector3<int> lo, hi;
 				containing_cube(parent_grid, rep[irep], radius, lo, hi);
 
-				auto cube_size = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);			
+				auto cube_size = (hi[0] - lo[0])*(hi[1] - lo[1])*(hi[2] - lo[2]);     
 
 				if(cube_size == 0) continue;
 
@@ -88,10 +88,10 @@ namespace basis {
 				
 				//OPTIMIZATION: this iteration should be done only over the local points
 				auto buffer = points_({upper_count, upper_count + cube_size}).partitioned(cube_dims[0]*cube_dims[1]).partitioned(cube_dims[0]);
-																																										
-				assert(std::get<0>(sizes(buffer)) == cube_dims[0]);
-				assert(std::get<1>(sizes(buffer)) == cube_dims[1]);
-				assert(std::get<2>(sizes(buffer)) == cube_dims[2]);
+
+				assert(get<0>(sizes(buffer)) == cube_dims[0]);
+				assert(get<1>(sizes(buffer)) == cube_dims[1]);
+				assert(get<2>(sizes(buffer)) == cube_dims[2]);
 
 				gpu::run(cube_dims[2], cube_dims[1], cube_dims[0],
 								 [lo, local_sizes, point_op = parent_grid.point_op(), re = rep[irep], buf = begin(buffer), radius] GPU_LAMBDA (auto iz, auto iy, auto ix){
@@ -129,21 +129,21 @@ namespace basis {
 			assert(upper_count == points_.size());
 
 			{
-				CALI_CXX_MARK_SCOPE("spherical_grid::compact");				
+				CALI_CXX_MARK_SCOPE("spherical_grid::compact");       
 #ifdef ENABLE_GPU
 				using thrust::remove_if;
 				auto it = remove_if(thrust::device, begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ < 0.0;});
-				size_ = it - begin(points_);				
+				size_ = it - begin(points_);        
 #else
 				using std::remove_if;
 				auto it = remove_if(begin(points_), end(points_), [] GPU_LAMBDA (auto value){ return value.distance_ < 0.0;});
-				size_ = it - begin(points_);				
+				size_ = it - begin(points_);        
 #endif
 			}
 
 			if(size_ == 0) {
 				points_.clear();
-				assert(points_.size() == 0);				
+				assert(points_.size() == 0);        
 				return;
 			}
 			
@@ -175,8 +175,8 @@ namespace basis {
 		gpu::array<typename array_4d::element, 2> gather(const array_4d & grid) const {
 
 			CALI_CXX_MARK_SCOPE("spherical_grid::gather(4d)");
-			
-			const int nst = std::get<3>(sizes(grid));
+
+			const int nst = get<3>(sizes(grid));
 
 			CALI_MARK_BEGIN("spherical_grid::gather(4d)::allocation");
 			gpu::array<typename array_4d::element, 2> subgrid({this->size(), nst});
@@ -194,7 +194,7 @@ namespace basis {
     void scatter_add(const array_2d & subgrid, array_4d && grid) const{
 			CALI_CXX_MARK_SCOPE("spherical_grid::scatter_add");
 
-			gpu::run(std::get<1>(sizes(subgrid)), size(),
+			gpu::run(get<1>(sizes(subgrid)), size(),
 							 [sgr = begin(subgrid), gr = begin(grid), poi = begin(points_)] GPU_LAMBDA (auto ist, auto ipoint){
 								 gr[poi[ipoint].coords_[0]][poi[ipoint].coords_[1]][poi[ipoint].coords_[2]][ist] += sgr[ipoint][ist];
 							 });
@@ -233,7 +233,7 @@ namespace basis {
 
 		auto ref() const {
 			return sphere_ref<decltype(cbegin(points_))>{cbegin(points_)};
-		}		
+		}   
 		
   private:
 
@@ -377,13 +377,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(size*pw.volume_element()/theo_vol == 0.9586598525_a);
 		
   }
-  	
+    
   SECTION("Non-cubic grid"){
 
 		auto radius = 5.71;
 		
 		basis::real_space rs(systems::cell::lattice({7.57325_b, 0.0_b, 0.0_b}, {-3.78662_b, 6.55862_b, 0.0_b}, {5.78917e-16_b, 1.00271e-15_b, 9.45443_b}), /*spacing = */ 0.405578, comm);
-    basis::spherical_grid sphere(rs, {3.78659, -2.18619, 1.65434}, radius);		
+    basis::spherical_grid sphere(rs, {3.78659, -2.18619, 1.65434}, radius);   
 
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
