@@ -43,8 +43,8 @@ These are the uses for the command:
   Python: `perturbations.status()`
 
   Without any arguments (or with the status() function in Python),
-  `perturbations` prints a list of the perturbations that are
-  currently defined.
+  `perturbations` prints a the perturbations that are currently
+  defined.
 
   Shell example:  `inq perturbations`.
   Python example: `pinq.perturbations.status()`
@@ -61,7 +61,7 @@ These are the uses for the command:
 - Shell:  `perturbations kick <px> <py> <pz>`
   Python: `perturbations.kick([px, py, pz])`
 
-  Adds a kick perturbation. This corresponds of a uniform
+  Specifies a kick perturbation. This corresponds of a uniform
   time-dependent electric field. The time profile is a delta function
   at time 0. The direction and intensity of the field is given by the
   values _px_, _py_ and _pz_ (these values are in cartesian units and
@@ -124,6 +124,7 @@ These are the uses for the command:
 
 	static void kick(vector3<double, cartesian> const & polarization) {
 		auto perturbations = perturbations::blend::load(".inq/default_perturbations");
+		perturbations.clear();
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		perturbations.add(perturbations::kick(cell, polarization));
 		perturbations.save(input::environment::global().comm(), ".inq/default_perturbations");
@@ -131,6 +132,7 @@ These are the uses for the command:
 
 	static void laser(vector3<double, cartesian> const & polarization, quantity<magnitude::energy> freq) {
 		auto perturbations = perturbations::blend::load(".inq/default_perturbations");
+		perturbations.clear();
 		auto cell = systems::ions::load(".inq/default_ions").cell();
 		if(cell.periodicity() == 0){
 			perturbations.add(perturbations::laser(polarization, freq, perturbations::gauge::length));
