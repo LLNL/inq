@@ -31,14 +31,13 @@ pybind11_add_module(_pinq MODULE
 target_link_libraries(_pinq PUBLIC)
 target_link_libraries(_pinq PRIVATE inq)
 
-#DO NOT INSTALL FROM HERE
-#
-#if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
-#  set(CMAKE_INSTALL_PYTHON_LIBDIR
-#    "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
-#endif ()
-#install(TARGETS _pinq
-#  COMPONENT python
-#  LIBRARY DESTINATION "${CMAKE_INSTALL_PYTHON_LIBDIR}"
-#)
+if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
+  set(CMAKE_INSTALL_PYTHON_LIBDIR
+    "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
+endif ()
 
+install(TARGETS _pinq
+  COMPONENT python
+  LIBRARY DESTINATION "${CMAKE_INSTALL_PYTHON_LIBDIR}"
+)
+install(DIRECTORY pinq DESTINATION ${CMAKE_INSTALL_PYTHON_LIBDIR})
