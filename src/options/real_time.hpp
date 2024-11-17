@@ -140,7 +140,13 @@ public:
 		solver.num_steps_ = etol;
 		return solver;
 	}
-				
+
+	auto propagation_time(quantity<magnitude::time> pt) const {	
+		real_time solver = *this;;
+		solver.num_steps_ = ceil(pt.in_atomic_units()/dt());
+		return solver;
+	}
+	
 	auto num_steps() const {
 		return num_steps_.value_or(100);
 	}
@@ -242,6 +248,11 @@ public:
 		out << "\n";
 		
 		out << "  num-steps          = " << self.num_steps();
+		if(not self.num_steps_.has_value()) out << " *";
+		out << "\n";
+
+		auto time = self.num_steps()*self.dt();
+		out << "  propagation-time   = " << time << " atu | " << time/in_atomic_units(1.0_fs) << " fs";
 		if(not self.num_steps_.has_value()) out << " *";
 		out << "\n";
 

@@ -33,8 +33,7 @@ The 'real-time' command
 This command defines the options for real-time electron dynamics
 simulations. These are the available options:
 
-- SHOW
-  Shell:  `real-time`
+- Shell:  `real-time`
   Python: `real_time.status()`
 
   When no arguments are given (or "status" in python), `real-time` will
@@ -44,8 +43,7 @@ simulations. These are the available options:
   Python example: `pinq.real_time.status()`
 
 
-- TIME STEP
-  Shell:  `real-time time-step <value> <units>`
+- Shell:  `real-time time-step <value> <units>`
   Python: `real_time.time_step(value, units)`
 
   Sets the time step for the real-time integration. In most cases you
@@ -58,8 +56,7 @@ simulations. These are the available options:
   Python example: `pinq.real_time.time_step(0.1, "atu")`
 
 
-- NUMBER OF STEPS
-  Shell:  `real-time num-steps <value>`
+- Shell:  `real-time num-steps <value>`
   Python: `real_time.num_steps(value)`
 
   The number of time-steps to do in the time propagation. The default
@@ -69,8 +66,24 @@ simulations. These are the available options:
   Python example: `pinq.real_time.num-steps(10000)`
 
 
-- ION DYNAMICS
-  Shell:  `real-time ions <value>`
+- Shell:  `real-time propagation-time <value> <units>`
+  Python: `real_time.propagation_time(value, units)`
+
+  Sets the number of step so that the total propagation time is
+  (slightly larger than) `value`. You need to pass the units as a
+  second argument, you can use "atu" (or "atomictimeunits"), "as" or
+  "fs" among others.
+
+  Note that this variable directly calculates the number of steps
+  based on the currently defined time-step. If the time-step is later
+  changed the number of steps will remain unchanged and the
+  propagation time will change.
+
+  Shell example:  `inq real-time propagation-time 10.0 fs`
+  Python example: `pinq.real_time.propagation_time(10.0, "fs")`
+
+
+- Shell:  `real-time ions <value>`
   Python: `real_time.ions.static()`
           `real_time.ions.impulsive()`
           `real_time.ions.ehrenfest()`
@@ -94,8 +107,7 @@ simulations. These are the available options:
   Python example: `pinq.real_time.ions.ehrenfest()`
 
 
-- OBSERVABLES
-  Shell:  `real-time observables <value>`
+- Shell:  `real-time observables <value>`
   Python: `real_time.observables.dipole()`
           `real_time.observables.current()`
 
@@ -113,8 +125,7 @@ simulations. These are the available options:
   Python example: `pinq.real_time.observables.current()`
 
 
-- CLEAR OBSERVABLES
-  Shell:  `real-time observables clear`
+- Shell:  `real-time observables clear`
   Python: `real_time.observables.clear()`
 
   This option removes all the observables that have been previously
@@ -148,6 +159,13 @@ simulations. These are the available options:
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
 	}
 
+	static void propagation_time(quantity<magnitude::time> pt) {
+		using namespace magnitude;
+
+		auto opts = options::real_time::load(".inq/default_real_time_options").propagation_time(pt);
+		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
+	}
+	
 	static void ions_static() {
 		auto opts = options::real_time::load(".inq/default_real_time_options").static_ions();
 		opts.save(input::environment::global().comm(), ".inq/default_real_time_options");
@@ -192,7 +210,13 @@ simulations. These are the available options:
 			if(not quiet) operator()();
 			actions::normal_exit();
 		}
-		
+
+		if(args.size() == 3 and (args[0] == "propagation-time")){
+			propagation_time(magnitude::time::parse(str_to<double>(args[1]), args[2]));
+			if(not quiet) operator()();
+			actions::normal_exit();
+		}
+				
 		if(args.size() == 2 and (args[0] == "num-steps")){
 			num_steps(str_to<long>(args[1]));
 			if(not quiet) operator()();
@@ -263,6 +287,10 @@ simulations. These are the available options:
 		sub.def("time_step", [](double dt, std::string const & units){
 			time_step(magnitude::time::parse(dt, units));
 		}, "dt"_a, "units"_a);
+
+		sub.def("propagation_time", [](double time, std::string const & units){
+			propagation_time(magnitude::time::parse(time, units));
+		}, "time"_a, "units"_a);
 		
 		sub.def("num_steps", &num_steps);
 
