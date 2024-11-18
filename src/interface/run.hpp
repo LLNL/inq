@@ -105,7 +105,7 @@ These are the options available:
 			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 		}
 		
-		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
+		systems::electrons electrons(input::environment::global().par().states(), ions, options::electrons::load(".inq/default_electrons_options"), bz);
  
 		if(not electrons.try_load(".inq/default_orbitals")) actions::error(input::environment::global().comm(), "Cannot load a ground-state electron configuration for a real-time run.\n Please run a ground-state first.");
 
@@ -141,7 +141,7 @@ These are the options available:
 			bz.save(input::environment::global().comm(), ".inq/default_brillouin");
 		}
 		
-		systems::electrons electrons(ions, options::electrons::load(".inq/default_electrons_options"), bz);
+		systems::electrons electrons(input::environment::global().par().states(), ions, options::electrons::load(".inq/default_electrons_options"), bz);
  
 		if(not electrons.try_load(dirname + "/real-time/orbitals")) {
 			actions::error(input::environment::global().comm(), "Cannot load the restart electron orbitals.\n The checkpoint must be corrupt");
