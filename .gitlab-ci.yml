@@ -815,26 +815,25 @@ clang-ompi-template:
 
 #######################################################################################################################
 
-#hip-mpich-build:
-#  stage: build
-#  needs: []
-#  image: rocm/dev-ubuntu-22.04
-#  script:
-#    - apt-get -qq update
-#    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev
-#    - /opt/rocm/bin/hipconfig --full
-#    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
-#    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-#    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-#    - cmake --version
-#    - mkdir build && cd build
-#    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
-#    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
-#    - export ROCM_PATH=/opt/rocm
-#    - export HIP_PATH=/opt/rocm
-#    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-#    - make -j2
-
+hip-mpich-build:
+  stage: build
+  needs: []
+  image: rocm/dev-ubuntu-24.04
+  script:
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev
+    - /opt/rocm/bin/hipconfig --full
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
+    - make -j2
 
 #########################################################################################################################
 # ARM GCC MPICH DEBUG
