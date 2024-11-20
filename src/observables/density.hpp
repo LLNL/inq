@@ -102,7 +102,8 @@ void normalize(FieldType & density, const double & total_charge){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	auto qq = operations::integral_sum(density);
+	auto max_index = std::min(2, density.set_size());
+	auto qq = operations::integral_partial_sum(density, max_index);
 	assert(fabs(qq) > 1e-16);
 
 	gpu::run(density.local_set_size(), density.basis().local_size(),
