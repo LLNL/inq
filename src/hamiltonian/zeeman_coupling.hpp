@@ -32,7 +32,7 @@ public:
 
         assert(zeeman_pot.set_size() == spin_components_);
 
-        compute_vz(magnetic_field, zeeman_pot);
+        compute_zeeman_potential(magnetic_field, zeeman_pot);
 
         gpu::run(zeeman_pot.local_set_size(), zeeman_pot.basis().local_size(),
             [vz = begin(zeeman_pot.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip) {
@@ -45,18 +45,18 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     template<typename VZType>
-    void compute_vz(basis::field<basis::real_space, vector3<double>> const & magnetic_field, VZType & vz) const {
+    void compute_zeeman_potential(basis::field<basis::real_space, vector3<double>> const & magnetic_field, VZType & zeeman_pot) const {
 
-        gpu::run(vz.basis().local_size(),
-            [v = begin(vz.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                v[ip][0] +=-magnetic_[ip][2];
-                v[ip][1] += magnetic_[ip][2];
+        gpu::run(zeeman_pot.basis().local_size(),
+            [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
+                vz[ip][0] +=-magnetic_[ip][2];
+                vz[ip][1] += magnetic_[ip][2];
             });
-        if (vz.set_size() == 4) {
-                gpu::run(vz.basis().local_size(),
-                    [v = begin(vz.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                        v[ip][2] +=-magnetic_[ip][0];
-                        v[ip][3] +=-magnetic_[ip][1];
+        if (zeeman_pot.set_size() == 4) {
+                gpu::run(zeeman_pot.basis().local_size(),
+                    [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
+                        vz[ip][2] +=-magnetic_[ip][0];
+                        vz[ip][3] +=-magnetic_[ip][1];
                     });
         }
     }
@@ -64,16 +64,21 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     template <typename SpinDensityType, typename VZType>
-    double compute_zeeman_energy(SpinDensityType const & spin_density, VZType & vz) const {
+    double compute_zeeman_energy(SpinDensityType const & spin_density, VZType & zeeman_pot) const {
 
         auto zeeman_ener_ = 0.0;
         if (spin_density.set_size() == 4) {
             gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
-                [v = begin(vz.matrix())] GPU_LAMBDA (auto is, auto ip) {
-                    if (is >= 2) v[ip][is] = 2.0*v[ip][is];
+                [vz = begin(zeeman_pot.matrix())] GPU_LAMBDA (auto is, auto ip) {
+                    if (is == 2) { 
+                        vz[ip][is] = 2.0*vz[ip][is];
+                    }
+                    else if (is == 3) {
+                        vz[ip][is] = -2.0*vz[ip][is];
+                    }
                 });
         }
-        zeeman_ener_ += operations::integral_product_sum(spin_density, vz);
+        zeeman_ener_ += operations::integral_product_sum(spin_density, zeeman_pot);
         return zeeman_ener_;
     }
 };
@@ -90,25 +95,25 @@ public:
 using namespace inq;
 
 template<class occupations_array_type, class field_set_type, typename VZType, typename RFType>
-void compute_psi_vz_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VZType const & vz, RFType & rfield) {
+void compute_psi_vz_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VZType const & zeeman_pot, RFType & rfield) {
 
     assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
     assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 
-    if (vz.set_size() == 2){
+    if (zeeman_pot.set_size() == 2){
         gpu::run(phi.local_set_size(), phi.basis().local_size(),
-            [ph = begin(phi.matrix()), rf = begin(rfield.linear()), v = begin(vz.matrix()), occ = begin(occupations), spi = phi.spin_index()] GPU_LAMBDA (auto ist, auto ip) {
-                rf[ip] += occ[ist]*v[ip][spi]*norm(ph[ip][ist]);
+            [ph = begin(phi.matrix()), rf = begin(rfield.linear()), vz = begin(zeeman_pot.matrix()), occ = begin(occupations), spi = phi.spin_index()] GPU_LAMBDA (auto ist, auto ip) {
+                rf[ip] += occ[ist]*vz[ip][spi]*norm(ph[ip][ist]);
             });
     }
     else {
-        assert(vz.set_size() == 4);
+        assert(zeeman_pot.set_size() == 4);
         gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),
-            [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), v = begin(vz.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip) {
-                auto offdiag = v[ip][2] + complex{0.0, 1.0}*v[ip][3];
-                auto cross = 2.0*occ[ist]*real(offdiag*ph[ip][1][ist]*conj(ph[ip][0][ist]));
-                rf[ip] += occ[ist]*v[ip][0]*norm(ph[ip][0][ist]);
-                rf[ip] += occ[ist]*v[ip][1]*norm(ph[ip][1][ist]);
+            [ph = begin(phi.spinor_array()), rf = begin(rfield.linear()), vz = begin(zeeman_pot.matrix()), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto ip) {
+                auto offdiag = vz[ip][2] + complex{0.0, 1.0}*vz[ip][3];
+                auto cross = 2.0*occ[ist]*real(offdiag*conj(ph[ip][1][ist])*ph[ip][0][ist]);
+                rf[ip] += occ[ist]*vz[ip][0]*norm(ph[ip][0][ist]);
+                rf[ip] += occ[ist]*vz[ip][1]*norm(ph[ip][1][ist]);
                 rf[ip] += cross;
             });
     }
@@ -119,16 +124,16 @@ void compute_psi_vz_psi_ofr(occupations_array_type const & occupations, field_se
 template<class CommType, typename SpinDensityType, typename MagneticField, class occupations_array_type, class kpin_type>
 void eval_psi_vz_psi(CommType & comm, SpinDensityType const & spin_density, MagneticField const & magnetic_field, occupations_array_type const & occupations, kpin_type const & kpin, double & zeeman_ener) {
         
-    basis::field_set<basis::real_space, double> vz(spin_density.skeleton());
-    vz.fill(0.0);
+    basis::field_set<basis::real_space, double> zeeman_pot(spin_density.skeleton());
+    zeeman_pot.fill(0.0);
     hamiltonian::zeeman_coupling zc_(spin_density.set_size());
-    zc_.compute_vz(magnetic_field, vz);
+    zc_.compute_zeeman_potential(magnetic_field, zeeman_pot);
 
-    basis::field<basis::real_space, double> rfield(vz.basis());
+    basis::field<basis::real_space, double> rfield(zeeman_pot.basis());
     rfield.fill(0.0);
     int iphi = 0;
     for (auto & phi : kpin) {
-        compute_psi_vz_psi_ofr(occupations[iphi], phi, vz, rfield);
+        compute_psi_vz_psi_ofr(occupations[iphi], phi, zeeman_pot, rfield);
         iphi++;
     }
 
@@ -140,6 +145,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     using namespace inq;
     using namespace inq::magnitude;
+    using namespace Catch::literals;
     using Catch::Approx;
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
@@ -153,9 +159,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         perturbations::magnetic magnetic_uniform{{0.0, 0.0, -1.0}};
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform);
         auto mag = observables::total_magnetization(electrons.spin_density());
-        CHECK(mag[0]/mag.length()   == 0.0);
-        CHECK(mag[1]/mag.length()   == 0.0);
-        CHECK(mag[2]/mag.length()   ==-1.0);
+        CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 0.0);
+        CHECK(Approx(mag[1]/mag.length()).margin(1.e-7)   == 0.0);
+        CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)   ==-1.0);
         auto zeeman_ener = result.energy.zeeman_energy();
         Approx target = Approx(zeeman_ener).epsilon(1.e-10);
 
@@ -177,12 +183,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform);
         auto mag = observables::total_magnetization(electrons.spin_density());
-        auto mx = mag[0]/mag.length();
-        auto my = mag[1]/mag.length();
-        auto mz = mag[2]/mag.length();
-        CHECK(abs(mx) < 1.e-7);
-        CHECK(abs(my) < 1.e-7);
-        CHECK(abs(mz + 1.0) < 1.e-7);
+        CHECK(Approx(sqrt(mag[0]*mag[0]+mag[1]*mag[1])/mag.length()).margin(1.e-7)    == 0.0);
+        CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)                               == -1.0);
 
         auto zeeman_ener = result.energy.zeeman_energy();
         Approx target = Approx(zeeman_ener).epsilon(1.e-10);
