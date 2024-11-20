@@ -39,6 +39,24 @@ auto integral_sum(basis::field_set<BasisType, ElementType> const & phi){
 }
 
 template <class BasisType, class ElementType>
+ElementType integral_partial_sum(basis::field_set<BasisType, ElementType> const & phi, int const & max_index){
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(phi.local_set_size() >= max_index);
+	basis::field<BasisType, ElementType> rphi(phi.basis());
+	rphi.fill(0.0);
+	gpu::run(phi.basis().local_size(),
+			[ph = begin(phi.matrix()), rph = begin(rphi.linear()), mi = max_index] GPU_LAMBDA (auto ip){ 
+				for (auto i=0; i<mi; i++) {
+					rph[ip] += ph[ip][i];
+				}
+			});
+	auto integral_value = rphi.basis().volume_element()*sum(rphi.linear());
+	if (phi.full_comm().size() > 1) phi.full_comm().all_reduce_in_place_n(&integral_value, 1, std::plus<>{});
+	return integral_value;
+}
+
+template <class BasisType, class ElementType>
 double integral_abs(basis::field<BasisType, ElementType> const & phi){
 	CALI_CXX_MARK_FUNCTION;
 
