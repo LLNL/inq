@@ -27,19 +27,19 @@ public:
     template<typename SpinDensityType, typename VKSType>
     void operator()(SpinDensityType const & spin_density, basis::field<basis::real_space, vector3<double>> const & magnetic_field, VKSType & vks, double & zeeman_ener) const {
 
-        basis::field_set<basis::real_space, double> vz(vks.skeleton());
-        vz.fill(0.0);
+        basis::field_set<basis::real_space, double> zeeman_pot(vks.skeleton());
+        zeeman_pot.fill(0.0);
 
-        assert(vz.set_size() == spin_components_);
+        assert(zeeman_pot.set_size() == spin_components_);
 
-        compute_vz(magnetic_field, vz);
+        compute_vz(magnetic_field, zeeman_pot);
 
-        gpu::run(vz.local_set_size(), vz.basis().local_size(),
-            [v = begin(vz.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip) {
-                vk[ip][is] += v[ip][is];
+        gpu::run(zeeman_pot.local_set_size(), zeeman_pot.basis().local_size(),
+            [vz = begin(zeeman_pot.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip) {
+                vk[ip][is] += vz[ip][is];
             });
 
-        zeeman_ener += compute_zeeman_energy(spin_density, vz);
+        zeeman_ener += compute_zeeman_energy(spin_density, zeeman_pot);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
