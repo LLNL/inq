@@ -262,6 +262,23 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         zeeman_ener2 = 0.0;
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target5);
+
+        bvec = {1.0, -2.0, 1.5};
+        bvec = bvec / bvec.length();
+        perturbations::magnetic magnetic_uniform6{bvec};
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform6);
+        mag = observables::total_magnetization(electrons.spin_density());
+        CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 1.0/sqrt(1.0+4.0+9.0/4));
+        CHECK(Approx(mag[1]/mag.length()).margin(1.e-7)   ==-2.0/sqrt(1.0+4.0+9.0/4));
+        CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)   == 1.5/sqrt(1.0+4.0+9.0/4));
+
+        zeeman_ener = result.energy.zeeman_energy();
+        Approx target6 = Approx(zeeman_ener).epsilon(1.e-10);
+        mag_field.fill(vector3 {0.0, 0.0, 0.0});
+        magnetic_uniform6.magnetic_field(0.0, mag_field);
+        zeeman_ener2 = 0.0;
+        eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
+        CHECK(zeeman_ener2 == target6);
     }
 }
 #endif
