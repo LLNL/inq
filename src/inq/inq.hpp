@@ -40,6 +40,7 @@
 #include <interface/run.hpp>
 #include <interface/species.hpp>
 #include <interface/spectrum.hpp>
+#include <interface/status.hpp>
 #include <interface/theory.hpp>
 #include <interface/units.hpp>
 #include <interface/util.hpp>

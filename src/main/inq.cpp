@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::run)
 		+ interface::item(interface::species)
 		+ interface::item(interface::spectrum)
+		+ interface::item(interface::status)
 		+ interface::item(interface::theory)
 		+ interface::item(interface::util);
 
