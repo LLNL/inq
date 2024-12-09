@@ -265,7 +265,7 @@ public:
 		if(self.obs_.empty()) out << " *";
 		out << "\n";
 		
-		out << "\n  * default values" << std::endl;
+		out << "\n  * default values\n" << std::endl;
 		
 		return out;
 	}
