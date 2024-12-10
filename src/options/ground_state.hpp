@@ -212,7 +212,7 @@ public:
 		if(not self.mixing_.has_value()) out << " *";
 		out << "\n";
 		
-		out << "\n  * default values" << std::endl;
+		out << "\n  * default values\n" << std::endl;
 		
 		return out;
 	}

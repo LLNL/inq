@@ -165,13 +165,13 @@ public:
 		out << "Theory:\n";
 
 		if(not self.hartree_potential() and self.exchange() == XC_NONE and self.correlation() == XC_NONE){
-			out << " Non-interacting electrons" << std::endl;
+			out << "  non-interacting electrons\n" << std::endl;
 			return out;
 		}
 
 		if(self.hartree_potential() and self.exchange() == XC_NONE and self.correlation() == XC_NONE){
-			out << " Hartree (with self-interaction)\n\n";
-			out << " [1] D. R. Hartree, Math. Proc. Camb. Philos. Soc. 24 1, 111 (1928)" << std::endl;
+			out << "  Hartree (with self-interaction)\n\n";
+			out << "  [1] D. R. Hartree, Math. Proc. Camb. Philos. Soc. 24 1, 111 (1928)\n" << std::endl;
 			return out;
 		}
 
@@ -190,6 +190,8 @@ public:
 			out << "    " << c_func.family_name() << " - " << c_func.name() << "\n\n";
 			out << c_func.references("    ") << "\n";
 		}
+
+		out << std::endl;
 		
 		return out;
 	}

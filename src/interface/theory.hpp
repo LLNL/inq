@@ -121,9 +121,13 @@ These are the options available:
 )"""";
 	}	
 
-	void operator()() const {
+	static void status() {
 		auto theo = options::theory::load(".inq/default_theory");
 		if(input::environment::global().comm().root()) std::cout << theo;
+	}
+
+	void operator()() const {
+		status();
 	}
 	
 	void non_interacting() const{
