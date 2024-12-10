@@ -18,6 +18,8 @@
 #include <interface/results_ground_state.hpp>
 #include <interface/real_time.hpp>
 #include <interface/results_real_time.hpp>
+#include <interface/species.hpp>
+#include <interface/theory.hpp>
 
 namespace inq {
 namespace interface {
@@ -46,8 +48,10 @@ Prints all the currently defined parameters and available results.
 	static void status() {
 		interface::cell.status();
 		interface::ions.status();
+		interface::species.status();
 		interface::kpoints.status();
 		interface::electrons.status();
+		interface::theory.status();
 		interface::ground_state.status();
 		interface::results_ground_state.status();
 		interface::real_time.status();
