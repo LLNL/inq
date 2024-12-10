@@ -90,16 +90,6 @@ public:
 		return nproj_ == 0 or sphere_.size() == 0;
 	}
 
-	template <typename OcType, typename PhiType, typename GPhiType>
-	struct force_term {
-		OcType oc;
-		PhiType phi;
-		GPhiType gphi;
-		constexpr auto operator()(int ist, int ip) const {
-			return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
-		}
-	};
-	
 	int num_projectors() const {
 		return nproj_;
 	}
