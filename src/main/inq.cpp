@@ -60,6 +60,11 @@ int main(int argc, char* argv[]) {
 	for(int iarg = 1; iarg < argc; iarg++) {
 		auto arg = std::string(argv[iarg]);
 
+		if(arg == "-h" or arg == "--help") {
+			args = {"help"};
+			break;
+		}
+		
 		if(arg == "-q" or arg == "--quiet") {
 			quiet = true;
 			continue;
@@ -129,6 +134,7 @@ int main(int argc, char* argv[]) {
 				std::cout << all_commands.list();
 				std::cout << "\n";
 				std::cout << "And the following options:\n";
+				std::cout << interface::list_item("-h,--help",  "Prints this help dialog");
 				std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
 				std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
 				std::cout << "\nTo get more information about any command use: inq help <command>\n";
