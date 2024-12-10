@@ -40,11 +40,6 @@ int main(int argc, char* argv[]) {
 		interface::item(interface::units)
 		+ interface::item(interface::results);
 		
-	if(argc == 1){
-		interface::status.status();
-		interface::actions::normal_exit();
-	}
-
 	interface::history_file.add_entry(argc, argv);
 	
 	auto quiet = false;
@@ -118,7 +113,11 @@ int main(int argc, char* argv[]) {
 		}
 		std::cout << "|" << std::endl;
 	}
-	
+
+	if(args.size() == 0){
+		args = {"status"};
+	}
+
 	auto command = args[0];
 	args.erase(args.begin());
 
