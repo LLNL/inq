@@ -5,7 +5,6 @@ set -x #output commands to the terminal
 
 #Test the help commands
 
-inq
 inq help
 inq help clear
 inq help cell
