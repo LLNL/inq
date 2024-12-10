@@ -41,18 +41,7 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::results);
 		
 	if(argc == 1){
-		if(comm.root()) {
-			std::cout << "\n";
-			std::cout << "Usage: inq <command> [arguments]\n\n";
-			std::cout << "The following commands are available:\n";
-			std::cout << interface::list_item("help", "Prints detailed information about other commands");
-			std::cout << all_commands.list();
-			std::cout << "\n";
-			std::cout << "And the following options:\n";
-			std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
-			std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
-			std::cout << std::endl;
-		}
+		interface::status.status();
 		interface::actions::normal_exit();
 	}
 
@@ -134,10 +123,16 @@ int main(int argc, char* argv[]) {
 		if(args.size() == 0){
 			if(comm.root()) {
 				std::cout << "\n";
-				std::cout << "Usage: inq help <command>\n\n";
-				std::cout << "The 'help' command prints detailed information about other inq commands:\n\n";
+				std::cout << "Usage: inq <command> [arguments]\n\n";
+				std::cout << "The following commands are available:\n";
+				std::cout << interface::list_item("help", "Prints detailed information about other commands");
 				std::cout << all_commands.list();
-				std::cout << "\nThere is also some additional help topics you can read:\n\n";
+				std::cout << "\n";
+				std::cout << "And the following options:\n";
+				std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
+				std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
+				std::cout << "\nTo get more information about any command use: inq help <command>\n";
+				std::cout << "\nBesides commands, there is also some additional help topics you can read with 'help':\n\n";
 				std::cout << all_helpers.list();
 				std::cout << std::endl;
 			}
