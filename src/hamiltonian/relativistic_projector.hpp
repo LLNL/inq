@@ -45,6 +45,8 @@ public: // for CUDA
 			nproj_ += jj + 1;
 		}
 
+		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
+		
 		matrix_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
 		
