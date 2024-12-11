@@ -143,6 +143,8 @@ public:
 			vnlphi.fill(0.0);
 
 			projectors_all_.apply(proj, vnlphi, phi.kpoint() + uniform_vector_potential_);
+
+			for(auto & pr : projectors_rel_) pr.apply(phi, vnlphi, phi.kpoint() + uniform_vector_potential_);
 			
 			return vnlphi;
 		}
@@ -187,6 +189,7 @@ public:
 		hamiltonian::scalar_potential_add(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 		exchange_(phi, hphi);
 
+		for(auto & pr : projectors_rel_) pr.apply(phi, hphi, phi.kpoint() + uniform_vector_potential_);
 		projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
 
 		return hphi;
@@ -205,7 +208,8 @@ public:
 		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 		exchange_(phi_rs, hphi_rs);
- 
+
+		for(auto & pr : projectors_rel_) pr.apply(phi_rs, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
 		auto hphi = operations::transform::to_fourier(hphi_rs);

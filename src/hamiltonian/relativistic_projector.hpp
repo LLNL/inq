@@ -135,6 +135,11 @@ public:
 		return matrix_;
 	}
 
+	template <typename KpointType>
+	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
+
+	}
+
 	friend class projector_all;
 	
     
