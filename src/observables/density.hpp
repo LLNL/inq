@@ -15,6 +15,7 @@
 #include <operations/transfer.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
+#include <observables/magnetization.hpp>
 
 namespace inq {
 namespace observables {
@@ -102,7 +103,8 @@ void normalize(FieldType & density, const double & total_charge){
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	auto qq = operations::integral_sum(density);
+	auto max_index = std::min(2, density.set_size());
+	auto qq = operations::integral_partial_sum(density, max_index);
 	assert(fabs(qq) > 1e-16);
 
 	gpu::run(density.local_set_size(), density.basis().local_size(),
@@ -130,6 +132,39 @@ basis::field<BasisType, ElementType> total(basis::field_set<BasisType, ElementTy
 					 });
 
 	return total_density;
+}
+
+///////////////////////////////////////////////////////////////
+
+template <class FieldType>
+void rotate_total_magnetization(FieldType & density, vector3<double> const & magnet_dir) {
+
+	CALI_CXX_MARK_FUNCTION
+
+	vector3 e_v = magnet_dir/sqrt(norm(magnet_dir));
+
+	if (density.set_size() == 2){
+		gpu::run(density.basis().local_size(),
+			[den = begin(density.matrix()), mv = e_v[2]] GPU_LAMBDA (auto ip){
+				auto n0 = den[ip][0] + den[ip][1];
+				auto m0 = den[ip][0] - den[ip][1];
+				den[ip][0] = 0.5*(n0 + m0*mv);
+				den[ip][1] = 0.5*(n0 - m0*mv);
+			});
+	}
+	else {
+		assert(density.set_size() == 4);
+		gpu::run(density.basis().local_size(),
+				[den = begin(density.matrix()), mv = e_v] GPU_LAMBDA (auto ip){
+					auto mag = observables::local_magnetization(den[ip], 4);
+					auto m0 = sqrt(norm(mag));
+					auto n0 = den[ip][0] + den[ip][1];
+					den[ip][0] = 0.5*(n0 + m0*mv[2]);
+					den[ip][1] = 0.5*(n0 - m0*mv[2]);
+					den[ip][2] = m0*mv[0]/2.0;
+					den[ip][3] = -m0*mv[1]/2.0;
+				});
+	}
 }
 
 }
