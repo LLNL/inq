@@ -27,7 +27,7 @@ class relativistic_projector {
 
 	basis::spherical_grid sphere_;
 	int nproj_;
-	gpu::array<double, 3> matrix_;
+	gpu::array<double, 3> beta_;
 	gpu::array<double, 1> kb_coeff_;
 	int iatom_;
 
@@ -47,7 +47,7 @@ public: // for CUDA
 
 		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
 		
-		matrix_.reextent({nproj_, sphere_.size(), 2});
+		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
 		
 		int iproj_lm = 0;
@@ -74,20 +74,20 @@ public: // for CUDA
 				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
 				
 				gpu::run(sphere_.size(),
-								 [mat = begin(matrix_),
+								 [bet = begin(beta_),
 									spline = ps.projector(iproj).function(),
 									sph = sphere_.ref(), cc0, cc1, ml0, ml1, ll, iproj_lm,
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
 									 if(abs(ml0) <= ll) {
-										 mat[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
-										 mat[iproj_lm][ipoint][0] = 0.0;
+										 bet[iproj_lm][ipoint][0] = 0.0;
 									 }
 									 if(abs(ml1) <= ll) {									 
-										 mat[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
-										 mat[iproj_lm][ipoint][1] = 0.0;
+										 bet[iproj_lm][ipoint][1] = 0.0;
 									 }
 								 });
 
@@ -133,13 +133,56 @@ public:
 		return sphere_;
 	}
 
-	auto & matrix() const {
-		return matrix_;
+	auto & beta() const {
+		return beta_;
 	}
 
 	template <typename KpointType>
 	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
+		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
+
+		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
+						 [gr = begin(phi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi)] GPU_LAMBDA (auto ist, auto ipoint){
+							 auto point = sph.grid_point(ipoint);
+							 sgr[ipoint][ist][0] = gr[point[0]][point[1]][point[2]][0][ist];
+							 sgr[ipoint][ist][1] = gr[point[0]][point[1]][point[2]][1][ist];							 
+						 });
+
+		gpu::array<complex, 3> projections({nproj_, phi.local_spinor_set_size(), 2});
+
+		gpu::run(phi.local_spinor_set_size(), nproj_,
+						 [proj = begin(projections), sgr = begin(sphere_phi), bet = begin(beta_), np = sphere_.size(), vol = phi.basis().volume_element()] GPU_LAMBDA (auto ist, auto iproj) {
+							 proj[iproj][ist][0] = 0.0;
+							 proj[iproj][ist][1] = 0.0;
+							 for(int ip = 0; ip < np; ip++) {
+								 proj[iproj][ist][0] += bet[iproj][ip][0]*sgr[ip][ist][0];
+								 proj[iproj][ist][1] += bet[iproj][ip][1]*sgr[ip][ist][1];
+							 }
+							 proj[iproj][ist][0] *= vol;
+							 proj[iproj][ist][1] *= vol;
+						 });
+
+		//missing parallel reduction of projections
+		
+		gpu::run(phi.local_spinor_set_size(), nproj_,
+						 [proj = begin(projections), coe = begin(kb_coeff_)] GPU_LAMBDA (auto ist, auto iproj) {
+
+							 //							 std::cout << "PROJ " <<  iproj << '\t' << proj[iproj][ist][0] << '\t' << proj[iproj][ist][1] << '\t' <<  coe[iproj] << std::endl;
+							 
+							 proj[iproj][ist][0] *= coe[iproj];
+							 proj[iproj][ist][1] *= coe[iproj];
+
+						 });
+
+		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
+						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
+							 auto point = sph.grid_point(ip);
+							 for(int iproj = 0; iproj < nproj; iproj++) {
+								 gr[point[0]][point[1]][point[2]][0][ist] += conj(bet[iproj][ip][0])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
+								 gr[point[0]][point[1]][point[2]][1][ist] += conj(bet[iproj][ip][1])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
+							 }
+						 });
 	}
 
 	friend class projector_all;
