@@ -16,6 +16,7 @@
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_all.hpp>
 #include <hamiltonian/projector_fourier.hpp>
+#include <hamiltonian/relativistic_projector.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
 #include <operations/transform.hpp>
@@ -48,6 +49,7 @@ private:
 	bool non_local_in_fourier_;
 	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
+	std::list<relativistic_projector> projectors_rel_;
 	states::ks_states states_;
 
 #ifdef ENABLE_CUDA
@@ -72,17 +74,20 @@ public:
 
 		std::list<projector> projectors;
 			
-		projectors_fourier_map_.clear();			
+		projectors_fourier_map_.clear();
 			
 		for(int iatom = 0; iatom < ions.size(); iatom++){
 			auto && ps = pot.pseudo_for_element(ions.species(iatom));
-			
-			if(non_local_in_fourier_){
+
+			if(ps.full_relativistic()){
+				projectors_rel_.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
+				if(projectors_rel_.back().empty()) projectors_rel_.pop_back();
+			} else if(non_local_in_fourier_){
 				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, ps));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.positions()[iatom]));
 			} else {
 				projectors.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
-				if(projectors.back().empty()) projectors.pop_back(); 
+				if(projectors.back().empty()) projectors.pop_back();
 			}
 		}
 
