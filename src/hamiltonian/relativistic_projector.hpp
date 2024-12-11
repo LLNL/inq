@@ -190,6 +190,18 @@ public:
 						 });
 	}
 
+	template <typename Occupations, typename KpointType>
+	double energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations, KpointType const & kpoint) const {
+		auto projections = project(phi, kpoint);
+		
+		return gpu::run(gpu::reduce(phi.local_spinor_set_size()), gpu::reduce(nproj_), 0.0,
+						 [proj = begin(projections), coe = begin(kb_coeff_), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto iproj) {
+							 auto pp = proj[iproj][ist][0] + proj[iproj][ist][1];
+							 return real(conj(pp)*pp)*coe[iproj]*occ[ist];
+						 });
+	}
+	
+
 	friend class projector_all;
 	
     

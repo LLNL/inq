@@ -165,7 +165,9 @@ public:
 			return en;
 
 		} else {
-			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
+			auto en = projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
+			for(auto & pr : projectors_rel_) en += pr.energy(phi, occupations, phi.kpoint() + uniform_vector_potential_);
+			return en;
 		}
 		
 	}
