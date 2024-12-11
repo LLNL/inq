@@ -75,11 +75,13 @@ public:
 		projectors_fourier_map_.clear();			
 			
 		for(int iatom = 0; iatom < ions.size(); iatom++){
+			auto && ps = pot.pseudo_for_element(ions.species(iatom));
+			
 			if(non_local_in_fourier_){
-				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, pot.pseudo_for_element(ions.species(iatom))));
+				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, ps));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.positions()[iatom]));
 			} else {
-				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(ions.species(iatom)), ions.positions()[iatom], iatom);
+				projectors.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
 				if(projectors.back().empty()) projectors.pop_back(); 
 			}
 		}
