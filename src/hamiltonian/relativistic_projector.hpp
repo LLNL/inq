@@ -135,7 +135,7 @@ public:
 	}
 
 	template <typename KpointType>
-	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
+	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
 
 		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
 
@@ -161,7 +161,15 @@ public:
 						 });
 
 		//missing parallel reduction of projections
-		
+
+		return projections;
+	}
+
+	template <typename KpointType>
+	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
+
+		auto projections = project(phi, kpoint);
+
 		gpu::run(phi.local_spinor_set_size(), nproj_,
 						 [proj = begin(projections), coe = begin(kb_coeff_)] GPU_LAMBDA (auto ist, auto iproj) {
 
@@ -173,7 +181,7 @@ public:
 						 });
 
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
-						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
+						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
 							 auto point = sph.grid_point(ip);
 							 for(int iproj = 0; iproj < nproj; iproj++) {
 								 gr[point[0]][point[1]][point[2]][0][ist] += conj(bet[iproj][ip][0])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
