@@ -56,6 +56,8 @@ public: // for CUDA
 			auto ll = ps.projector_l(iproj);
 			int const jj = std::lround(2.0*ps.projector_j(iproj));
 
+			assert(jj%2 == 1);
+			
 			std::cout << "LL = " << ll << " JJ = " << jj/2.0 << std::endl;
 
 			auto sgn = 1.0;
@@ -66,24 +68,24 @@ public: // for CUDA
 				auto den = sqrt(jj - sgn + 1);
 				auto cc0 = sgn*sqrt(jj/2.0 - 0.5*sgn + sgn*mj/2.0 + 0.5)/den;
 				auto cc1 =     sqrt(jj/2.0 - 0.5*sgn - sgn*mj/2.0 + 0.5)/den;
-				auto mm0 = lround(mj/2.0 - 0.5);
-				auto mm1 = lround(mj/2.0 + 0.5);
+				auto ml0 = (mj - 1)/2;
+				auto ml1 = (mj + 1)/2;
 
-				std::cout << cc0 << '\t' << cc1 << '\t' << mm0 << '\t' << mm1 << std::endl;												
+				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
 				
 				gpu::run(sphere_.size(),
 								 [mat = begin(matrix_),
 									spline = ps.projector(iproj).function(),
-									sph = sphere_.ref(), cc0, cc1, mm0, mm1, ll, iproj_lm,
+									sph = sphere_.ref(), cc0, cc1, ml0, ml1, ll, iproj_lm,
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
-									 if(abs(mm0) <= ll) {
-										 mat[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, mm0, metric.to_cartesian(sph.point_pos(ipoint)));
+									 if(abs(ml0) <= ll) {
+										 mat[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 mat[iproj_lm][ipoint][0] = 0.0;
 									 }
-									 if(abs(mm1) <= ll) {									 
-										 mat[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, mm1, metric.to_cartesian(sph.point_pos(ipoint)));
+									 if(abs(ml1) <= ll) {									 
+										 mat[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 mat[iproj_lm][ipoint][1] = 0.0;
 									 }
