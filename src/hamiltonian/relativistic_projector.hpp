@@ -45,7 +45,7 @@ public: // for CUDA
 			nproj_ += jj + 1;
 		}
 
-		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
+		//		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
 		
 		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
@@ -58,7 +58,7 @@ public: // for CUDA
 
 			assert(jj%2 == 1);
 			
-			std::cout << "LL = " << ll << " JJ = " << jj/2.0 << std::endl;
+			//			std::cout << "LL = " << ll << " JJ = " << jj/2.0 << std::endl;
 
 			auto sgn = 1.0;
 			if(jj == 2*ll - 1.0) sgn = -1.0;
@@ -71,7 +71,7 @@ public: // for CUDA
 				auto ml0 = (mj - 1)/2;
 				auto ml1 = (mj + 1)/2;
 
-				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
+				//				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
 				
 				gpu::run(sphere_.size(),
 								 [bet = begin(beta_),
