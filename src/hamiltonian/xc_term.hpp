@@ -273,8 +273,8 @@ using namespace inq;
 template<class occupations_array_type, class field_set_type, typename VxcType>
 void compute_psi_vxc_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VxcType const & vxc, basis::field<basis::real_space, double> & rfield) {
 
-	assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
-	assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+	assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+	assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 
 	if (vxc.set_size() == 1) {
 		gpu::run(phi.local_spinor_set_size(), phi.basis().local_size(),

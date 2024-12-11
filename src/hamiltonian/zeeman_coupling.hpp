@@ -97,8 +97,8 @@ using namespace inq;
 template<class occupations_array_type, class field_set_type, typename VZType, typename RFType>
 void compute_psi_vz_psi_ofr(occupations_array_type const & occupations, field_set_type const & phi, VZType const & zeeman_pot, RFType & rfield) {
 
-    assert(std::get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
-    assert(std::get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
+    assert(get<1>(sizes(phi.spinor_array())) == phi.spinor_dim());
+    assert(get<2>(sizes(phi.spinor_array())) == phi.local_spinor_set_size());
 
     if (zeeman_pot.set_size() == 2){
         gpu::run(phi.local_set_size(), phi.basis().local_size(),
