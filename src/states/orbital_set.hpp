@@ -148,9 +148,17 @@ public:
 	auto hypercubic() const {
 		return fields_.hypercubic();
 	}
-	
+
 	auto hypercubic() {
 		return fields_.hypercubic();
+	}
+
+	auto spinor_hypercubic() const {
+		return fields_.hypercubic().rotated().rotated().rotated().partitioned(spinor_dim()).unrotated().unrotated().unrotated();
+	}
+
+	auto spinor_hypercubic() {
+		return fields_.hypercubic().rotated().rotated().rotated().partitioned(spinor_dim()).unrotated().unrotated().unrotated();
 	}
 	
 	auto & full_comm() const {
@@ -264,7 +272,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(sporb.spinor_array().is_compact());
 	CHECK(sporb.spinor_matrix().is_compact());
-	
+
+	CHECK(sporb.spinor_hypercubic().is_compact());
+
 	if(cart_comm.size() == 1){
 		CHECK(sporb.matrix().size() == sporb.basis().local_size());
 		CHECK(sporb.matrix().transposed().size() == 24);
@@ -294,6 +304,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			}
 		}
 
+		CHECK(get<0>(sizes(sporb.spinor_hypercubic())) == 28);
+		CHECK(get<1>(sizes(sporb.spinor_hypercubic())) == 11);
+		CHECK(get<2>(sizes(sporb.spinor_hypercubic())) == 20);
+		CHECK(get<3>(sizes(sporb.spinor_hypercubic())) == 2);
+		CHECK(get<4>(sizes(sporb.spinor_hypercubic())) == 12);
+		
 	}
 	
 	states::orbital_set<basis::real_space, double> rr(rs, 12, 1, {0.4, 0.22, -0.57}, 0, cart_comm);
