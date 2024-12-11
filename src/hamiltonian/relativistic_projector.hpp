@@ -37,12 +37,12 @@ public: // for CUDA
 
 		CALI_CXX_MARK_SCOPE("relativistic_projector::build");
 
+		assert(ps.has_total_angular_momentum());
+		
 		nproj_ = 0.0;
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
 			nproj_ += ps.projector_2j(iproj) + 1;
 		}
-
-		//		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
 		
 		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
@@ -230,26 +230,46 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	basis::real_space rs(systems::cell::cubic(10.0_b), /*spacing = */ 0.49672941, comm);
 	basis::double_grid dg(false);
-	
-	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "He_fr.upf.gz", sep, rs.gcutoff());
-	
-	hamiltonian::relativistic_projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
-	CHECK(proj.num_projectors() == 10);
-	/*
-	if(not proj.empty()){
-		CHECK(proj.kb_coeff(0) ==  7.494508815_a);
-		CHECK(proj.kb_coeff(1) ==  0.6363049519_a);
-		CHECK(proj.kb_coeff(2) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(3) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(4) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(5) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(6) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(7) == -1.0069878791_a);
-	}
+	SECTION("He") {
 	
-	CHECK(proj.iatom() == 77);
-	*/
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "He_fr.upf.gz", sep, rs.gcutoff());
+		
+		hamiltonian::relativistic_projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 10);
+		/*
+			if(not proj.empty()){
+			CHECK(proj.kb_coeff(0) ==  7.494508815_a);
+			CHECK(proj.kb_coeff(1) ==  0.6363049519_a);
+			CHECK(proj.kb_coeff(2) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(3) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(4) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(5) == -1.0069878791_a);
+			CHECK(proj.kb_coeff(6) == -1.0069878791_a);
+			CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+			}
+			
+			CHECK(proj.iatom() == 77);
+		*/
+
+	}
+
+
+	SECTION("Xe") {
+			
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "Xe_fr.UPF.gz", sep, rs.gcutoff());
+		
+		hamiltonian::relativistic_projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 16);
+
+	}
+
+
+	
 }
+
+
 #endif
 

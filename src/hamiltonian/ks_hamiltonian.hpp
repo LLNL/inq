@@ -79,7 +79,7 @@ public:
 		for(int iatom = 0; iatom < ions.size(); iatom++){
 			auto && ps = pot.pseudo_for_element(ions.species(iatom));
 
-			if(ps.full_relativistic()){
+			if(ps.has_total_angular_momentum()){
 				projectors_rel_.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
 				if(projectors_rel_.back().empty()) projectors_rel_.pop_back();
 			} else if(non_local_in_fourier_){
