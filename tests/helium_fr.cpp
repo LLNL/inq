@@ -15,8 +15,8 @@ int main(int argc, char ** argv){
 	inq::utils::match energy_match(3.0e-5);
 
 	inq::systems::ions ions(inq::systems::cell::cubic(10.0_b).finite());
-	ions.species_list().insert(inq::ionic::species("He").symbol("He_fr").pseudo_file(inq::config::path::unit_tests_data() + "He_fr.upf.gz"));
-	ions.insert("He_fr", {0.0_b, 0.0_b, 0.0_b});
+	ions.species_list().pseudopotentials() = pseudo::set_id::pseudodojo_rel_pbe();
+	ions.insert("He", {0.0_b, 0.0_b, 0.0_b});
 	
 	inq::systems::electrons electrons(ions, inq::options::electrons{}.cutoff(40.0_Ha).spin_non_collinear().extra_states(2));
 	inq::ground_state::initial_guess(ions, electrons);
