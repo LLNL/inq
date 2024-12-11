@@ -39,10 +39,7 @@ public: // for CUDA
 
 		nproj_ = 0.0;
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
-				
-			int const jj = std::lround(2.0*ps.projector_j(iproj));
-
-			nproj_ += jj + 1;
+			nproj_ += ps.projector_2j(iproj) + 1;
 		}
 
 		//		std::cout << "RELATIVISTIC " << ps.full_relativistic() << std::endl;
@@ -54,7 +51,7 @@ public: // for CUDA
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
 				
 			auto ll = ps.projector_l(iproj);
-			int const jj = std::lround(2.0*ps.projector_j(iproj));
+			int const jj = ps.projector_2j(iproj);
 
 			assert(jj%2 == 1);
 			
