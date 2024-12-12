@@ -23,18 +23,16 @@ int main(int argc, char ** argv){
 	
 	auto result = inq::ground_state::calculate(ions, electrons, inq::options::theory{}.pbe(), inq::options::ground_state{}.energy_tolerance(1e-8_Ha));
 
-	/*
-	energy_match.check("total energy",        result.energy.total(),          -0.445160072256);
-		energy_match.check("kinetic energy",      result.energy.kinetic(),         0.414315464604);
-		energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -0.234029035766);
-		energy_match.check("Hartree energy",      result.energy.hartree(),         0.281309132025);
-		energy_match.check("external energy",     result.energy.external(),       -0.909266382097);
-		energy_match.check("non-local energy",    result.energy.non_local(),       0.000000000000);
-		energy_match.check("XC energy",           result.energy.xc(),             -0.231518286787);
-		energy_match.check("XC density integral", result.energy.nvxc(),           -0.301696382322);
-		energy_match.check("HF exchange energy",  result.energy.exact_exchange(),  0.000000000000);
-		energy_match.check("ion-ion energy",      result.energy.ion(),             0.000000000000);
-	*/
+	energy_match.check("total energy",        result.energy.total(),          -2.860762587218);
+	energy_match.check("kinetic energy",      result.energy.kinetic(),         2.504793796156);
+	energy_match.check("eigenvalues",         result.energy.eigenvalues(),    -1.161792830932);
+	energy_match.check("Hartree energy",      result.energy.hartree(),         1.986218327002);
+	energy_match.check("external energy",     result.energy.external(),       -4.892155878650);
+	energy_match.check("non-local energy",    result.energy.non_local(),      -1.440150012679);
+	energy_match.check("XC energy",           result.energy.xc(),             -1.019468819047);
+	energy_match.check("XC density integral", result.energy.nvxc(),           -1.306717389763);
+	energy_match.check("HF exchange energy",  result.energy.exact_exchange(),  0.000000000000);
+	energy_match.check("ion-ion energy",      result.energy.ion(),             0.000000000000);
 	
 	return energy_match.fail();
 	

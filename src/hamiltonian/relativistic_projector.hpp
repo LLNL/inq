@@ -134,8 +134,10 @@ public:
 		return beta_;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename KpointType>
-	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	gpu::array<complex, 2> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
 
 		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
 
@@ -146,25 +148,26 @@ public:
 							 sgr[ipoint][ist][1] = gr[point[0]][point[1]][point[2]][1][ist];							 
 						 });
 
-		gpu::array<complex, 3> projections({nproj_, phi.local_spinor_set_size(), 2});
+		gpu::array<complex, 2> projections({nproj_, phi.local_spinor_set_size()});
 
 		gpu::run(phi.local_spinor_set_size(), nproj_,
 						 [proj = begin(projections), sgr = begin(sphere_phi), bet = begin(beta_), np = sphere_.size(), vol = phi.basis().volume_element()] GPU_LAMBDA (auto ist, auto iproj) {
-							 proj[iproj][ist][0] = 0.0;
-							 proj[iproj][ist][1] = 0.0;
+							 proj[iproj][ist] = 0.0;
 							 for(int ip = 0; ip < np; ip++) {
-								 proj[iproj][ist][0] += bet[iproj][ip][0]*sgr[ip][ist][0];
-								 proj[iproj][ist][1] += bet[iproj][ip][1]*sgr[ip][ist][1];
+								 proj[iproj][ist] += bet[iproj][ip][0]*sgr[ip][ist][0] + bet[iproj][ip][1]*sgr[ip][ist][1];
 							 }
-							 proj[iproj][ist][0] *= vol;
-							 proj[iproj][ist][1] *= vol;
+							 proj[iproj][ist] *= vol;
 						 });
 
-		//missing parallel reduction of projections
+		if(phi.basis().comm().size() > 1) {
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+		}
 
 		return projections;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename KpointType>
 	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
@@ -172,31 +175,36 @@ public:
 
 		gpu::run(phi.local_spinor_set_size(), nproj_,
 						 [proj = begin(projections), coe = begin(kb_coeff_)] GPU_LAMBDA (auto ist, auto iproj) {
-
-							 //							 std::cout << "PROJ " <<  iproj << '\t' << proj[iproj][ist][0] << '\t' << proj[iproj][ist][1] << '\t' <<  coe[iproj] << std::endl;
-							 
-							 proj[iproj][ist][0] *= coe[iproj];
-							 proj[iproj][ist][1] *= coe[iproj];
-
+							 proj[iproj][ist] *= coe[iproj];
 						 });
 
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
 						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
 							 auto point = sph.grid_point(ip);
+
+							 auto red0 = complex(0.0, 0.0);
+							 auto red1 = complex(0.0, 0.0);
 							 for(int iproj = 0; iproj < nproj; iproj++) {
-								 gr[point[0]][point[1]][point[2]][0][ist] += conj(bet[iproj][ip][0])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
-								 gr[point[0]][point[1]][point[2]][1][ist] += conj(bet[iproj][ip][1])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
+								 auto pp = proj[iproj][ist];
+								 red0 += conj(bet[iproj][ip][0])*pp;
+								 red1 += conj(bet[iproj][ip][1])*pp;
 							 }
+
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], red0);
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][1][ist], red1);
+							 
 						 });
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename Occupations, typename KpointType>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations, KpointType const & kpoint) const {
 		auto projections = project(phi, kpoint);
 		
 		return gpu::run(gpu::reduce(phi.local_spinor_set_size()), gpu::reduce(nproj_), 0.0,
 						 [proj = begin(projections), coe = begin(kb_coeff_), occ = begin(occupations)] GPU_LAMBDA (auto ist, auto iproj) {
-							 auto pp = proj[iproj][ist][0] + proj[iproj][ist][1];
+							 auto pp = proj[iproj][ist];
 							 return real(conj(pp)*pp)*coe[iproj]*occ[ist];
 						 });
 	}
