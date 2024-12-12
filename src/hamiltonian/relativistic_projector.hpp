@@ -183,10 +183,17 @@ public:
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
 						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
 							 auto point = sph.grid_point(ip);
+
+							 auto red0 = complex(0.0, 0.0);
+							 auto red1 = complex(0.0, 0.0);
 							 for(int iproj = 0; iproj < nproj; iproj++) {
-								 gr[point[0]][point[1]][point[2]][0][ist] += conj(bet[iproj][ip][0])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
-								 gr[point[0]][point[1]][point[2]][1][ist] += conj(bet[iproj][ip][1])*(proj[iproj][ist][0] + proj[iproj][ist][1]);
+								 auto pp = proj[iproj][ist][0] + proj[iproj][ist][1];
+								 red0 += conj(bet[iproj][ip][0])*pp;
+								 red1 += conj(bet[iproj][ip][1])*pp;
 							 }
+							 gr[point[0]][point[1]][point[2]][0][ist] += red0;
+							 gr[point[0]][point[1]][point[2]][1][ist] += red1;
+
 						 });
 	}
 
