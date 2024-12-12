@@ -54,11 +54,9 @@ public: // for CUDA
 			int const jj = ps.projector_2j(iproj);
 
 			assert(jj%2 == 1);
-			
-			//			std::cout << "LL = " << ll << " JJ = " << jj/2.0 << std::endl;
+			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
 
-			auto sgn = 1.0;
-			if(jj == 2*ll - 1.0) sgn = -1.0;
+			auto sgn = double(jj - 2*ll);
 
 			for(auto mj = -jj; mj <= jj; mj += 2){
 
