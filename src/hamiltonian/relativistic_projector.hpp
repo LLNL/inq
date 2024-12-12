@@ -134,6 +134,8 @@ public:
 		return beta_;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename KpointType>
 	gpu::array<complex, 2> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
 
@@ -164,6 +166,8 @@ public:
 		return projections;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename KpointType>
 	void apply(states::orbital_set<basis::real_space, complex> const & phi, states::orbital_set<basis::real_space, complex> & vnlphi, KpointType const & kpoint) const {
 
@@ -192,6 +196,8 @@ public:
 						 });
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename Occupations, typename KpointType>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, Occupations const & occupations, KpointType const & kpoint) const {
 		auto projections = project(phi, kpoint);
