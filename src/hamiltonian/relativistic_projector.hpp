@@ -191,9 +191,10 @@ public:
 								 red0 += conj(bet[iproj][ip][0])*pp;
 								 red1 += conj(bet[iproj][ip][1])*pp;
 							 }
-							 gr[point[0]][point[1]][point[2]][0][ist] += red0;
-							 gr[point[0]][point[1]][point[2]][1][ist] += red1;
 
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], red0);
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][1][ist], red1);
+							 
 						 });
 	}
 
