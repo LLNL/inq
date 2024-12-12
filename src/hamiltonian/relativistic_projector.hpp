@@ -27,7 +27,7 @@ class relativistic_projector {
 
 	basis::spherical_grid sphere_;
 	int nproj_;
-	gpu::array<double, 3> beta_;
+	gpu::array<complex, 3> beta_;
 	gpu::array<double, 1> kb_coeff_;
 	int iatom_;
 
@@ -75,12 +75,12 @@ public: // for CUDA
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
 									 if(abs(ml0) <= ll) {
-										 bet[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic_complex(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][0] = 0.0;
 									 }
 									 if(abs(ml1) <= ll) {									 
-										 bet[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic_complex(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][1] = 0.0;
 									 }
@@ -152,7 +152,7 @@ public:
 						 [proj = begin(projections), sgr = begin(sphere_phi), bet = begin(beta_), np = sphere_.size(), vol = phi.basis().volume_element()] GPU_LAMBDA (auto ist, auto iproj) {
 							 proj[iproj][ist] = 0.0;
 							 for(int ip = 0; ip < np; ip++) {
-								 proj[iproj][ist] += bet[iproj][ip][0]*sgr[ip][ist][0] + bet[iproj][ip][1]*sgr[ip][ist][1];
+								 proj[iproj][ist] += conj(bet[iproj][ip][0])*sgr[ip][ist][0] + conj(bet[iproj][ip][1])*sgr[ip][ist][1];
 							 }
 							 proj[iproj][ist] *= vol;
 						 });
@@ -184,8 +184,8 @@ public:
 							 auto red1 = complex(0.0, 0.0);
 							 for(int iproj = 0; iproj < nproj; iproj++) {
 								 auto pp = proj[iproj][ist];
-								 red0 += conj(bet[iproj][ip][0])*pp;
-								 red1 += conj(bet[iproj][ip][1])*pp;
+								 red0 += bet[iproj][ip][0]*pp;
+								 red1 += bet[iproj][ip][1]*pp;
 							 }
 
 							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], red0);
