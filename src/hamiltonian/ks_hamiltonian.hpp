@@ -16,6 +16,7 @@
 #include <hamiltonian/projector.hpp>
 #include <hamiltonian/projector_all.hpp>
 #include <hamiltonian/projector_fourier.hpp>
+#include <hamiltonian/relativistic_projector.hpp>
 #include <hamiltonian/scalar_potential.hpp>
 #include <input/environment.hpp>
 #include <operations/transform.hpp>
@@ -48,6 +49,7 @@ private:
 	bool non_local_in_fourier_;
 	std::unordered_map<std::string, projector_fourier> projectors_fourier_map_;
 	std::vector<std::unordered_map<std::string, projector_fourier>::iterator> projectors_fourier_;
+	std::list<relativistic_projector> projectors_rel_;
 	states::ks_states states_;
 
 #ifdef ENABLE_CUDA
@@ -72,15 +74,20 @@ public:
 
 		std::list<projector> projectors;
 			
-		projectors_fourier_map_.clear();			
+		projectors_fourier_map_.clear();
 			
 		for(int iatom = 0; iatom < ions.size(); iatom++){
-			if(non_local_in_fourier_){
-				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, pot.pseudo_for_element(ions.species(iatom))));
+			auto && ps = pot.pseudo_for_element(ions.species(iatom));
+
+			if(ps.has_total_angular_momentum()){
+				projectors_rel_.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
+				if(projectors_rel_.back().empty()) projectors_rel_.pop_back();
+			} else if(non_local_in_fourier_){
+				auto insert = projectors_fourier_map_.emplace(ions.symbol(iatom), projector_fourier(basis, ps));
 				insert.first->second.add_coord(basis.cell().metric().to_contravariant(ions.positions()[iatom]));
 			} else {
-				projectors.emplace_back(basis, pot.double_grid(), pot.pseudo_for_element(ions.species(iatom)), ions.positions()[iatom], iatom);
-				if(projectors.back().empty()) projectors.pop_back(); 
+				projectors.emplace_back(basis, pot.double_grid(), ps, ions.positions()[iatom], iatom);
+				if(projectors.back().empty()) projectors.pop_back();
 			}
 		}
 
@@ -136,6 +143,8 @@ public:
 			vnlphi.fill(0.0);
 
 			projectors_all_.apply(proj, vnlphi, phi.kpoint() + uniform_vector_potential_);
+
+			for(auto & pr : projectors_rel_) pr.apply(phi, vnlphi, phi.kpoint() + uniform_vector_potential_);
 			
 			return vnlphi;
 		}
@@ -156,7 +165,9 @@ public:
 			return en;
 
 		} else {
-			return projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
+			auto en = projectors_all_.energy(phi, phi.kpoint() + uniform_vector_potential_, occupations, reduce_states);
+			for(auto & pr : projectors_rel_) en += pr.energy(phi, occupations, phi.kpoint() + uniform_vector_potential_);
+			return en;
 		}
 		
 	}
@@ -180,6 +191,7 @@ public:
 		hamiltonian::scalar_potential_add(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi, hphi);
 		exchange_(phi, hphi);
 
+		for(auto & pr : projectors_rel_) pr.apply(phi, hphi, phi.kpoint() + uniform_vector_potential_);
 		projectors_all_.apply(proj, hphi, phi.kpoint() + uniform_vector_potential_);
 
 		return hphi;
@@ -198,7 +210,8 @@ public:
 		auto hphi_rs = hamiltonian::scalar_potential(scalar_potential_, phi.spin_index(), 0.5*phi.basis().cell().metric().norm(phi.kpoint() + uniform_vector_potential_), phi_rs);
 		
 		exchange_(phi_rs, hphi_rs);
- 
+
+		for(auto & pr : projectors_rel_) pr.apply(phi_rs, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 		projectors_all_.apply(proj, hphi_rs, phi.kpoint() + uniform_vector_potential_);
 			
 		auto hphi = operations::transform::to_fourier(hphi_rs);
