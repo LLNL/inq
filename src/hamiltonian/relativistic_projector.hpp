@@ -56,15 +56,19 @@ public: // for CUDA
 			assert(jj%2 == 1);
 			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
 
-			auto sgn = double(jj - 2*ll);
-
 			for(auto mj = -jj; mj <= jj; mj += 2){
 
-				auto den = sqrt(jj - sgn + 1);
-				auto cc0 = sgn*sqrt(jj/2.0 - 0.5*sgn + sgn*mj/2.0 + 0.5)/den;
-				auto cc1 =     sqrt(jj/2.0 - 0.5*sgn - sgn*mj/2.0 + 0.5)/den;
+				// These come from https://en.wikipedia.org/wiki/Spinor_spherical_harmonics
+				// we use that '2*ll = jj - sgn' to simplify the expressions
+				auto sgn = double(jj - 2*ll);
+				auto den = 2*ll + 1;
+				auto cc0 = sgn*sqrt((ll + sgn*mj/2.0 + 0.5)/den);
+				auto cc1 =     sqrt((ll - sgn*mj/2.0 + 0.5)/den);
 				auto ml0 = (mj - 1)/2;
 				auto ml1 = (mj + 1)/2;
+
+				if(abs(ml0) > ll) assert(fabs(cc0) < 1e-14);
+				if(abs(ml1) > ll) assert(fabs(cc1) < 1e-14);
 
 				//				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
 				
