@@ -160,7 +160,9 @@ public:
 							 proj[iproj][ist][1] *= vol;
 						 });
 
-		//missing parallel reduction of projections
+		if(phi.basis().comm().size() > 1) {
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections.data_elements()), projections.num_elements(), std::plus<>{});
+		}
 
 		return projections;
 	}
