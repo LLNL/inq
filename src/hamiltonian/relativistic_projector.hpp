@@ -268,7 +268,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 
-	SECTION("Xe") {
+	SECTION("Xe UPF1") {
 			
 		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "Xe_fr.UPF.gz", sep, rs.gcutoff());
 		
@@ -277,7 +277,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(proj.num_projectors() == 16);
 
 	}
+	
+	SECTION("Xe pseudodojo") {
+			
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "pseudodojo_Xe_fr.upf.gz", sep, rs.gcutoff());
+		
+		hamiltonian::relativistic_projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 36);
 
+	}
 
 	
 }
