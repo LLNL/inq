@@ -78,13 +78,15 @@ public: // for CUDA
 									sph = sphere_.ref(), cc0, cc1, ml0, ml1, ll, iproj_lm,
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
+									 auto radial = spline(sph.distance(ipoint));
+									 
 									 if(abs(ml0) <= ll) {
-										 bet[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][0] = cc0*radial*pseudo::math::sharmonic_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][0] = 0.0;
 									 }
 									 if(abs(ml1) <= ll) {									 
-										 bet[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][1] = cc1*radial*pseudo::math::sharmonic_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][1] = 0.0;
 									 }
