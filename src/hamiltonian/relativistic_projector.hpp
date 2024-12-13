@@ -46,6 +46,8 @@ public: // for CUDA
 		
 		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
+
+		std::cout << "NUM " << ps.num_projectors_l() << std::endl;
 		
 		int iproj_lm = 0;
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
@@ -56,6 +58,8 @@ public: // for CUDA
 			assert(jj%2 == 1);
 			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
 
+			//			std::cout << "PROJ " << iproj << '\t' << ll << '\t' << jj/2.0 << '\t' << ps.kb_coeff(iproj) << '\t' <<  ps.projector(iproj).function()(0.5)<< std::endl;
+			
 			for(auto mj = -jj; mj <= jj; mj += 2){
 
 				// These come from https://en.wikipedia.org/wiki/Spinor_spherical_harmonics
