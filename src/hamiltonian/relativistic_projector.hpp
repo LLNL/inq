@@ -27,7 +27,7 @@ class relativistic_projector {
 
 	basis::spherical_grid sphere_;
 	int nproj_;
-	gpu::array<double, 3> beta_;
+	gpu::array<complex, 3> beta_;
 	gpu::array<double, 1> kb_coeff_;
 	int iatom_;
 
@@ -46,6 +46,8 @@ public: // for CUDA
 		
 		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
+
+		std::cout << "NUM " << ps.num_projectors_l() << std::endl;
 		
 		int iproj_lm = 0;
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
@@ -54,19 +56,23 @@ public: // for CUDA
 			int const jj = ps.projector_2j(iproj);
 
 			assert(jj%2 == 1);
+			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
+
+			//			std::cout << "PROJ " << iproj << '\t' << ll << '\t' << jj/2.0 << '\t' << ps.kb_coeff(iproj) << '\t' <<  ps.projector(iproj).function()(0.5)<< std::endl;
 			
-			//			std::cout << "LL = " << ll << " JJ = " << jj/2.0 << std::endl;
-
-			auto sgn = 1.0;
-			if(jj == 2*ll - 1.0) sgn = -1.0;
-
 			for(auto mj = -jj; mj <= jj; mj += 2){
 
-				auto den = sqrt(jj - sgn + 1);
-				auto cc0 = sgn*sqrt(jj/2.0 - 0.5*sgn + sgn*mj/2.0 + 0.5)/den;
-				auto cc1 =     sqrt(jj/2.0 - 0.5*sgn - sgn*mj/2.0 + 0.5)/den;
+				// These come from https://en.wikipedia.org/wiki/Spinor_spherical_harmonics
+				// we use that '2*ll = jj - sgn' to simplify the expressions
+				auto sgn = double(jj - 2*ll);
+				auto den = 2*ll + 1;
+				auto cc0 = sgn*sqrt((ll + sgn*mj/2.0 + 0.5)/den);
+				auto cc1 =     sqrt((ll - sgn*mj/2.0 + 0.5)/den);
 				auto ml0 = (mj - 1)/2;
 				auto ml1 = (mj + 1)/2;
+
+				if(abs(ml0) > ll) assert(fabs(cc0) < 1e-14);
+				if(abs(ml1) > ll) assert(fabs(cc1) < 1e-14);
 
 				//				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
 				
@@ -76,13 +82,15 @@ public: // for CUDA
 									sph = sphere_.ref(), cc0, cc1, ml0, ml1, ll, iproj_lm,
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
+									 auto radial = spline(sph.distance(ipoint));
+									 
 									 if(abs(ml0) <= ll) {
-										 bet[iproj_lm][ipoint][0] = cc0*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][0] = cc0*radial*pseudo::math::sharmonic_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][0] = 0.0;
 									 }
 									 if(abs(ml1) <= ll) {									 
-										 bet[iproj_lm][ipoint][1] = cc1*spline(sph.distance(ipoint))*pseudo::math::sharmonic(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][1] = cc1*radial*pseudo::math::sharmonic_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][1] = 0.0;
 									 }
@@ -154,7 +162,7 @@ public:
 						 [proj = begin(projections), sgr = begin(sphere_phi), bet = begin(beta_), np = sphere_.size(), vol = phi.basis().volume_element()] GPU_LAMBDA (auto ist, auto iproj) {
 							 proj[iproj][ist] = 0.0;
 							 for(int ip = 0; ip < np; ip++) {
-								 proj[iproj][ist] += bet[iproj][ip][0]*sgr[ip][ist][0] + bet[iproj][ip][1]*sgr[ip][ist][1];
+								 proj[iproj][ist] += conj(bet[iproj][ip][0])*sgr[ip][ist][0] + conj(bet[iproj][ip][1])*sgr[ip][ist][1];
 							 }
 							 proj[iproj][ist] *= vol;
 						 });
@@ -186,8 +194,8 @@ public:
 							 auto red1 = complex(0.0, 0.0);
 							 for(int iproj = 0; iproj < nproj; iproj++) {
 								 auto pp = proj[iproj][ist];
-								 red0 += conj(bet[iproj][ip][0])*pp;
-								 red1 += conj(bet[iproj][ip][1])*pp;
+								 red0 += bet[iproj][ip][0]*pp;
+								 red1 += bet[iproj][ip][1]*pp;
 							 }
 
 							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], red0);
@@ -264,7 +272,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	}
 
 
-	SECTION("Xe") {
+	SECTION("Xe UPF1") {
 			
 		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "Xe_fr.UPF.gz", sep, rs.gcutoff());
 		
@@ -273,7 +281,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(proj.num_projectors() == 16);
 
 	}
+	
+	SECTION("Xe pseudodojo") {
+			
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "pseudodojo_Xe_fr.upf.gz", sep, rs.gcutoff());
+		
+		hamiltonian::relativistic_projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 36);
 
+	}
 
 	
 }
