@@ -29,7 +29,6 @@ class electrons {
 	std::optional<bool> double_grid_;	
 	std::optional<double> density_factor_;
 	std::optional<bool> spherical_grid_;
-	std::optional<bool> fourier_pseudo_;
 
 public:
 	
@@ -131,22 +130,6 @@ public:
 		return density_factor_.value_or(1.0);
 	}
 
-	auto real_space_pseudo() const {
-		electrons conf = *this;
-		conf.fourier_pseudo_ = false;
-		return conf;
-	}
-
-	auto fourier_pseudo() const {
-		electrons conf = *this;
-		conf.fourier_pseudo_ = true;
-		return conf;
-	}
-		
-	auto fourier_pseudo_value() const {
-		return fourier_pseudo_.value_or(false);
-	}
-
 	void save(parallel::communicator & comm, std::string const & dirname) const {
 		auto error_message = "INQ error: Cannot save the options::electrons to directory '" + dirname + "'.";
 
@@ -158,7 +141,6 @@ public:
 		utils::save_optional(comm, dirname + "/double_grid", double_grid_, error_message);
 		utils::save_optional(comm, dirname + "/density_factor", density_factor_, error_message);
 		utils::save_optional(comm, dirname + "/spherical_grid", spherical_grid_, error_message);
-		utils::save_optional(comm, dirname + "/fourier_pseudo", fourier_pseudo_, error_message);
 		utils::save_optional(comm, dirname + "/spin",           spin_,           error_message);
 		
 	}
@@ -173,7 +155,6 @@ public:
 		utils::load_optional(dirname + "/double_grid", opts.double_grid_);
 		utils::load_optional(dirname + "/density_factor", opts.density_factor_);
 		utils::load_optional(dirname + "/spherical_grid", opts.spherical_grid_);
-		utils::load_optional(dirname + "/fourier_pseudo", opts.fourier_pseudo_);
 		utils::load_optional(dirname + "/spin",           opts.spin_);		
 				
 		return opts;
@@ -246,7 +227,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	CHECK(conf.extra_states_val() == 666);
 	CHECK(conf.spacing_value() == 23.1_a);
-	CHECK(conf.fourier_pseudo_value() == false);
 	CHECK(conf.spin_val() == states::spin_config::NON_COLLINEAR);
 
 	conf.save(comm, "options_electrons_save");
@@ -254,7 +234,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	CHECK(read_conf.extra_states_val() == 666);
 	CHECK(read_conf.spacing_value() == 23.1_a);
-	CHECK(read_conf.fourier_pseudo_value() == false);
 	CHECK(read_conf.spin_val() == states::spin_config::NON_COLLINEAR);
 	
 }

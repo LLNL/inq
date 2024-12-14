@@ -164,11 +164,6 @@ the user.
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
-	static void fourier_pseudo() {
-		auto el_opts = options::electrons::load(".inq/default_electrons_options").fourier_pseudo();
-		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
-	}
-
 	static void spin_unpolarized() {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").spin_unpolarized();
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
