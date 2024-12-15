@@ -50,7 +50,7 @@ namespace hamiltonian {
 				for(int m = -l; m <= l; m++){
 					for(int ipoint = 0; ipoint < sphere.size(); ipoint++){
 						auto point = sphere.ref().grid_point(ipoint);
-						beta_rs.hypercubic()[point[0]][point[1]][point[2]][iproj_lm] = ps.projector(iproj_l).function()(sphere.ref().distance(ipoint))*pseudo::math::sharmonic(l, m, sphere.ref().point_pos(ipoint));
+						beta_rs.hypercubic()[point[0]][point[1]][point[2]][iproj_lm] = ps.projector(iproj_l).function()(sphere.ref().distance(ipoint))*pseudo::math::sharmonic_real(l, m, sphere.ref().point_pos(ipoint));
 					}
 					
 					kb_coeff_[iproj_lm]	= ps.kb_coeff(iproj_l); 
