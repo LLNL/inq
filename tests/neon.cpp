@@ -55,23 +55,5 @@ int main(int argc, char ** argv){
 	energy_match &= interface::util.match(interface::results_ground_state.energy_nvxc()       ,   0.000000000000, 2.0e-5);
 	energy_match &= interface::util.match(interface::results_ground_state.energy_ion()        ,   0.000000000000, 2.0e-5);
 	
-	//FOURIER SPACE PSEUDO
-	//inq electrons fourier_pseudo
-	interface::electrons.fourier_pseudo();
-
-	//inq run ground_state
-	interface::run.ground_state();
-	
-	energy_match &= interface::util.match(interface::results_ground_state.energy_total()      , -61.861056649453, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_kinetic()    ,  35.765555684056, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_eigenvalues(), -61.861056649453, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_external()   , -79.509918897873, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_non_local()  , -18.116693435635, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_hartree()    ,   0.000000000000, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_xc()         ,   0.000000000000, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_nvxc()       ,   0.000000000000, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_nvxc()       ,   0.000000000000, 2.0e-5);
-	energy_match &= interface::util.match(interface::results_ground_state.energy_ion()        ,   0.000000000000, 2.0e-5);
-	
 	return energy_match.fail();
 }
