@@ -438,7 +438,7 @@ public:
                [proj = begin(projections_all), rproj = begin(rprojections_all), coe = begin(coeff_)]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
                  proj[iproj][ilm][ist] *= coe[iproj][ilm];
-                 proj[iproj][ilm][ist] *= coe[iproj][ilm];								 
+                 rproj[iproj][ilm][ist] *= coe[iproj][ilm];
                });
 		}
 
