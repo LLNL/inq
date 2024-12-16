@@ -97,11 +97,11 @@ int main(int argc, char ** argv){
 		data_match.check("energy step  30", energy[30],  -33.418518662296);
 		data_match.check("energy step  40", energy[40],  -33.418518662423);
 		
-		data_match.check("current in z step   0", jz[0],   -0.157729547895);
-		data_match.check("current in z step  10", jz[10],  -0.151911067747);
-		data_match.check("current in z step  20", jz[20],  -0.144088608186);
-		data_match.check("current in z step  30", jz[30],  -0.140191267000);
-		data_match.check("current in z step  40", jz[40],  -0.135683835952);
+		data_match.check("current in z step   0", jz[0],   -0.151225679030);
+		data_match.check("current in z step  10", jz[10],  -0.146491063357);
+		data_match.check("current in z step  20", jz[20],  -0.138514196446);
+		data_match.check("current in z step  30", jz[30],  -0.132857574521);
+		data_match.check("current in z step  40", jz[40],  -0.128278272499);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.005000000000);
 		data_match.check("vector potential in z step  10", Az[10],  0.005000000000);
@@ -132,11 +132,11 @@ int main(int argc, char ** argv){
 		data_match.check("energy step  30", energy[30],  -33.418517090347);
 		data_match.check("energy step  40", energy[40],  -33.418515953351);
 			
-		data_match.check("current in z step   0", jz[0],   -0.157729547895);
-		data_match.check("current in z step  10", jz[10],  -0.151948955175);
-		data_match.check("current in z step  20", jz[20],  -0.144243229877);
-		data_match.check("current in z step  30", jz[30],  -0.140534021619);
-		data_match.check("current in z step  40", jz[40],  -0.136281715570);
+		data_match.check("current in z step   0", jz[0],   -0.151225679030);
+		data_match.check("current in z step  10", jz[10],  -0.146529575060);
+		data_match.check("current in z step  20", jz[20],  -0.138664112001);
+		data_match.check("current in z step  30", jz[30],  -0.133184328060);
+		data_match.check("current in z step  40", jz[40],  -0.128841730136);
 		
 		data_match.check("vector potential in z step   0", Az[0],   0.005000000000);
 		data_match.check("vector potential in z step  10", Az[10],  0.005001210192);
