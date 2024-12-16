@@ -277,46 +277,21 @@ public:
 
 		namespace blas = boost::multi::blas;
 
-		gpu::array<typename PhiType::element_type, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		auto sphere_phi_all = project(phi, kpoint);
 		gpu::array<typename GPhiType::element_type, 3> sphere_gphi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
-		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
  
 		{ CALI_CXX_MARK_SCOPE("projector_all::force::gather");
 				
 			gpu::run(phi.local_set_size(), max_sphere_size_, nprojs_,
-							 [sgr = begin(sphere_phi_all), gsgr = begin(sphere_gphi_all), gr = begin(phi.hypercubic()), ggr = begin(gphi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint]
+							 [gsgr = begin(sphere_gphi_all), gr = begin(phi.hypercubic()), ggr = begin(gphi.hypercubic()), poi = begin(points_), pos = begin(positions_), kpoint]
 							 GPU_LAMBDA (auto ist, auto ipoint, auto iproj){
 								 if(poi[iproj][ipoint][0] >= 0){
 									 auto phase = polar(1.0, dot(kpoint, pos[iproj][ipoint]));
-									 sgr[iproj][ipoint][ist] = phase*gr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
 									 gsgr[iproj][ipoint][ist] = phase*ggr[poi[iproj][ipoint][0]][poi[iproj][ipoint][1]][poi[iproj][ipoint][2]][ist];
 								 } else {
-									 sgr[iproj][ipoint][ist] = 0.0;
 									 gsgr[iproj][ipoint][ist] = {complex(0.0), complex(0.0), complex(0.0)};
 								 }
 							 });
-		}
-
-		for(auto iproj = 0; iproj < nprojs_; iproj++){
-			if(locally_empty_[iproj]) continue;
-			
-			blas::real_doubled(projections_all[iproj]) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sphere_phi_all[iproj]));
-		}
-			
-		{ CALI_CXX_MARK_SCOPE("projector_force_scal"); 
-			
-			gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
-							 [proj = begin(projections_all), coeff = begin(coeff_)] GPU_LAMBDA (auto ist, auto ipj, auto iproj){
-								 proj[iproj][ipj][ist] *= coeff[iproj][ipj];
-							 });
-		}
-
-		if(phi.basis().comm().size() > 1) {
-			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
-		}
-		
-		for(auto iproj = 0; iproj < nprojs_; iproj++){		
-			blas::real_doubled(sphere_phi_all[iproj]) = blas::gemm(1.0, blas::T(matrices_[iproj]), blas::real_doubled(projections_all[iproj]));
 		}
 
 		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
