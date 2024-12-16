@@ -96,8 +96,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////		
 	
 	template <typename KpointType>
-	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
-    
+	gpu::array<complex, 3> calculate_projections(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		gpu::array<complex, 3> projections_all({nprojs_, max_nlm_, phi.local_set_size()}, 0.0);
 
@@ -154,6 +154,16 @@ public:
 			
 		}
 #endif
+		
+		return 	projections_all;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <typename KpointType>
+	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+		
+		auto projections_all = calculate_projections(phi, kpoint);
 
     { CALI_CXX_MARK_SCOPE("projector_scal");
 				
@@ -169,6 +179,8 @@ public:
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 
+		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
+		
 #ifndef ENABLE_CUDA
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			CALI_CXX_MARK_SCOPE("projector_gemm_2");
