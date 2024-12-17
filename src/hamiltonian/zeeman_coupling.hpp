@@ -156,7 +156,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
         auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_polarized());
         ground_state::initial_guess(ions, electrons);
-        perturbations::magnetic magnetic_uniform{{0.0, 0.0, -1.0}};
+        perturbations::magnetic magnetic_uniform{{0.0_au, 0.0_au, -1.0_au}};
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform);
         auto mag = observables::total_magnetization(electrons.spin_density());
         CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 0.0);
@@ -179,7 +179,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
         auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
         ground_state::initial_guess(ions, electrons);
-        perturbations::magnetic magnetic_uniform{{0.0, 0.0, -1.0}};
+        perturbations::magnetic magnetic_uniform{{0.0_au, 0.0_au, -1.0_au}};
 
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform);
         auto mag = observables::total_magnetization(electrons.spin_density());
@@ -195,15 +195,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target);
 
-        vector3 bvec = {1.0, 1.0, 0.0};
-        bvec = bvec / bvec.length();
+        vector3 bvec = {1.0_au/sqrt(2.0), 1.0_au/sqrt(2.0), 0.0_au};
         perturbations::magnetic magnetic_uniform2{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform2);
         mag = observables::total_magnetization(electrons.spin_density());
         CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 1.0/sqrt(2.0));
         CHECK(Approx(mag[1]/mag.length()).margin(1.e-7)   == 1.0/sqrt(2.0));
         CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)   == 0.0);
-
+        
         zeeman_ener = result.energy.zeeman_energy();
         Approx target2 = Approx(zeeman_ener).epsilon(1.e-10);
         mag_field.fill(vector3 {0.0, 0.0, 0.0});
@@ -212,15 +211,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target2);
 
-        bvec = {1.0, -1.0, 0.0};
-        bvec = bvec / bvec.length();
+        bvec = {1.0_au/sqrt(2.0), -1.0_au/sqrt(2.0), 0.0_au};
         perturbations::magnetic magnetic_uniform3{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform3);
         mag = observables::total_magnetization(electrons.spin_density());
         CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 1.0/sqrt(2.0));
         CHECK(Approx(mag[1]/mag.length()).margin(1.e-7)   ==-1.0/sqrt(2.0));
         CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)   == 0.0);
-
+        
         zeeman_ener = result.energy.zeeman_energy();
         Approx target3 = Approx(zeeman_ener).epsilon(1.e-10);
         mag_field.fill(vector3 {0.0, 0.0, 0.0});
@@ -228,16 +226,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         zeeman_ener2 = 0.0;
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target3);
-
-        bvec = {1.0, 1.0, 1.0};
-        bvec = bvec / bvec.length();
+        
+        bvec = {1.0_au/sqrt(3.0), 1.0_au/sqrt(3.0), 1.0_au/sqrt(3.0)};
         perturbations::magnetic magnetic_uniform4{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform4);
         mag = observables::total_magnetization(electrons.spin_density());
         CHECK(Approx(mag[0]/mag.length()).margin(1.e-7)   == 1.0/sqrt(3.0));
         CHECK(Approx(mag[1]/mag.length()).margin(1.e-7)   == 1.0/sqrt(3.0));
         CHECK(Approx(mag[2]/mag.length()).margin(1.e-7)   == 1.0/sqrt(3.0));
-
+        
         zeeman_ener = result.energy.zeeman_energy();
         Approx target4 = Approx(zeeman_ener).epsilon(1.e-10);
         mag_field.fill(vector3 {0.0, 0.0, 0.0});
@@ -246,8 +243,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target4);
 
-        bvec = {0.0, -1.0, 1.0};
-        bvec = bvec / bvec.length();
+        bvec = {0.0_au, -1.0_au/sqrt(2.0), 1.0_au/sqrt(2.0)};
         perturbations::magnetic magnetic_uniform5{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform5);
         mag = observables::total_magnetization(electrons.spin_density());
@@ -262,9 +258,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         zeeman_ener2 = 0.0;
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target5);
-
-        bvec = {1.0, -2.0, 1.5};
-        bvec = bvec / bvec.length();
+        
+        bvec = {1.0_au/sqrt(1.0+4.0+9.0/4), -2.0_au/sqrt(1.0+4.0+9.0/4), 1.5_au/sqrt(1.0+4.0+9.0/4)};
         perturbations::magnetic magnetic_uniform6{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform6);
         mag = observables::total_magnetization(electrons.spin_density());
@@ -279,9 +274,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         zeeman_ener2 = 0.0;
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target6);
-
-        bvec = {4.0, -2.0, 1.0};
-        bvec = bvec / bvec.length();
+        
+        bvec = {4.0e+05_T/sqrt(16.0+4.0+1.0), -2.0e+05_T/sqrt(16.0+4.0+1.0), 1.0e+05_T/sqrt(16.0+4.0+1.0)};
         perturbations::magnetic magnetic_uniform7{bvec};
         result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(200).mixing(0.1), magnetic_uniform7);
         mag = observables::total_magnetization(electrons.spin_density());
@@ -296,6 +290,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
         zeeman_ener2 = 0.0;
         eval_psi_vz_psi(electrons.kpin_states_comm(), electrons.spin_density(), mag_field, electrons.occupations(), electrons.kpin(), zeeman_ener2);
         CHECK(zeeman_ener2 == target7);
+        
     }
 }
 #endif
