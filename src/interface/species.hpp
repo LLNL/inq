@@ -47,24 +47,14 @@ These are the options available:
    Python example: `pinq.species.status()`
 
 
--  Shell:  `species pseudo-set`
+-  Shell:  `species set`
    Python: `species.pseudo_set()`
 
    Returns the current pseudopotential set that will be used by
    default for all species in the simulation.
 
-   Shell example:  `inq species pseudo-set`
+   Shell example:  `inq species set`
    Python example: `pinq.species.pseudo_set()`
-
-
--  Shell:  `species pseudo-set <set name>`
-   Python: `species.pseudo_set("set_name")`
-
-   Sets the pseudopotential set that will be used by default for all
-   species in the simulation.
-
-   Shell example:  `inq species pseudo-set sg15`
-   Python example: `pinq.species.pseudo-set("sg15")`
 
 
 -  Shell:  `species list-sets`
@@ -74,6 +64,17 @@ These are the options available:
 
    Shell example:  `inq species list-sets`
    Python example: `pinq.species.list_sets()`
+
+
+-  Shell:  `species set <set name>`
+   Python: `species.pseudo_set("set_name")`
+
+   Selects the pseudopotential set that will be used by default for
+   all species in the simulation. The name must be one those returned
+   by the `list-sets` command.
+
+   Shell example:  `inq species set sg15`
+   Python example: `pinq.species.set("sg15")`
 
 
 -  Shell:  `species add <element>`
@@ -107,14 +108,14 @@ These are the options available:
    Python example: `pinq.species.add_by_atomic_number("C14", 6)`
 
 
--  Shell:  `species <symbol> pseudo-set <set name>`
+-  Shell:  `species <symbol> set <set name>`
    Python: `species.pseudo_set("symbol", "set_name")`
 
    Sets the pseudopotential set that will be used for the species
    given by <symbol>.
 
-   Shell example:  `inq species He pseudo-set sg15`
-   Python example: `pinq.species.pseudo-set("He", "sg15")`
+   Shell example:  `inq species He set sg15`
+   Python example: `pinq.species.set("He", "sg15")`
 
 
 -  Shell:  `species <symbol> file <filename>`
@@ -149,7 +150,7 @@ These are the options available:
 			return set;
 		}
 		catch(...) {
-			actions::error(input::environment::global().comm(), "Unknown pseudo-set '" + set_name + "'.");
+			actions::error(input::environment::global().comm(), "Unknown set '" + set_name + "'.");
 			return pseudo::set_id{};
 		}
 	}
@@ -250,12 +251,12 @@ These are the options available:
 			actions::normal_exit();
 		}
 
-		if(args.size() == 1 and args[0] == "pseudo-set") {
+		if(args.size() == 1 and args[0] == "set") {
 			pseudo_set();
 			actions::normal_exit();
 		}
 
-		if(args.size() == 2 and args[0] == "pseudo-set") {
+		if(args.size() == 2 and args[0] == "set") {
 			pseudo_set(args[1]);
 			status();
       actions::normal_exit();
@@ -284,7 +285,7 @@ These are the options available:
 			actions::normal_exit();
 		}
 		
-		if(args.size() == 3 and args[1] == "pseudo-set") {
+		if(args.size() == 3 and args[1] == "set") {
 			pseudo_set(args[0], args[2]);
 			status();
 			actions::normal_exit();
