@@ -154,7 +154,12 @@ public:
 			
 		}
 #endif
-		
+
+		if(phi.basis().comm().size() > 1) {
+			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
+			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
+		}
+
 		return 	projections_all;
 	}
 
@@ -172,11 +177,6 @@ public:
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
                  proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm];
                });
-		}
-
-		if(phi.basis().comm().size() > 1) {
-			CALI_CXX_MARK_SCOPE("projector_all::project::reduce");
-			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(projections_all.data_elements()), projections_all.num_elements(), std::plus<>{});
 		}
 
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
