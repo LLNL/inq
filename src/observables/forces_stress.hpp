@@ -126,10 +126,10 @@ private:
 		auto iphi = 0;
 		for(auto & phi : electrons.kpin()){
 			
-			auto gphi = operations::gradient(phi, /* factor = */ 1.0, /*shift = */ phi.kpoint());
+			auto gphi = operations::gradient(phi, /* factor = */ 1.0, /*shift = */ phi.kpoint() + ham.uniform_vector_potential());
 			observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 			
-			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], ham.uniform_vector_potential(), forces_non_local);
+			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], ham.uniform_vector_potential(), phi.kpoint() + ham.uniform_vector_potential(), forces_non_local);
 
 			stress += stress_kinetic(gphi, electrons.occupations()[iphi]);
 
