@@ -46,8 +46,6 @@ public: // for CUDA
 		
 		beta_.reextent({nproj_, sphere_.size(), 2});
 		kb_coeff_.reextent(nproj_);
-
-		std::cout << "NUM " << ps.num_projectors_l() << std::endl;
 		
 		int iproj_lm = 0;
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
@@ -150,10 +148,11 @@ public:
 		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
 
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
-						 [gr = begin(phi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi)] GPU_LAMBDA (auto ist, auto ipoint){
+						 [gr = begin(phi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
 							 auto point = sph.grid_point(ipoint);
-							 sgr[ipoint][ist][0] = gr[point[0]][point[1]][point[2]][0][ist];
-							 sgr[ipoint][ist][1] = gr[point[0]][point[1]][point[2]][1][ist];							 
+							 auto phase = polar(1.0, dot(kpoint, sph.point_pos(ipoint)));
+							 sgr[ipoint][ist][0] = phase*gr[point[0]][point[1]][point[2]][0][ist];
+							 sgr[ipoint][ist][1] = phase*gr[point[0]][point[1]][point[2]][1][ist];
 						 });
 
 		gpu::array<complex, 2> projections({nproj_, phi.local_spinor_set_size()});
@@ -187,8 +186,9 @@ public:
 						 });
 
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
-						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), nproj = nproj_, bet = begin(beta_), proj = begin(projections)] GPU_LAMBDA (auto ist, auto ip){
+						 [gr = begin(vnlphi.spinor_hypercubic()), sph = sphere_.ref(), nproj = nproj_, bet = begin(beta_), proj = begin(projections), kpoint] GPU_LAMBDA (auto ist, auto ip){
 							 auto point = sph.grid_point(ip);
+							 auto phase = polar(1.0, -dot(kpoint, sph.point_pos(ip)));
 
 							 auto red0 = complex(0.0, 0.0);
 							 auto red1 = complex(0.0, 0.0);
@@ -198,8 +198,8 @@ public:
 								 red1 += bet[iproj][ip][1]*pp;
 							 }
 
-							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], red0);
-							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][1][ist], red1);
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][0][ist], phase*red0);
+							 gpu::atomic::add(&gr[point[0]][point[1]][point[2]][1][ist], phase*red1);
 							 
 						 });
 	}
