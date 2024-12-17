@@ -301,7 +301,8 @@ These are the options available:
 			status();
 			actions::normal_exit();
 		}
-		
+
+		if(input::environment::global().comm().root()) actions::error(input::environment::global().comm(), "Invalid syntax in the species command");
 	}
 	
 #ifdef INQ_PYTHON_INTERFACE
