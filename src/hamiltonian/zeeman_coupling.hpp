@@ -49,14 +49,14 @@ public:
 
         gpu::run(zeeman_pot.basis().local_size(),
             [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                vz[ip][0] +=-magnetic_[ip][2];
-                vz[ip][1] += magnetic_[ip][2];
+                vz[ip][0] +=-0.5*magnetic_[ip][2];
+                vz[ip][1] += 0.5*magnetic_[ip][2];
             });
         if (zeeman_pot.set_size() == 4) {
                 gpu::run(zeeman_pot.basis().local_size(),
                     [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                        vz[ip][2] +=-magnetic_[ip][0];
-                        vz[ip][3] +=-magnetic_[ip][1];
+                        vz[ip][2] +=-0.5*magnetic_[ip][0];
+                        vz[ip][3] +=-0.5*magnetic_[ip][1];
                     });
         }
     }
