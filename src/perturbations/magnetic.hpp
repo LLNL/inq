@@ -4,6 +4,7 @@
 #define INQ__PERTURBATIONS__MAGNET
 
 #include <inq_config.h>
+#include <magnitude/magfield.hpp>
 
 namespace inq {
 namespace perturbations {
@@ -14,8 +15,8 @@ class magnetic : public none {
     
 public:
 
-    magnetic(vector3<double> const & value):
-        magnetic_vector_(value)
+    magnetic(vector3<quantity<magnitude::magfield>> const & value):
+        magnetic_vector_(vector3<double> {value[0].in_atomic_units(), value[1].in_atomic_units(), value[2].in_atomic_units()})
     {
     }
 
@@ -49,7 +50,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-    perturbations::magnetic uniform_magnetic{{0.0, 0.0, 1.0}};
+    vector3<quantity<magnitude::magfield>> bvec = {0.0_au, 0.0_au, 1.0_au};
+    perturbations::magnetic uniform_magnetic{bvec};
 
     basis::real_space bas(systems::cell::cubic(5.0_b), /*spacing*/ 0.1, comm);
     basis::field<basis::real_space, vector3<double>> mag_field(bas);
