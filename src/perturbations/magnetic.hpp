@@ -50,7 +50,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-    vector3<quantity<magnitude::magfield>> bvec = {0.0_au, 0.0_au, 1.0_au};
+    vector3<quantity<magnitude::magfield>> bvec = {0.0_amu, 0.0_amu, 1.0_amu};
     perturbations::magnetic uniform_magnetic{bvec};
 
     basis::real_space bas(systems::cell::cubic(5.0_b), /*spacing*/ 0.1, comm);
