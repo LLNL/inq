@@ -10,11 +10,11 @@ namespace magnitude {
 
 struct magfield;
 
-auto operator "" _au(long double val){
+auto operator "" _amu(long double val){
     return inq::quantity<magfield>::from_atomic_units(val);
 }
 
-auto operator "" _AU(long double val){
+auto operator "" _AMU(long double val){
     return inq::quantity<magfield>::from_atomic_units(val);
 }
 
@@ -33,7 +33,7 @@ struct magfield {
         units = utils::lowercase(units);
 
         if (units == "AU" or units == "au") {
-            return value*1.0_AU;
+            return value*1.0_AMU;
         } else if (units == "tesla" or units == "T") {
             return value*1.0_T;
         } else {
@@ -58,12 +58,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     using Catch::Approx;
 
     {
-        auto mf = 100.0_AU;
+        auto mf = 100.0_AMU;
         CHECK(mf.in_atomic_units() == 100.0);
     }
 
     {
-        auto mf = 10.0_au;
+        auto mf = 10.0_amu;
         CHECK(mf.in_atomic_units() == 10.0);
     }
 
@@ -78,7 +78,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     }
 
     {
-        auto mf = 1.0_au;
+        auto mf = 1.0_amu;
         auto muB = 5.78883942514688e-05;
         CHECK(Approx((mf.in_atomic_units()*2.3505e+05*muB*1.0_ev).in_atomic_units()).margin(1.e-4) == 0.5);
     }
