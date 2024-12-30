@@ -144,10 +144,10 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	template <typename KpointType>
-	gpu::array<complex, 3> gather(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	template <typename Type, typename KpointType>
+	gpu::array<Type, 3> gather(states::orbital_set<basis::real_space, Type> const & phi, KpointType const & kpoint) const {
 
-		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
+		gpu::array<Type, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
 
 		gpu::run(phi.local_spinor_set_size(), sphere_.size(),
 						 [gr = begin(phi.spinor_hypercubic()), sph = sphere_.ref(), sgr = begin(sphere_phi), kpoint] GPU_LAMBDA (auto ist, auto ipoint){
@@ -233,6 +233,8 @@ public:
 	
 	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType, typename KPoint>
 	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+
+		auto sphere_gphi = gather(gphi, kpoint);
 		
 	}
 	
