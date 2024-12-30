@@ -145,7 +145,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KpointType>
-	gpu::array<complex, 2> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	gpu::array<complex, 3> gather(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
 
 		gpu::array<complex, 3> sphere_phi({sphere_.size(), phi.local_spinor_set_size(), 2});
 
@@ -156,6 +156,16 @@ public:
 							 sgr[ipoint][ist][0] = phase*gr[point[0]][point[1]][point[2]][0][ist];
 							 sgr[ipoint][ist][1] = phase*gr[point[0]][point[1]][point[2]][1][ist];
 						 });
+
+		return sphere_phi;
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <typename KpointType>
+	gpu::array<complex, 2> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+
+		auto sphere_phi = gather(phi, kpoint);
 
 		gpu::array<complex, 2> projections({nproj_, phi.local_spinor_set_size()});
 
