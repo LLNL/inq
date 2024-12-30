@@ -231,8 +231,8 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType, typename KPoint>
-	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+	template <typename PhiType, typename GPhiType, typename OccsType, typename KPoint>
+	void force(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
 
 		auto sphere_gphi = gather(gphi, kpoint);
 		auto projections = project(phi, kpoint);
@@ -255,7 +255,7 @@ public:
 													 return -2.0*oc[ist]*(real(red0*conj(gph[ip][ist][0])) + real(red1*conj(gph[ip][ist][1])));
 												 });
 
-		forces_non_local[iatom_] += phi.basis().volume_element()*metric.to_cartesian(forc);
+		forces_non_local[iatom_] += phi.basis().volume_element()*phi.basis().cell().metric().to_cartesian(forc);
 		
 	}
 	

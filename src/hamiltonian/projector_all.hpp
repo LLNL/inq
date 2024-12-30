@@ -269,8 +269,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	
-	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType, typename KPoint>
-	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+	template <typename PhiType, typename GPhiType, typename OccsType, typename KPoint>
+	void force(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -308,7 +308,7 @@ public:
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			if(locally_empty_[iproj]) continue;
 			
-			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*metric.to_cartesian(force[iproj]);
+			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*phi.basis().cell().metric().to_cartesian(force[iproj]);
 		}
 		
 	}
