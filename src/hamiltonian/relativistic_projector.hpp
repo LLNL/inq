@@ -218,8 +218,14 @@ public:
 							 return real(conj(pp)*pp)*coe[iproj]*occ[ist];
 						 });
 	}
-	
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType, typename KPoint>
+	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+		
+	}
+	
 	friend class projector_all;
 	
     

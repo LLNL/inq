@@ -130,6 +130,7 @@ private:
 			observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 			
 			ham.projectors_all().force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], phi.kpoint() + ham.uniform_vector_potential(), forces_non_local);
+			for(auto & pr : ham.projectors_rel()) pr.force(phi, gphi, ions.cell().metric(), electrons.occupations()[iphi], phi.kpoint() + ham.uniform_vector_potential(), forces_non_local);
 
 			stress += stress_kinetic(gphi, electrons.occupations()[iphi]);
 
