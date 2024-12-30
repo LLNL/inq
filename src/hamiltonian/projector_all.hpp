@@ -270,8 +270,7 @@ public:
 
 	
 	template <typename PhiType, typename GPhiType, typename MetricType, typename OccsType, typename KPoint>
-	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric,
-						 OccsType const & occs, vector3<double, covariant> const & vector_potential, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+	void force(PhiType & phi, GPhiType const & gphi, MetricType const & metric, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
