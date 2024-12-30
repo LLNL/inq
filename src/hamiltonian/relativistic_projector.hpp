@@ -31,7 +31,9 @@ class relativistic_projector {
 	gpu::array<double, 1> kb_coeff_;
 	int iatom_;
 
-public: // for CUDA
+#ifdef ENABLE_GPU
+public:
+#endif
 	
 	void build(basis::real_space const & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps) {
 
