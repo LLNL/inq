@@ -117,7 +117,7 @@ private:
 	template <typename HamiltonianType, typename Energy>
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy){
 		// This function calculates the force and the stress. Sources:
-		//   - Force: Eq. (2.40) of https://digital.csic.es/bitstream/10261/44512/1/xandrade_phd.pdf
+		//   - Force: Page 41, Eq. (2.41) of https://digital.csic.es/bitstream/10261/44512/1/xandrade_phd.pdf
 		//   - Stress formulas: Eq. (33) of https://arxiv.org/pdf/1809.08157
 
 		
