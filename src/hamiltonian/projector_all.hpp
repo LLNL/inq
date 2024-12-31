@@ -300,8 +300,9 @@ public:
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
 				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																[oc = begin(occs), phi = begin(sphere_phi_all[iproj]), gphi = begin(sphere_gphi_all[iproj])] GPU_LAMBDA (auto ist, auto ip) {
-																	return -2.0*oc[ist]*real(phi[ip][ist]*conj(gphi[ip][ist]));
+																[oc = begin(occs), phi = begin(sphere_phi_all[iproj]), gphi = begin(sphere_gphi_all[iproj]), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto ist, auto ip) {
+																	auto ist_spinor = ist%spinor_size;
+																	return -2.0*oc[ist_spinor]*real(phi[ip][ist]*conj(gphi[ip][ist]));
 																});
 		}
 
