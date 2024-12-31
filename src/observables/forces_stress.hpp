@@ -25,6 +25,8 @@ struct forces_stress {
 
 	forces_stress() = default;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename HamiltonianType, typename Energy>
 	forces_stress(systems::ions const & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy):
 		forces(ions.size())
@@ -32,6 +34,8 @@ struct forces_stress {
 		calculate(ions, electrons, ham, energy);
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 #ifndef ENABLE_GPU
 private:
 #endif
@@ -53,6 +57,8 @@ private:
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	template <typename Stress1D>
 	auto tensor(Stress1D const & stress1d) {
 		vector3<vector3<double>> stress;
@@ -66,6 +72,8 @@ private:
 
 		return stress;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename GPhi, typename Occupations>
 	vector3<vector3<double>> stress_kinetic(GPhi const & gphi, Occupations const & occupations) {
@@ -82,6 +90,8 @@ private:
 
 		return -gphi.basis().volume_element()*tensor(stress1d);
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename Density>
 	vector3<vector3<double>> stress_electrostatic(Density const & density) {
@@ -101,7 +111,9 @@ private:
 
 		return density.basis().volume_element()/(4.0*M_PI)*tensor(stress1d);
 	}
-	
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename HamiltonianType, typename Energy>
 	void calculate(const systems::ions & ions, systems::electrons const & electrons, HamiltonianType const & ham, Energy const & energy){
 		// This function calculates the force and the stress. Sources:
