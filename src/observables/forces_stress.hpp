@@ -180,13 +180,12 @@ private:
 				electrons.density_basis().comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 			}
 		}
-		
-		
+
+		auto forces_nlcc = electrons.atomic_pot().nlcc_forces(electrons.states_comm(), ham.vxc(), ions);
+
 		for(int iatom = 0; iatom < ions.size(); iatom++){
-			forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom];
+			forces[iatom] = ionic_forces[iatom] + forces_local[iatom] + forces_non_local[iatom] + forces_nlcc[iatom];
 		}
-		
-		// MISSING: the non-linear core correction term to the force
 
 		// THE XC CONTRIBUTION TO THE STRESS
 		for(int alpha = 0; alpha < 3; alpha++) {

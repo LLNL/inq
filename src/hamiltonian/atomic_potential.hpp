@@ -300,6 +300,19 @@ namespace hamiltonian {
 			density.all_reduce(comm);
 			return density;			
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+		template <class Comm, class Ions>
+		auto nlcc_forces(Comm & comm, basis::field_set<basis::real_space, double> const & vxc, Ions const & ions) const {
+			CALI_CXX_MARK_FUNCTION;
+
+			gpu::array<vector3<double>, 1> forces(ions.size(), {0.0, 0.0, 0.0});
+			
+			return forces;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////
 		
 		template <class output_stream>
 		void info(output_stream & out) const {
