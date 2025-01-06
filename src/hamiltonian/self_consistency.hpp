@@ -133,7 +133,13 @@ public:
 		
 		// XC
 		double exc, nvxc;
-		xc_(spin_density, core_density_, vks, exc, nvxc);
+		auto vxc = xc_(spin_density, core_density_, exc, nvxc);
+		
+		gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
+						 [vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
+							 vk[ip][is] += vx[ip][is];
+						 });
+
 		energy.xc(exc);
 		energy.nvxc(nvxc);
 
