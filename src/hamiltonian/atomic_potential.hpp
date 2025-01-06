@@ -304,7 +304,7 @@ namespace hamiltonian {
 		////////////////////////////////////////////////////////////////////////////////////
 
 		template <class Comm, class Ions>
-		auto nlcc_forces(Comm & comm, basis::field_set<basis::real_space, double> const & vxc, Ions const & ions) const {
+		gpu::array<vector3<double>, 1> nlcc_forces(Comm & comm, basis::field_set<basis::real_space, double> const & vxc, Ions const & ions) const {
 			CALI_CXX_MARK_FUNCTION;
 
 			// NLCC Forces from Kronik et al., J. Chem. Phys. 115, 4322 (2001): Eq. 9
