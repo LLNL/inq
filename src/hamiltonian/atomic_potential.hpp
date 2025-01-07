@@ -325,7 +325,7 @@ namespace hamiltonian {
 
 				assert(has_nlcc());
 				
-				basis::spherical_grid sphere(basis, atom_position, ps.nlcc_density_radius());
+				basis::spherical_grid sphere(basis, atom_position, 1.1*ps.nlcc_density_radius());
 
 				auto ff = gpu::run(gpu::reduce(sphere.size()), zero<vector3<double, contravariant>>(),
 													 [vx = begin(vxc.hypercubic()), nspin = std::min(2l, vxc.local_set_size()), sph = sphere.ref(), spline = ps.nlcc_density().function()]
