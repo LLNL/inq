@@ -333,12 +333,12 @@ namespace hamiltonian {
 														 auto vv = 0.0;
 														 for(int ispin = 0; ispin < nspin; ispin++) vv += vx[sph.grid_point(ipoint)[0]][sph.grid_point(ipoint)[1]][sph.grid_point(ipoint)[2]][ispin];
 														 auto rr = sph.distance(ipoint);
+														 if(rr < 1e-15) return zero<vector3<double, contravariant>>();
 														 auto grad = spline.derivative(rr)*sph.point_pos(ipoint)/rr;
 														 return vv*grad;
 													 });
 
 				forces[iatom] = basis.volume_element()*basis.cell().metric().to_cartesian(ff);
-				
 			}
 
 			if(comm.size() > 1) {
