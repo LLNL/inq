@@ -103,18 +103,21 @@ public:
 	template <typename SpinDensityType, typename VXC>
 	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vxc) const {
 
-		auto nvxc = gpu::run(gpu::reduce(spin_density.local_set_size()), gpu::reduce(spin_density.basis().local_size()), 0.0,
-												 [den = begin(spin_density.matrix()), vx = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
-													 if (is == 2) return  2.0*den[ip][is]*vx[ip][is];
-													 if (is == 3) return -2.0*den[ip][is]*vx[ip][is];
-													 return den[ip][is]*vx[ip][is];
-												 });
+		CALI_CXX_MARK_FUNCTION;
 		
-			if(spin_density.basis().comm().size() > 1) {
-				spin_density.basis().comm().all_reduce_in_place_n(&nvxc, 1, std::plus<>{});
-			}
+		auto nvxc = gpu::run(gpu::reduce(spin_density.basis().local_size()), 0.0,
+												 [den = begin(spin_density.matrix()), vx = begin(vxc.matrix()), nspin = spin_density.local_set_size()] GPU_LAMBDA (auto ip){
+													 if(nspin == 1) return den[ip][0]*vx[ip][0];
+													 if(nspin == 2) return den[ip][0]*vx[ip][0] + den[ip][1]*vx[ip][1];
+													 if(nspin == 4) return den[ip][0]*vx[ip][0] + den[ip][1]*vx[ip][1] + 2.0*den[ip][2]*vx[ip][2] - 2.0*den[ip][3]*vx[ip][3];
+													 return 0.0;
+												 });
+												 
+		if(spin_density.basis().comm().size() > 1) {
+			spin_density.basis().comm().all_reduce_in_place_n(&nvxc, 1, std::plus<>{});
+		}
 			
-			return nvxc*spin_density.basis().volume_element();
+		return nvxc*spin_density.basis().volume_element();
 	}
 
   ////////////////////////////////////////////////////////////////////////////////////////////
