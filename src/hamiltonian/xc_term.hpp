@@ -102,21 +102,22 @@ public:
 
 	template <typename SpinDensityType, typename VXC>
 	double compute_nvxc(SpinDensityType const & spin_density, VXC const & vxc) const {
+
+		CALI_CXX_MARK_FUNCTION;
 		
-		auto nvxc_ = 0.0;
-		if (spin_density.set_size() == 4) {
-			gpu::run(spin_density.local_set_size(), spin_density.basis().local_size(),
-					[vx = begin(vxc.matrix())] GPU_LAMBDA (auto is, auto ip){
-						if (is == 2){
-							vx[ip][is] = 2.0*vx[ip][is];
-						}
-						else if (is == 3){
-							vx[ip][is] = -2.0*vx[ip][is];
-						}
-					});
+		auto nvxc = gpu::run(gpu::reduce(spin_density.basis().local_size()), 0.0,
+												 [den = begin(spin_density.matrix()), vx = begin(vxc.matrix()), nspin = spin_density.local_set_size()] GPU_LAMBDA (auto ip){
+													 if(nspin == 1) return den[ip][0]*vx[ip][0];
+													 if(nspin == 2) return den[ip][0]*vx[ip][0] + den[ip][1]*vx[ip][1];
+													 if(nspin == 4) return den[ip][0]*vx[ip][0] + den[ip][1]*vx[ip][1] + 2.0*den[ip][2]*vx[ip][2] - 2.0*den[ip][3]*vx[ip][3];
+													 return 0.0;
+												 });
+												 
+		if(spin_density.basis().comm().size() > 1) {
+			spin_density.basis().comm().all_reduce_in_place_n(&nvxc, 1, std::plus<>{});
 		}
-		nvxc_ += operations::integral_product_sum(spin_density, vxc);
-		return nvxc_;
+			
+		return nvxc*spin_density.basis().volume_element();
 	}
 
   ////////////////////////////////////////////////////////////////////////////////////////////
