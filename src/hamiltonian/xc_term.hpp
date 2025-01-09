@@ -87,17 +87,6 @@ public:
 		return full_density;
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-
-	template <typename VXC, typename VKS>
-	void process_potential(VXC const & vxc, VKS & vks) const {
-
-		gpu::run(vxc.local_set_size(), vxc.basis().local_size(),
-			[vx = begin(vxc.matrix()), vk = begin(vks.matrix())] GPU_LAMBDA (auto is, auto ip){
-				vk[ip][is] += vx[ip][is];
-			});
-	}
-
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename SpinDensityType, typename VXC>
@@ -122,20 +111,19 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////////////////////
 	
-  template <typename SpinDensityType, typename CoreDensityType, typename VKSType>
-  void operator()(SpinDensityType const & spin_density, CoreDensityType const & core_density, VKSType & vks, double & exc, double & nvxc) const {
-    
-      exc = 0.0;
+  template <typename SpinDensityType, typename CoreDensityType>
+  auto operator()(SpinDensityType const & spin_density, CoreDensityType const & core_density, double & exc, double & nvxc) const {
+
+		basis::field_set<basis::real_space, double> vxc(spin_density.skeleton());
+		vxc.fill(0.0);
+		exc = 0.0;
 		nvxc = 0.0;
-		if(not any_true_functional()) return;
+		if(not any_true_functional()) return vxc;
 		
 		auto full_density = process_density(spin_density, core_density);
 		
 		double efunc = 0.0;
 		
-		basis::field_set<basis::real_space, double> vxc(spin_density.skeleton());
-		vxc.fill(0.0);
-
 		basis::field_set<basis::real_space, double> vfunc(full_density.skeleton());
 		auto density_gradient = std::optional<decltype(operations::gradient(full_density))>{};
 		if(any_requires_gradient()) density_gradient.emplace(operations::gradient(full_density));
@@ -149,8 +137,9 @@ public:
 			exc += efunc;
 		}
 
-		process_potential(vxc, vks);
 		nvxc += compute_nvxc(spin_density, vxc);
+
+		return vxc;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
