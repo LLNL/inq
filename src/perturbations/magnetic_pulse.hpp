@@ -61,7 +61,7 @@ public:
     }
 
     template<typename MagneticField>
-    auto magnetic_field(const double time, MagneticField & magnetic) const {
+    void magnetic_field(const double time, MagneticField & magnetic) const {
         gpu::run(magnetic.basis().local_size(),
             [magnetic_ = begin(magnetic.linear()), mv = magnetic_vector_, pv = pulse_vector_, sv = step_vector_, t_ = time, t0_ = time_shift_, f_ = frequency_, phs_ = phase_shift_, ch_ = chirp_, w_ = width_] GPU_LAMBDA (auto ip){
                 if (t_ > t0_) {
