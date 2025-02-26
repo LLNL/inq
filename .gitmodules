@@ -14,3 +14,6 @@
 [submodule "external_libs/sharmonic"]
 	path = external_libs/sharmonic
 	url = https://gitlab.com/npneq/sharmonic.git
+[submodule "external_libs/libpaw_interface"]
+	path = external_libs/libpaw_interface
+	url = https://gitlab.com/npneq/libpaw-interface.git
