@@ -5,5 +5,7 @@ src/inq_unit_tests
 blds
 build
 build.*
+build_*
 src/eigensolvers/BACKUP
 __pycache__
+runs

@@ -17,3 +17,6 @@
 [submodule "external_libs/libpaw_interface"]
 	path = external_libs/libpaw_interface
 	url = https://gitlab.com/npneq/libpaw-interface.git
+[submodule "external_libs/libaw_interface"]
+	path = external_libs/libaw_interface
+	url = https://gitlab.com/npneq/libpaw-interface.git
