@@ -797,7 +797,7 @@ clang-ompi-template:
     needs: []    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq wget
+      - time apt install --no-install-recommends -y -qq wget libomp-dev
       - mkdir inq_template_dir
       - cd inq_template_dir
       - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
