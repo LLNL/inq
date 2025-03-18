@@ -384,6 +384,7 @@ clang-ompi-debug-1proc:
     stage: test
     needs: ["clang-ompi-debug"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -393,6 +394,7 @@ clang-ompi-debug-2proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -412,6 +414,7 @@ clang-ompi-debug-4proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -421,6 +424,7 @@ clang-ompi-debug-5proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -450,6 +454,7 @@ clang-ompi-fast-1proc:
     stage: test
     needs: ["clang-ompi-fast"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -460,6 +465,7 @@ clang-ompi-fast-2proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -470,6 +476,7 @@ clang-ompi-fast-3proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -480,6 +487,7 @@ clang-ompi-fast-4proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -490,6 +498,7 @@ clang-ompi-fast-5proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
