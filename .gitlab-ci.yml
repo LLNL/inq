@@ -365,6 +365,7 @@ clang-ompi-debug:
     stage: build
     needs: []    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev
       - clang++ --version
       - mkdir build
       - cd build
@@ -401,6 +402,7 @@ clang-ompi-debug-3proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -432,6 +434,7 @@ clang-ompi-fast:
     stage: build
     needs: []    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - clang++ --version
       - mkdir build && cd build
       - CXX=clang++ cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.openmpi
