@@ -11,3 +11,6 @@
 [submodule "external_libs/libxc"]
 	path = external_libs/libxc
 	url = https://gitlab.com/npneq/libxc.git
+[submodule "external_libs/sharmonic"]
+	path = external_libs/sharmonic
+	url = https://gitlab.com/npneq/sharmonic.git

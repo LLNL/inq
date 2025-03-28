@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <pseudopod/math/sharmonic.hpp>
+#include <sharmonic.hpp>
 
 #include <gpu/array.hpp>
 #include <math/vector3.hpp>
@@ -85,12 +85,12 @@ public:
 									 auto radial = spline(sph.distance(ipoint));
 									 
 									 if(abs(ml0) <= ll) {
-										 bet[iproj_lm][ipoint][0] = cc0*radial*pseudo::math::sharmonic_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][0] = cc0*radial*sharmonic::cartesian_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][0] = 0.0;
 									 }
 									 if(abs(ml1) <= ll) {									 
-										 bet[iproj_lm][ipoint][1] = cc1*radial*pseudo::math::sharmonic_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
+										 bet[iproj_lm][ipoint][1] = cc1*radial*sharmonic::cartesian_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
 									 } else {
 										 bet[iproj_lm][ipoint][1] = 0.0;
 									 }

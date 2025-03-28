@@ -167,6 +167,10 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external_libs/gpurun)
 set(gpurun_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/gpurun/include)
 
+#SHARMONIC
+add_subdirectory(external_libs/sharmonic)
+target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/sharmonic/include ${PROJECT_BINARY_DIR}/external_libs/sharmonic)
+
 #PSEUDOPOD
 add_subdirectory(external_libs/pseudopod)
 target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/pseudopod)
