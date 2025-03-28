@@ -548,7 +548,7 @@ cuda-mpich-fast-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1
       - cd build      
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-fast-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
@@ -641,7 +641,7 @@ cuda-mpich-debug-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -660,7 +660,7 @@ cuda-mpich-debug-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-debug-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
