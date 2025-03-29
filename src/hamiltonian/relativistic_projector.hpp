@@ -53,23 +53,23 @@ public:
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
 				
 			auto ll = ps.projector_l(iproj);
-			int const jj = ps.projector_2j(iproj);
+			int const twice_jj = ps.projector_2j(iproj);
 
-			assert(jj%2 == 1);
-			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
+			assert(twice_jj%2 == 1);
+			assert(twice_jj == 2*ll + 1 or twice_jj == 2*ll - 1);
 
-			//			std::cout << "PROJ " << iproj << '\t' << ll << '\t' << jj/2.0 << '\t' << ps.kb_coeff(iproj) << '\t' <<  ps.projector(iproj).function()(0.5)<< std::endl;
+			//			std::cout << "PROJ " << iproj << '\t' << ll << '\t' << twice_jj/2.0 << '\t' << ps.kb_coeff(iproj) << '\t' <<  ps.projector(iproj).function()(0.5)<< std::endl;
 			
-			for(auto mj = -jj; mj <= jj; mj += 2){
+			for(auto twice_mj = -twice_jj; twice_mj <= twice_jj; twice_mj += 2){
 
 				// These come from https://en.wikipedia.org/wiki/Spinor_spherical_harmonics
-				// we use that '2*ll = jj - sgn' to simplify the expressions
-				auto sgn = double(jj - 2*ll);
+				// we use that '2*ll = twice_jj - sgn' to simplify the expressions
+				auto sgn = double(twice_jj - 2*ll);
 				auto den = 2*ll + 1;
-				auto cc0 = sgn*sqrt((ll + sgn*mj/2.0 + 0.5)/den);
-				auto cc1 =     sqrt((ll - sgn*mj/2.0 + 0.5)/den);
-				auto ml0 = (mj - 1)/2;
-				auto ml1 = (mj + 1)/2;
+				auto cc0 = sgn*sqrt((ll + sgn*twice_mj/2.0 + 0.5)/den);
+				auto cc1 =     sqrt((ll - sgn*twice_mj/2.0 + 0.5)/den);
+				auto ml0 = (twice_mj - 1)/2;
+				auto ml1 = (twice_mj + 1)/2;
 
 				if(abs(ml0) > ll) assert(fabs(cc0) < 1e-14);
 				if(abs(ml1) > ll) assert(fabs(cc1) < 1e-14);
