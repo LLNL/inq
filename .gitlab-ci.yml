@@ -365,6 +365,7 @@ clang-ompi-debug:
     stage: build
     needs: []    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev
       - clang++ --version
       - mkdir build
       - cd build
@@ -383,6 +384,7 @@ clang-ompi-debug-1proc:
     stage: test
     needs: ["clang-ompi-debug"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -392,6 +394,7 @@ clang-ompi-debug-2proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -401,6 +404,7 @@ clang-ompi-debug-3proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -410,6 +414,7 @@ clang-ompi-debug-4proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -419,6 +424,7 @@ clang-ompi-debug-5proc:
     stage: test
     needs: ["clang-ompi-debug"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
       - cmake --build . --target install/fast
@@ -432,6 +438,7 @@ clang-ompi-fast:
     stage: build
     needs: []    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - clang++ --version
       - mkdir build && cd build
       - CXX=clang++ cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Release -DMPI_EXECUTABLE_SUFFIX=.openmpi
@@ -447,6 +454,7 @@ clang-ompi-fast-1proc:
     stage: test
     needs: ["clang-ompi-fast"]
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -457,6 +465,7 @@ clang-ompi-fast-2proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -467,6 +476,7 @@ clang-ompi-fast-3proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -477,6 +487,7 @@ clang-ompi-fast-4proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -487,6 +498,7 @@ clang-ompi-fast-5proc:
     stage: test
     needs: ["clang-ompi-fast"]    
     script:
+      - apt install --no-install-recommends -y -qq libomp-dev    
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
@@ -536,7 +548,7 @@ cuda-mpich-fast-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1
       - cd build      
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-fast-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
@@ -629,7 +641,7 @@ cuda-mpich-debug-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
@@ -648,7 +660,7 @@ cuda-mpich-debug-1proc:
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
       - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-debug-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
@@ -794,7 +806,7 @@ clang-ompi-template:
     needs: []    
     script:
       - time apt update -qq
-      - time apt install --no-install-recommends -y -qq wget
+      - time apt install --no-install-recommends -y -qq wget libomp-dev
       - mkdir inq_template_dir
       - cd inq_template_dir
       - wget https://gitlab.com/npneq/inq_template/-/archive/main/inq_template-main.tar.gz
