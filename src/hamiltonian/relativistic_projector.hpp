@@ -9,7 +9,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <sharmonic.hpp>
+#include <sharmonic.h>
 
 #include <gpu/array.hpp>
 #include <math/vector3.hpp>
@@ -53,47 +53,26 @@ public:
 		for(int iproj = 0; iproj < ps.num_projectors_l(); iproj++){
 				
 			auto ll = ps.projector_l(iproj);
-			int const jj = ps.projector_2j(iproj);
+			int const twice_jj = ps.projector_2j(iproj);
 
-			assert(jj%2 == 1);
-			assert(jj == 2*ll + 1 or jj == 2*ll - 1);
+			assert(twice_jj%2 == 1);
+			assert(twice_jj == 2*ll + 1 or twice_jj == 2*ll - 1);
 
-			//			std::cout << "PROJ " << iproj << '\t' << ll << '\t' << jj/2.0 << '\t' << ps.kb_coeff(iproj) << '\t' <<  ps.projector(iproj).function()(0.5)<< std::endl;
-			
-			for(auto mj = -jj; mj <= jj; mj += 2){
+			for(auto twice_mj = -twice_jj; twice_mj <= twice_jj; twice_mj += 2){
 
-				// These come from https://en.wikipedia.org/wiki/Spinor_spherical_harmonics
-				// we use that '2*ll = jj - sgn' to simplify the expressions
-				auto sgn = double(jj - 2*ll);
-				auto den = 2*ll + 1;
-				auto cc0 = sgn*sqrt((ll + sgn*mj/2.0 + 0.5)/den);
-				auto cc1 =     sqrt((ll - sgn*mj/2.0 + 0.5)/den);
-				auto ml0 = (mj - 1)/2;
-				auto ml1 = (mj + 1)/2;
-
-				if(abs(ml0) > ll) assert(fabs(cc0) < 1e-14);
-				if(abs(ml1) > ll) assert(fabs(cc1) < 1e-14);
-
-				//				std::cout << cc0 << '\t' << cc1 << '\t' << ml0 << '\t' << ml1 << std::endl;												
-				
 				gpu::run(sphere_.size(),
 								 [bet = begin(beta_),
 									spline = ps.projector(iproj).function(),
-									sph = sphere_.ref(), cc0, cc1, ml0, ml1, ll, iproj_lm,
+									sph = sphere_.ref(), ll, iproj_lm, twice_mj, twice_jj,
 									metric = basis.cell().metric()] GPU_LAMBDA (auto ipoint) {
 
+									 auto pos = metric.to_cartesian(sph.point_pos(ipoint));
+									 auto spinor_sph_harmomic = sharmonic::cartesian_spinor<complex>(twice_jj, twice_mj, twice_jj - 2*ll, pos[0], pos[1], pos[2]);
 									 auto radial = spline(sph.distance(ipoint));
-									 
-									 if(abs(ml0) <= ll) {
-										 bet[iproj_lm][ipoint][0] = cc0*radial*sharmonic::cartesian_complex<complex>(ll, ml0, metric.to_cartesian(sph.point_pos(ipoint)));
-									 } else {
-										 bet[iproj_lm][ipoint][0] = 0.0;
-									 }
-									 if(abs(ml1) <= ll) {									 
-										 bet[iproj_lm][ipoint][1] = cc1*radial*sharmonic::cartesian_complex<complex>(ll, ml1, metric.to_cartesian(sph.point_pos(ipoint)));
-									 } else {
-										 bet[iproj_lm][ipoint][1] = 0.0;
-									 }
+
+									 bet[iproj_lm][ipoint][0] = radial*spinor_sph_harmomic[0];
+									 bet[iproj_lm][ipoint][1] = radial*spinor_sph_harmomic[1];
+
 								 });
 
 				kb_coeff_[iproj_lm] = ps.kb_coeff(iproj);
