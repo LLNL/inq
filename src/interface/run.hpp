@@ -193,7 +193,7 @@ These are the options available:
 		auto sub = module.def_submodule(name(), help());
 		sub.def("ground_state", &ground_state);
 		sub.def("real_time",    &real_time);
-		sub.def("resume",       &real_time);
+		sub.def("resume",       &resume);
 		
 	}
 #endif
