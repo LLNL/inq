@@ -291,8 +291,15 @@ add_subdirectory(python)
 message("\nCONFIGURING LIBPAW INTERFACE\n")
 add_subdirectory(external_libs/libpaw_interface)
 target_include_directories(inq INTERFACE ${PROJECT_SOURCE_DIR}/external_libs/libpaw_interface/)
+target_include_directories(inq INTERFACE ${PROJECT_BINARY_DIR}/external_libs/libpaw_interface/)
 message("\nDONE CONFIGURING LIBPAW INTERFACE\n")
-	
+set(libpaw_interface_include_dirs ${PROJECT_SOURCE_DIR}/external_libs/libpaw_interface)
+
+target_link_libraries(inq INTERFACE libpaw_interface)
+
+
+
+
 #######################
 # GENERATE inq_config.h
 ######################
