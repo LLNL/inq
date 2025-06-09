@@ -8,4 +8,5 @@ build.*
 build_*
 src/eigensolvers/BACKUP
 __pycache__
+inq_runs
 runs
