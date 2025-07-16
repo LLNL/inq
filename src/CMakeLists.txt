@@ -44,6 +44,7 @@ foreach(TEST_FILE ${INCLUDE_FILES})
 		APPEND)
 
 	add_test(NAME inq::unit_tests::${dir}::${name} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ${CMAKE_CURRENT_BINARY_DIR}/all_unit_tests [${dir}][${name}])
+	set_property(TEST inq::unit_tests::${dir}::${name} PROPERTY ENVIRONMENT_MODIFICATION "${INQ_PATHS}")
 endforeach()
 
 if(ENABLE_GPU)

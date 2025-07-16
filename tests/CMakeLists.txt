@@ -16,6 +16,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_include_directories(${TEST_EXE} PRIVATE ${catch2_SOURCE_DIR}/src)
   target_link_libraries(${TEST_EXE} PRIVATE Catch2::Catch2 inq)
   add_test(NAME inq::tests::${TEST_EXE} COMMAND ${PROJECT_BINARY_DIR}/scripts/run_test.sh ${CMAKE_CURRENT_BINARY_DIR}/${TEST_EXE})
+	set_property(TEST inq::tests::${TEST_EXE} PROPERTY ENVIRONMENT_MODIFICATION "${INQ_PATHS}")
   if(ENABLE_GPU)
     set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE ${GPU_LANGUAGE})
   endif()
@@ -27,7 +28,7 @@ file(GLOB PYTHON_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
 
 foreach(TEST_FILE ${PYTHON_TESTS})
   add_test(NAME inq::tests::${TEST_FILE} COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
-  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python:${PROJECT_SOURCE_DIR}/python")
+  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "${INQ_PATHS}")
 endforeach()
 
 #BASH TESTS
@@ -36,5 +37,5 @@ file(GLOB COMMAND_LINE_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.sh)
 
 foreach(TEST_FILE ${COMMAND_LINE_TESTS})
   add_test(NAME inq::tests::${TEST_FILE} COMMAND ${PROJECT_SOURCE_DIR}/scripts/run_shell_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
-  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${PROJECT_BINARY_DIR}/src")
+  set_property(TEST inq::tests::${TEST_FILE} PROPERTY ENVIRONMENT_MODIFICATION "${INQ_PATHS}")
 endforeach()
