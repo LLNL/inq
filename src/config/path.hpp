@@ -13,12 +13,19 @@
 
 namespace inq {
 namespace config {
+namespace path {
 
-struct path {
-  static std::string share(){ return SHARE_DIR + std::string("/") ; }
-  static std::string unit_tests_data(){ return share() + std::string("unit_tests_data/"); }
-};
+std::string share(){
+	auto env = std::getenv("INQ_SHARE_PATH");
+	if(env == NULL) return SHARE_DIR + std::string("/");
+	return env + std::string("/");
+}
 
+std::string unit_tests_data(){
+	return share() + std::string("unit_tests_data/");
+}
+
+}
 }
 }
 #endif
@@ -29,9 +36,24 @@ struct path {
 #include <catch2/catch_all.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
+
+	//Do not run if the variable is set
+	if(std::getenv("INQ_SHARE_PATH") != NULL) return;
+	
   SECTION("Share path"){
     CHECK(inq::config::path::share() == SHARE_DIR + std::string("/"));
   }
+
+	SECTION("Unit test path"){
+    CHECK(inq::config::path::unit_tests_data() == SHARE_DIR + std::string("/unit_tests_data/"));
+  }
+	
+	SECTION("Path from environment variable"){
+		REQUIRE(setenv("INQ_SHARE_PATH", "/basura", 1) == 0);
+    CHECK(inq::config::path::share() == std::string("/basura/"));
+		REQUIRE(unsetenv("INQ_SHARE_PATH") == 0);
+  }
+
 }
 
 #endif

@@ -450,6 +450,20 @@ clang-ompi-fast:
       paths:
       - clang-ompi-fast-build.tar.xz
 
+clang-ompi-fast-1proc-noinstall:
+    stage: test
+    needs: ["clang-ompi-fast"]
+    script:
+      - apt install --no-install-recommends -y -qq libomp-dev
+      - export INQ_COMM="point"
+      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
+      - export PSEUDOPOD_SHARE_PATH=`pwd`/external_libs/pseudopod/share
+      - echo $PSEUDOPOD_SHARE_PATH
+      - export INQ_SHARE_PATH=`pwd`/share
+      - echo $INQ_SHARE_PATH
+      - cd build
+      - ctest --output-on-failure --timeout 360
+
 clang-ompi-fast-1proc:
     stage: test
     needs: ["clang-ompi-fast"]
