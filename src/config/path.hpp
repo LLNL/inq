@@ -37,8 +37,10 @@ std::string unit_tests_data(){
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
-	//Do not run if the variable is set
-	if(std::getenv("INQ_SHARE_PATH") != NULL) return;
+	auto env = std::getenv("INQ_SHARE_PATH");
+	std::string original_var;
+	if(env != NULL) original_var = env;
+	REQUIRE(unsetenv("INQ_SHARE_PATH") == 0);
 	
   SECTION("Share path"){
     CHECK(inq::config::path::share() == SHARE_DIR + std::string("/"));
@@ -53,7 +55,11 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     CHECK(inq::config::path::share() == std::string("/basura/"));
 		REQUIRE(unsetenv("INQ_SHARE_PATH") == 0);
   }
-
+	
+	if(not original_var.empty()) {
+		REQUIRE(setenv("INQ_SHARE_PATH", original_var.c_str(), 1) == 0);
+	}
+	
 }
 
 #endif

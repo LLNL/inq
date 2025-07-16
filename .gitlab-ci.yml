@@ -188,7 +188,6 @@ gcc-mpich-1proc:
     script:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
 
 gcc-mpich-2proc:
@@ -197,7 +196,6 @@ gcc-mpich-2proc:
     script:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 2" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-3proc:
@@ -206,7 +204,6 @@ gcc-mpich-3proc:
     script:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 3" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-4proc:
@@ -215,7 +212,6 @@ gcc-mpich-4proc:
     script:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 4" ctest --output-on-failure --timeout 3600
 
 gcc-mpich-5proc:
@@ -224,7 +220,6 @@ gcc-mpich-5proc:
     script:
       - time tar -Ipixz -xvf gcc-mpich-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.mpich -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
@@ -252,7 +247,6 @@ gcc-ompi-debug-1proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
 
 gcc-ompi-debug-2proc:
@@ -261,7 +255,6 @@ gcc-ompi-debug-2proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
       
 gcc-ompi-debug-3proc:
@@ -270,7 +263,6 @@ gcc-ompi-debug-3proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 gcc-ompi-debug-4proc:
@@ -279,7 +271,6 @@ gcc-ompi-debug-4proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
 
 gcc-ompi-debug-5proc:
@@ -288,7 +279,6 @@ gcc-ompi-debug-5proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 
@@ -318,7 +308,6 @@ gcc-ompi-fast-1proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast      
       - ctest --output-on-failure --timeout 360
 
 gcc-ompi-fast-2proc:
@@ -327,7 +316,6 @@ gcc-ompi-fast-2proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
 
 gcc-ompi-fast-3proc:
@@ -336,7 +324,6 @@ gcc-ompi-fast-3proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 gcc-ompi-fast-4proc:
@@ -345,7 +332,6 @@ gcc-ompi-fast-4proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
       
 gcc-ompi-fast-5proc:
@@ -354,7 +340,6 @@ gcc-ompi-fast-5proc:
     script:
       - time tar -Ipixz -xvf gcc-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
@@ -387,7 +372,6 @@ clang-ompi-debug-1proc:
       - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - ctest --output-on-failure --timeout 360
 
 clang-ompi-debug-2proc:
@@ -397,7 +381,6 @@ clang-ompi-debug-2proc:
       - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
       
 clang-ompi-debug-3proc:
@@ -407,7 +390,6 @@ clang-ompi-debug-3proc:
       - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 clang-ompi-debug-4proc:
@@ -417,7 +399,6 @@ clang-ompi-debug-4proc:
       - apt install --no-install-recommends -y -qq libomp-dev
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
 
 clang-ompi-debug-5proc:
@@ -427,7 +408,6 @@ clang-ompi-debug-5proc:
       - apt install --no-install-recommends -y -qq libomp-dev    
       - time tar -Ipixz -xvf clang-ompi-debug-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
@@ -450,20 +430,6 @@ clang-ompi-fast:
       paths:
       - clang-ompi-fast-build.tar.xz
 
-clang-ompi-fast-1proc-noinstall:
-    stage: test
-    needs: ["clang-ompi-fast"]
-    script:
-      - apt install --no-install-recommends -y -qq libomp-dev
-      - export INQ_COMM="point"
-      - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
-      - export PSEUDOPOD_SHARE_PATH=`pwd`/external_libs/pseudopod/share
-      - echo $PSEUDOPOD_SHARE_PATH
-      - export INQ_SHARE_PATH=`pwd`/share
-      - echo $INQ_SHARE_PATH
-      - cd build
-      - ctest --output-on-failure --timeout 360
-
 clang-ompi-fast-1proc:
     stage: test
     needs: ["clang-ompi-fast"]
@@ -472,7 +438,6 @@ clang-ompi-fast-1proc:
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast      
       - ctest --output-on-failure --timeout 360
 
 clang-ompi-fast-2proc:
@@ -483,7 +448,6 @@ clang-ompi-fast-2proc:
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 2" ctest --output-on-failure --timeout 3600
 
 clang-ompi-fast-3proc:
@@ -494,7 +458,6 @@ clang-ompi-fast-3proc:
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 3" ctest --output-on-failure --timeout 3600
 
 clang-ompi-fast-4proc:
@@ -505,7 +468,6 @@ clang-ompi-fast-4proc:
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 4" ctest --output-on-failure --timeout 3600
       
 clang-ompi-fast-5proc:
@@ -516,7 +478,6 @@ clang-ompi-fast-5proc:
       - export INQ_COMM="point"      
       - time tar -Ipixz -xvf clang-ompi-fast-build.tar.xz
       - cd build
-      - cmake --build . --target install/fast
       - cd tests; INQ_EXEC_ENV="mpirun.openmpi --allow-run-as-root -np 5" ctest --output-on-failure --timeout 3600; cd ..
 
 #########################################################################################################################
@@ -561,7 +522,6 @@ cuda-mpich-fast-1proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1
       - cd build      
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-fast-2proc:
@@ -577,7 +537,6 @@ cuda-mpich-fast-2proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-fast-4proc:
@@ -593,7 +552,6 @@ cuda-mpich-fast-4proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-fast-5proc:
@@ -609,7 +567,6 @@ cuda-mpich-fast-5proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build      
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 5 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 #########################################################################################################################
@@ -654,26 +611,6 @@ cuda-mpich-debug-1proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
-      - cmake --build . --target install/fast
-      - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-
-cuda-mpich-debug-1proc:
-    image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
-    needs: [cuda-mpich-debug-build]
-    tags:
-      - cuda-docker
-    script:
-      - apt update -qq
-      - apt install --no-install-recommends -y -qq pixz curl git ca-certificates ssh g++ gfortran clang make cmake pkg-config libblas-dev liblapack-dev libfftw3-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-serialization-dev libhdf5-dev libhdf5-openmpi-dev valgrind libmpich-dev mpich libhdf5-dev libhdf5-mpich-dev wget python3 python3-dev ase
-      - time tar -Ipixz -xvf cuda-mpich-debug-build.tar.xz
-      - export GPUBIND=`pwd`/scripts/gpubind
-      - export CUDA_VISIBLE_DEVICES=0,1      
-      - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 1 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-debug-2proc:
@@ -689,7 +626,6 @@ cuda-mpich-debug-2proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-debug-3proc:
@@ -705,7 +641,6 @@ cuda-mpich-debug-3proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 cuda-mpich-debug-4proc:
@@ -721,7 +656,6 @@ cuda-mpich-debug-4proc:
       - export GPUBIND=`pwd`/scripts/gpubind
       - export CUDA_VISIBLE_DEVICES=0,1      
       - cd build
-      - cmake --build . --target install/fast
       - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
 
 #########################################################################################################################
@@ -873,7 +807,7 @@ arm-gcc-mpich-debug:
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
       - make -j4
-      - make install
+#      - make install
       - ctest -j4 --output-on-failure --timeout 3600
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1

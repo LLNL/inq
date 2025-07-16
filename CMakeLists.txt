@@ -330,6 +330,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 #link_libraries(Catch2::Catch2WithMain)
 
+#####################
+# BUILD DIRECTORIES
+#####################
+
+set(INQ_PATHS
+  "INQ_SHARE_PATH=set:${PROJECT_SOURCE_DIR}/share"
+  "PSEUDOPOD_SHARE_PATH=set:${PROJECT_SOURCE_DIR}/external_libs/pseudopod/share"
+  "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python"
+  "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/python"
+  "PATH=path_list_prepend:${PROJECT_BINARY_DIR}/src"
+)
+
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(speed_tests)
