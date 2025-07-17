@@ -796,9 +796,9 @@ hip-mpich-build:
 # ARM GCC MPICH DEBUG
 #########################################################################################################################
 
-arm-gcc-mpich-debug:
+arm-gcc-mpich-debug-build:
     image: npneq/debian_inq_deps:bookworm_arm64
-    stage: test
+    stage: build
     needs: []
     tags:
       - arm
@@ -807,10 +807,57 @@ arm-gcc-mpich-debug:
       - cd build
       - cmake ../ --install-prefix=$HOME -DCMAKE_BUILD_TYPE=Debug -DMPI_EXECUTABLE_SUFFIX=.mpich
       - make -j4
-#      - make install
+      - make install
+      - cd ../
+      - time tar -Ipixz -cvf arm-gcc-mpich-debug-build.tar.xz build/
+      - du -sh build/*
+      - ls -lh arm-gcc-mpich-debug-build.tar.xz
+    artifacts:
+      paths:
+      - arm-gcc-mpich-debug-build.tar.xz
+
+arm-gcc-mpich-debug-1proc:
+    image: npneq/debian_inq_deps:bookworm_arm64    
+    stage: test
+    needs: [arm-gcc-mpich-debug-build]
+    tags:
+      - arm
+    script:
+      - time tar -Ipixz -xvf arm-gcc-mpich-debug-build.tar.xz
+      - cd build
       - ctest -j4 --output-on-failure --timeout 3600
+
+arm-gcc-mpich-debug-2proc:
+    image: npneq/debian_inq_deps:bookworm_arm64    
+    stage: test
+    needs: [arm-gcc-mpich-debug-build]
+    tags:
+      - arm
+    script:
+      - time tar -Ipixz -xvf arm-gcc-mpich-debug-build.tar.xz
+      - cd build
       - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --output-on-failure --timeout 3600 -j2
+
+arm-gcc-mpich-debug-3proc:
+    image: npneq/debian_inq_deps:bookworm_arm64    
+    stage: test
+    needs: [arm-gcc-mpich-debug-build]
+    tags:
+      - arm
+    script:
+      - time tar -Ipixz -xvf arm-gcc-mpich-debug-build.tar.xz
+      - cd build
       - INQ_EXEC_ENV="mpirun.mpich -np 3 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
-      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1
+
+arm-gcc-mpich-debug-4proc:
+    image: npneq/debian_inq_deps:bookworm_arm64    
+    stage: test
+    needs: [arm-gcc-mpich-debug-build]
+    tags:
+      - arm
+    script:
+      - time tar -Ipixz -xvf arm-gcc-mpich-debug-build.tar.xz
+      - cd build
+      - INQ_EXEC_ENV="mpirun.mpich -np 4 $GPUBIND" ctest --output-on-failure --timeout 3600 -j1     
 
 # vim: set sw=4 ts=4 sts=4 tw=80 et nowrap
