@@ -27,7 +27,7 @@ class projector_all {
 	int max_nlm_;
 	gpu::array<vector3<int>, 2> points_;
 	gpu::array<vector3<float, contravariant>, 2> positions_;
-	gpu::array<double, 2> coeff_;
+	gpu::array<double, 3> coeff_;
 	gpu::array<double, 3> matrices_;
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
@@ -49,7 +49,7 @@ public: // for CUDA
 
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
 		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
-    coeff_ = decltype(coeff_)({nprojs_, max_nlm_}, 0.0);
+    coeff_ = decltype(coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		
     auto iproj = 0;
@@ -73,7 +73,7 @@ public: // for CUDA
 								 }
 							 });
 
-			for(int ii = 0; ii < it->nproj_; ii++) coeff_[iproj][ii] = it->kb_coeff_[ii][ii];
+			for(int ii = 0; ii < it->nproj_; ii++) coeff_[iproj][ii][ii] = it->kb_coeff_[ii][ii];
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
@@ -196,7 +196,7 @@ public:
       gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
                [proj = begin(projections_all), coe = begin(coeff_)]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-                 proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm];
+                 proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm][ilm];
                });
 		}
 
@@ -276,7 +276,7 @@ public:
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 												 auto ist_spinor = ist%spinor_size;
 												 auto pp = proj[iproj][ilm][ist];
-												 return real(conj(pp)*pp)*coe[iproj][ilm]*occ[ist_spinor];
+												 return real(conj(pp)*pp)*coe[iproj][ilm][ilm]*occ[ist_spinor];
 											 });
 		
 		if(reduce_states and phi.set_comm().size() > 1) {
@@ -362,7 +362,7 @@ public:
       gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
                [rproj = begin(rprojections_all), coe = begin(coeff_)]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-                 rproj[iproj][ilm][ist] *= coe[iproj][ilm];
+                 rproj[iproj][ilm][ist] *= coe[iproj][ilm][ilm];
                });
 		}
 
