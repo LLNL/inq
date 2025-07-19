@@ -31,7 +31,7 @@ void lu_raw(matrix_type && matrix){
 	const int nst = matrix.size();
 	int info;
   
-#ifdef NO_ENABLE_CUDA
+#ifdef ENABLE_CUDA
 	{
 
 		CALI_CXX_MARK_SCOPE("cuda_dgetrf");
@@ -40,29 +40,36 @@ void lu_raw(matrix_type && matrix){
 			
 		[[maybe_unused]] auto cusolver_status = cusolverDnCreate(&cusolver_handle);
 		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status);
+
+		cusolverDnParams_t params;
+		cusolverDnCreateParams(&params);
 			
 		//query the work size
-		int lwork;
-		cusolver_status = cusolverDnDgetrf_bufferSize(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(matrix.data_elements()), nst, &lwork);
+		size_t lwork, lwork_cpu;
+		cusolver_status = cusolverDnXgetrf_bufferSize(cusolver_handle, params, nst, nst, CUDA_R_64F, raw_pointer_cast(matrix.data_elements()), nst, CUDA_R_64F, &lwork, &lwork_cpu);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
-		assert(lwork >= 0);
 			
 		//allocate the work array
-		cuDoubleComplex * work;
-		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(cuDoubleComplex)*lwork);
+		double * work;
+		[[maybe_unused]] auto cuda_status = cudaMalloc((void**)&work, sizeof(double)*(lwork + nst)); //allocate extra for ipiv
 		assert(cudaSuccess == cuda_status);
 
+		double * work_cpu;
+		cuda_status = cudaHostAlloc((void**)&work_cpu, sizeof(double)*lwork_cpu, cudaHostAllocDefault);
+		assert(cudaSuccess == cuda_status);
+		
 		//finaly do the decomposition
 		int * devInfo;
 		cuda_status = cudaMallocManaged((void**)&devInfo, sizeof(int));
 		assert(cudaSuccess == cuda_status);
 
-		cusolver_status = cusolverDnDgetrf(cusolver_handle, CUBLAS_FILL_MODE_UPPER, nst, (cuDoubleComplex *) raw_pointer_cast(matrix.data_elements()), nst, work, lwork, devInfo);
+		cusolver_status = cusolverDnXgetrf(cusolver_handle, params, nst, nst, CUDA_R_64F, raw_pointer_cast(matrix.data_elements()), nst, (int64_t *) work + lwork, CUDA_R_64F, work, lwork, work_cpu, lwork_cpu, devInfo);
 		assert(cusolver_status == CUSOLVER_STATUS_SUCCESS);
 		cudaDeviceSynchronize();
 		info = *devInfo ;
 		
 		cudaFree(work);
+		cudaFree(work_cpu);
 		cudaFree(devInfo);
 		cusolverDnDestroy(cusolver_handle);
 			
@@ -73,7 +80,7 @@ void lu_raw(matrix_type && matrix){
 		auto ipiv = (int *) malloc(nst*sizeof(int));
 		dgetrf(&nst, &nst, raw_pointer_cast(matrix.data_elements()), &nst, ipiv, &info);
 		free(ipiv);
-															 
+		
 	}
 #endif
 	if(info != 0){
