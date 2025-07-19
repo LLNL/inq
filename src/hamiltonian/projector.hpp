@@ -25,6 +25,12 @@ namespace hamiltonian {
 
 class projector {
 
+	basis::spherical_grid sphere_;
+	int nproj_;
+	gpu::array<double, 2> matrix_;
+	gpu::array<double, 1> kb_coeff_;
+	int iatom_;
+
 public: // for CUDA
 	
 	void build(basis::real_space const & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps) {
@@ -112,14 +118,6 @@ public:
 
 	friend class projector_all;
 	
-private:
-
-	basis::spherical_grid sphere_;
-	int nproj_;
-	gpu::array<double, 2> matrix_;
-	gpu::array<double, 1> kb_coeff_;
-	int iatom_;
-    
 };
   
 }
