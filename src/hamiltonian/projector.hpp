@@ -28,7 +28,7 @@ class projector {
 	basis::spherical_grid sphere_;
 	int nproj_;
 	gpu::array<double, 2> matrix_;
-	gpu::array<double, 1> kb_coeff_;
+	gpu::array<double, 2> kb_coeff_;
 	int iatom_;
 
 public: // for CUDA
@@ -42,7 +42,7 @@ public: // for CUDA
 				
 			int l = ps.projector_l(iproj_l);
 
-			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm] = ps.kb_coeff(iproj_l, iproj_l);
+			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm][iproj_lm + mm] = ps.kb_coeff(iproj_l, iproj_l);
 			
 			if(not double_grid.enabled()) {
 				
@@ -80,7 +80,7 @@ public:
 		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
-		kb_coeff_(nproj_),
+		kb_coeff_({nproj_, nproj_}, 0.0),
 		iatom_(iatom){
 
 		build(basis, double_grid, ps);
@@ -100,8 +100,8 @@ public:
 		return nproj_;
 	}
 		
-	auto kb_coeff(int iproj){
-		return kb_coeff_[iproj];
+	auto kb_coeff(int iproj, int jproj){
+		return kb_coeff_[iproj][jproj];
 	}
 
 	auto iatom() const {
@@ -151,14 +151,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	CHECK(proj.num_projectors() == 8);
 
 	if(not proj.empty()){
-		CHECK(proj.kb_coeff(0) ==  7.494508815_a);
-		CHECK(proj.kb_coeff(1) ==  0.6363049519_a);
-		CHECK(proj.kb_coeff(2) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(3) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(4) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(5) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(6) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(7) == -1.0069878791_a);
+		CHECK(proj.kb_coeff(0, 0) ==  7.494508815_a);
+		CHECK(proj.kb_coeff(1, 1) ==  0.6363049519_a);
+		CHECK(proj.kb_coeff(2, 2) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(3, 3) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(4, 4) == -4.2939052122_a);
+		CHECK(proj.kb_coeff(5, 5) == -1.0069878791_a);
+		CHECK(proj.kb_coeff(6, 6) == -1.0069878791_a);
+		CHECK(proj.kb_coeff(7, 7) == -1.0069878791_a);
+		
+		for(int ip = 0; ip < proj.num_projectors(); ip++) {
+			for(int jp = 0; jp < proj.num_projectors(); jp++) {
+				if(ip != jp) CHECK(proj.kb_coeff(ip, jp) ==  0.0_a);
+			}
+		}
 	}
 	
 	CHECK(proj.iatom() == 77);

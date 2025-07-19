@@ -61,8 +61,8 @@ public: // for CUDA
 									 mat[iproj][ilm][ipoint] = 0.0;								 
 								 }
 							 });
-								 
-      coeff_[iproj]({0, it->nproj_}) = it->kb_coeff_;
+
+			for(int ii = 0; ii < it->nproj_; ii++) coeff_[iproj][ii] = it->kb_coeff_[ii][ii];
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
