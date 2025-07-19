@@ -22,6 +22,17 @@ namespace hamiltonian {
 
 class projector_all {
 
+	int nprojs_;
+	long max_sphere_size_;
+	int max_nlm_;
+	gpu::array<vector3<int>, 2> points_;
+	gpu::array<vector3<float, contravariant>, 2> positions_;
+	gpu::array<double, 2> coeff_;
+	gpu::array<double, 3> matrices_;
+	gpu::array<int, 1> nlm_;
+	gpu::array<int, 1> iatom_;
+	gpu::array<bool, 1> locally_empty_;
+
 public: // for CUDA
 	
 	template <typename ProjectorsType>
@@ -388,22 +399,6 @@ public:
 							 });
 		}
 	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////		
-
-
-private:
-			
-	int nprojs_;
-	long max_sphere_size_;
-	int max_nlm_;
-	gpu::array<vector3<int>, 2> points_;
-	gpu::array<vector3<float, contravariant>, 2> positions_;
-	gpu::array<double, 2> coeff_;
-	gpu::array<double, 3> matrices_;
-	gpu::array<int, 1> nlm_;
-	gpu::array<int, 1> iatom_;
-	gpu::array<bool, 1> locally_empty_;
   
 };
   
