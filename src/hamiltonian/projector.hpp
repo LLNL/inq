@@ -36,13 +36,19 @@ public: // for CUDA
 	void build(basis::real_space const & basis, basis::double_grid const & double_grid, atomic_potential::pseudopotential_type const & ps) {
 
 		CALI_CXX_MARK_SCOPE("projector::build");
-		
+
+		std::vector<int> proj_m;
+		std::vector<int> proj_i;
+
 		int iproj_lm = 0;
 		for(int iproj_l = 0; iproj_l < ps.num_projectors_l(); iproj_l++){
 				
 			int l = ps.projector_l(iproj_l);
 
-			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm][iproj_lm + mm] = ps.kb_coeff(iproj_l, iproj_l);
+			for(auto mm = 0; mm < 2*l + 1; mm++) {
+				proj_m.push_back(mm);
+				proj_i.push_back(iproj_l);
+			}
 			
 			if(not double_grid.enabled()) {
 				
@@ -68,10 +74,21 @@ public: // for CUDA
 			}
 
 			iproj_lm += 2*l + 1;
-			
 		}
-
-		assert(iproj_lm == ps.num_projectors_lm());
+		
+		assert(iproj_lm == ps.num_projectors_lm());	
+		assert((long long) proj_m.size() == ps.num_projectors_lm());
+		assert((long long) proj_i.size() == ps.num_projectors_lm());
+		
+		for(int iproj_lm = 0; iproj_lm < ps.num_projectors_lm(); iproj_lm++){
+			for(int jproj_lm = 0; jproj_lm < ps.num_projectors_lm(); jproj_lm++){
+				if(proj_m[iproj_lm] != proj_m[jproj_lm]) {
+					kb_coeff_[iproj_lm][jproj_lm] = 0.0;
+				} else {
+					kb_coeff_[iproj_lm][jproj_lm] = ps.kb_coeff(proj_i[iproj_lm], proj_i[jproj_lm]);
+				}
+			}
+		}
 
 	}
 	
@@ -80,7 +97,7 @@ public:
 		sphere_(basis, atom_position, ps.projector_radius()),
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
-		kb_coeff_({nproj_, nproj_}, 0.0),
+		kb_coeff_({nproj_, nproj_}),
 		iatom_(iatom){
 
 		build(basis, double_grid, ps);
