@@ -73,7 +73,11 @@ public: // for CUDA
 								 }
 							 });
 
-			for(int ii = 0; ii < it->nproj_; ii++) coeff_[iproj][ii][ii] = it->kb_coeff_[ii][ii];
+			for(int ii = 0; ii < it->nproj_; ii++) {
+				for(int jj = 0; jj < it->nproj_; jj++) {
+					coeff_[iproj][ii][jj] = it->kb_coeff_[ii][jj];
+				}
+			}
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
@@ -192,11 +196,15 @@ public:
 		auto projections_all = calculate_projections(phi, kpoint);
 
     { CALI_CXX_MARK_SCOPE("projector_scal");
-				
+
+			auto copy = projections_all;
+			
       gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
-               [proj = begin(projections_all), coe = begin(coeff_)]
+               [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-                 proj[iproj][ilm][ist] = proj[iproj][ilm][ist]*coe[iproj][ilm][ilm];
+								 complex acc = 0.0;
+								 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
+								 proj[iproj][ilm][ist] = acc;
                });
 		}
 
