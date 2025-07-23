@@ -24,7 +24,7 @@ int main (int argc, char ** argv){
 
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000).mixing(0.1), B);
         auto mag = observables::total_magnetization(electrons.spin_density());
-        match.check("magnetization direction",        mag[2],         b[2]);
+        match.check("magnetization direction",        mag[2],         1.0);
         
         std::vector<double> mz;
         std::vector<double> mx;
@@ -37,9 +37,14 @@ int main (int argc, char ** argv){
 
         vector3<double> b2 = {3.0, 0.0, 0.0};
         perturbations::magnetic B2{b2};
-        real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(200).dt(0.03_atomictime), B2);
+        real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(100).dt(0.03_atomictime), B2);
 
-        match.check("magnetization module: ", (mx[199]*mx[199] + my[199]*my[199] + mz[199]*mz[199]), mag[2]*mag[2]);
+        match.check("magnetization module: ", (mx[10]*mx[10] + my[10]*my[10] + mz[10]*mz[10]), 1.0);
+        match.check("magnetization module: ", (mx[30]*mx[30] + my[30]*my[30] + mz[30]*mz[30]), 1.0);
+        match.check("magnetization module: ", (mx[50]*mx[50] + my[50]*my[50] + mz[50]*mz[50]), 1.0);
+        match.check("magnetization module: ", (mx[70]*mx[70] + my[70]*my[70] + mz[70]*mz[70]), 1.0);
+        match.check("magnetization module: ", (mx[85]*mx[85] + my[85]*my[85] + mz[85]*mz[85]), 1.0);
+        match.check("magnetization module: ", (mx[99]*mx[99] + my[99]*my[99] + mz[99]*mz[99]), 1.0);
     }
 
     if (match.fail()) return match.fail();
@@ -50,8 +55,9 @@ int main (int argc, char ** argv){
 
         auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-8_Ha).max_steps(1000).mixing(0.1), B);
         auto mag = observables::total_magnetization(electrons.spin_density());
-        match.check("magnetization direction",      mag[2],        b[2]);
+        match.check("magnetization direction",      mag[2],        1.0);
         
+
         std::vector<double> mz;
         std::vector<double> mx;
         std::vector<double> my;
@@ -64,9 +70,14 @@ int main (int argc, char ** argv){
         vector3<double> Db = {6.0, 0.0, -6.0};
         vector3<double> b2 = {1.0, 0.0, -1.0};
         perturbations::magnetic_pulse B2{b, Db, b2, 10.0_ev, 1000.0_attosecond, 1.0_invfs2, 100.0_attosecond, 0.0};
-        real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(200).dt(0.03_atomictime), B2);
+        real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(100).dt(0.03_atomictime), B2);
         
-        match.check("magnetization module: ", (mx[199]*mx[199] + my[199]*my[199] + mz[199]*mz[199]), mag[2]*mag[2]);
+        match.check("magnetization module: ", (mx[10]*mx[10] + my[10]*my[10] + mz[10]*mz[10]), 1.0);
+        match.check("magnetization module: ", (mx[30]*mx[30] + my[30]*my[30] + mz[30]*mz[30]), 1.0);
+        match.check("magnetization module: ", (mx[50]*mx[50] + my[50]*my[50] + mz[50]*mz[50]), 1.0);
+        match.check("magnetization module: ", (mx[70]*mx[70] + my[70]*my[70] + mz[70]*mz[70]), 1.0);
+        match.check("magnetization module: ", (mx[85]*mx[85] + my[85]*my[85] + mz[85]*mz[85]), 1.0);
+        match.check("magnetization module: ", (mx[99]*mx[99] + my[99]*my[99] + mz[99]*mz[99]), 1.0);
     }
     
     if (match.fail()) return match.fail();
