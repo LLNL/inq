@@ -160,31 +160,124 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	basis::real_space rs(systems::cell::cubic(10.0_b), /*spacing = */ 0.49672941, comm);
 	basis::double_grid dg(false);
-	
-	hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
-	
-	hamiltonian::projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
 
-	CHECK(proj.num_projectors() == 8);
-
-	if(not proj.empty()){
-		CHECK(proj.kb_coeff(0, 0) ==  7.494508815_a);
-		CHECK(proj.kb_coeff(1, 1) ==  0.6363049519_a);
-		CHECK(proj.kb_coeff(2, 2) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(3, 3) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(4, 4) == -4.2939052122_a);
-		CHECK(proj.kb_coeff(5, 5) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(6, 6) == -1.0069878791_a);
-		CHECK(proj.kb_coeff(7, 7) == -1.0069878791_a);
+	SECTION("Diagonal pseudo") {
 		
-		for(int ip = 0; ip < proj.num_projectors(); ip++) {
-			for(int jp = 0; jp < proj.num_projectors(); jp++) {
-				if(ip != jp) CHECK(proj.kb_coeff(ip, jp) ==  0.0_a);
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N.upf", sep, rs.gcutoff());
+		hamiltonian::projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 8);
+		
+		if(not proj.empty()){
+			CHECK(proj.kb_coeff(0, 0) ==  7.494508815_a);
+			CHECK(proj.kb_coeff(1, 1) ==  0.6363049519_a);
+			CHECK(proj.kb_coeff(2, 2) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(3, 3) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(4, 4) == -4.2939052122_a);
+			CHECK(proj.kb_coeff(5, 5) == -1.0069878791_a);
+			CHECK(proj.kb_coeff(6, 6) == -1.0069878791_a);
+			CHECK(proj.kb_coeff(7, 7) == -1.0069878791_a);
+			
+			for(int ip = 0; ip < proj.num_projectors(); ip++) {
+				for(int jp = 0; jp < proj.num_projectors(); jp++) {
+					if(ip != jp) CHECK(proj.kb_coeff(ip, jp) ==  0.0_a);
+				}
 			}
 		}
+
+		CHECK(proj.iatom() == 77);
+
 	}
+
+	SECTION("Non-diagonal pseudo") {
+		
+		hamiltonian::atomic_potential::pseudopotential_type ps(config::path::unit_tests_data() + "N_non_diagonal.upf.gz", sep, rs.gcutoff());
+		hamiltonian::projector proj(rs, dg, ps, vector3<double>(0.0, 0.0, 0.0), 77);
+		
+		CHECK(proj.num_projectors() == 8);
+		
+		if(not proj.empty()){
+			
+ 			CHECK(proj.kb_coeff(0, 0) ==  4.0654068834_a);
+			CHECK(proj.kb_coeff(0, 1) == -3.4291019316_a);
+			CHECK(proj.kb_coeff(0, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(0, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(0, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(0, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(0, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(0, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(1, 0) == -3.4291019316_a);
+			CHECK(proj.kb_coeff(1, 1) ==  4.0654068834_a);
+			CHECK(proj.kb_coeff(1, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(1, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(1, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(1, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(1, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(1, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(2, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(2, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(2, 2) == -2.6504465456_a);
+			CHECK(proj.kb_coeff(2, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(2, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(2, 5) ==  1.6434586665_a);
+			CHECK(proj.kb_coeff(2, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(2, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(3, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(3, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(3, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(3, 3) == -2.6504465456_a);
+			CHECK(proj.kb_coeff(3, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(3, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(3, 6) ==  1.6434586665_a);
+			CHECK(proj.kb_coeff(3, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(4, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 4) == -2.6504465456_a);
+			CHECK(proj.kb_coeff(4, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(4, 7) ==  1.6434586665_a);
+
+			CHECK(proj.kb_coeff(5, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(5, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(5, 2) ==  1.6434586665_a);
+			CHECK(proj.kb_coeff(5, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(5, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(5, 5) == -2.6504465456_a);
+			CHECK(proj.kb_coeff(5, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(5, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(6, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(6, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(6, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(6, 3) ==  1.6434586665_a);
+			CHECK(proj.kb_coeff(6, 4) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(6, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(6, 6) == -2.6504465456_a);
+			CHECK(proj.kb_coeff(6, 7) ==  0.0000000000_a);
+
+			CHECK(proj.kb_coeff(7, 0) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 1) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 2) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 3) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 4) ==  1.6434586665_a);
+			CHECK(proj.kb_coeff(7, 5) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 6) ==  0.0000000000_a);
+			CHECK(proj.kb_coeff(7, 7) == -2.6504465456_a);
+			
+		}
+
+		CHECK(proj.iatom() == 77);
+
+	}
+
 	
-	CHECK(proj.iatom() == 77);
+	
 	
 }
 #endif
