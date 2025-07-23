@@ -279,12 +279,15 @@ public:
 
 		auto projections_all = calculate_projections(phi, kpoint);
 		
-		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
-											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size()]
+		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), complex{0.0},
+											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 												 auto ist_spinor = ist%spinor_size;
-												 auto pp = proj[iproj][ilm][ist];
-												 return real(conj(pp)*pp)*coe[iproj][ilm][ilm]*occ[ist_spinor];
+												 complex acc = 0.0;
+												 for(int jlm = 0; jlm < nlm; jlm++){
+													 acc += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
+												 }
+												 return occ[ist_spinor]*conj(proj[iproj][ilm][ist])*acc;
 											 });
 		
 		if(reduce_states and phi.set_comm().size() > 1) {
@@ -292,7 +295,7 @@ public:
 			phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
 		}
 
-		return en;
+		return real(en);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
