@@ -34,6 +34,7 @@ inq util match `inq results ground-state forces 1` -5.79904200238517265052e-08  
 
 inq species N file `inq util test-data`/N_non_diagonal.upf.gz
 
+inq ground-state max-steps 0
 inq run ground-state
 
 printf "*********************************\n\n  Checking non-diagonal results\n\n*********************************\n"
