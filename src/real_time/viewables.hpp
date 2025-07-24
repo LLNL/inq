@@ -97,6 +97,14 @@ public:
 		return operations::integral(electrons_.density());
 	}
 
+	auto magnetization() const {
+		return observables::total_magnetization(electrons_.spin_density());
+	}
+
+	auto uniform_magnetic_field() const {
+		return pert_.uniform_magnetic_field(time_);
+	}
+
   auto current() const {
     return ions_.cell().metric().to_cartesian(observables::current(ions_, electrons_, ham_));
   }
