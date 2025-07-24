@@ -189,25 +189,37 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename ProjectionsType>
+	void multiply_by_coefficients(ProjectionsType & projections_all) const {
+		
+		CALI_CXX_MARK_FUNCTION;
+
+		auto nst = get<2>(sizes(projections_all));
+		
+		auto copy = projections_all;
+		
+		gpu::run(nst, max_nlm_, nprojs_,
+						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
+						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+							 using type = typename ProjectionsType::element_type;
+
+							 auto acc = zero<type>();
+							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
+							 proj[iproj][ilm][ist] = acc;
+						 });
+		
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KpointType>
 	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
 		
 		auto projections_all = calculate_projections(phi, kpoint);
 
-    { CALI_CXX_MARK_SCOPE("projector_scal");
-
-			auto copy = projections_all;
-			
-      gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
-               [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
-               GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-								 complex acc = 0.0;
-								 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
-								 proj[iproj][ilm][ist] = acc;
-               });
-		}
-
+		multiply_by_coefficients(projections_all);
+		
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		
 #ifndef ENABLE_CUDA
@@ -368,22 +380,7 @@ public:
 			blas::real_doubled(rpa) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sra));
 		}
 
-    { CALI_CXX_MARK_SCOPE("position_commutator_scal");
-
-			auto copy = rprojections_all;
-			
-      gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
-               [rproj = begin(rprojections_all), coe = begin(coeff_), nlm = max_nlm_, cop = begin(copy)]
-               GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-								 using type = std::remove_reference_t<decltype(rproj[iproj][ilm][ist])>;
-								 
-								 auto acc = type{0.0, 0.0, 0.0};
-								 for(auto jlm = 0; jlm < nlm; jlm++){
-									 acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
-								 }
-								 rproj[iproj][ilm][ist] = acc;
-               });
-		}
+		multiply_by_coefficients(rprojections_all);
 
 		if(phi.basis().comm().size() > 1) {
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(rprojections_all.data_elements()), rprojections_all.num_elements(), std::plus<>{});
