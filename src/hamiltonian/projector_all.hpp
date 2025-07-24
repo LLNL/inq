@@ -369,11 +369,19 @@ public:
 		}
 
     { CALI_CXX_MARK_SCOPE("position_commutator_scal");
-				
+
+			auto copy = rprojections_all;
+			
       gpu::run(phi.local_set_size(), max_nlm_, nprojs_,
-               [rproj = begin(rprojections_all), coe = begin(coeff_)]
+               [rproj = begin(rprojections_all), coe = begin(coeff_), nlm = max_nlm_, cop = begin(copy)]
                GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-                 rproj[iproj][ilm][ist] *= coe[iproj][ilm][ilm];
+								 using type = std::remove_reference_t<decltype(rproj[iproj][ilm][ist])>;
+								 
+								 auto acc = type{0.0, 0.0, 0.0};
+								 for(auto jlm = 0; jlm < nlm; jlm++){
+									 acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
+								 }
+								 rproj[iproj][ilm][ist] = acc;
                });
 		}
 
