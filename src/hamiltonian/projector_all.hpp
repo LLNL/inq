@@ -291,9 +291,10 @@ public:
 											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 												 auto ist_spinor = ist%spinor_size;
-												 complex acc = 0.0;
-												 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
-												 return occ[ist_spinor]*real(conj(proj[iproj][ilm][ist])*acc);
+												 double acc = 0.0;
+												 auto pp = conj(proj[iproj][ilm][ist]);
+												 for(int jlm = 0; jlm < nlm; jlm++) acc += real(pp*coe[iproj][ilm][jlm]*proj[iproj][jlm][ist]);
+												 return occ[ist_spinor]*acc;
 											 });
 		
 		if(reduce_states and phi.set_comm().size() > 1) {
