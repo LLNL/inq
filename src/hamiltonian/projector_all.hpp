@@ -73,11 +73,7 @@ public: // for CUDA
 								 }
 							 });
 
-			for(int ii = 0; ii < it->nproj_; ii++) {
-				for(int jj = 0; jj < it->nproj_; jj++) {
-					coeff_[iproj][ii][jj] = it->kb_coeff_[ii][jj];
-				}
-			}
+			coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->kb_coeff_;
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
