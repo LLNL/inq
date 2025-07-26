@@ -19,11 +19,11 @@ inq run ground-state
 
 printf "*****************************\n\n  Checking diagonal results\n\n*****************************\n"
 inq util match `inq results ground-state energy total`          -20.763133982527  1e-5
+inq util match `inq results ground-state energy non-local`       -1.621656527689  1e-5
 inq util match `inq results ground-state energy kinetic`         13.230584158096  1e-5
 inq util match `inq results ground-state energy eigenvalues`     -5.238706955641  1e-5
 inq util match `inq results ground-state energy hartree`         14.564582838069  1e-5
 inq util match `inq results ground-state energy external`       -39.563429064622  1e-5
-inq util match `inq results ground-state energy non-local`       -1.621656527689  1e-5
 inq util match `inq results ground-state energy xc`              -5.855780921531  1e-5
 inq util match `inq results ground-state energy nvxc`            -6.413371197564  1e-5
 inq util match `inq results ground-state energy exact-exchange`   0.000000000000  1e-5
@@ -38,11 +38,11 @@ inq run ground-state
 
 printf "*********************************\n\n  Checking non-diagonal results\n\n*********************************\n"
 inq util match `inq results ground-state energy total`           -20.763189284257 1e-5
+inq util match `inq results ground-state energy non-local`        -1.622238914430 1e-5
 inq util match `inq results ground-state energy kinetic`          13.231118947204 1e-5
 inq util match `inq results ground-state energy eigenvalues`      -5.238721752365 1e-5
 inq util match `inq results ground-state energy hartree`          14.564651460870 1e-5
 inq util match `inq results ground-state energy external`        -39.563500607215 1e-5
-inq util match `inq results ground-state energy non-local`        -1.622238914430 1e-5
 inq util match `inq results ground-state energy xc`               -5.855785705837 1e-5
 inq util match `inq results ground-state energy nvxc`             -6.413404099665 1e-5
 inq util match `inq results ground-state energy exact-exchange`    0.000000000000 1e-5
