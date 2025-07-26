@@ -82,7 +82,7 @@ public:
 		}
 
 		if(parse::poscar::detect(filename)) {
-			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing CIF file '" + filename + "'.");			
+			if(cell.has_value() or radius.has_value()) throw std::runtime_error("error: the radius or cell arguments cannot be given for parsing POSCAR file '" + filename + "'.");			
 			
 			parse::poscar file(filename);
 			ions parsed(file.cell());
