@@ -36,7 +36,7 @@ public: // for CUDA
 				
 			int l = ps.projector_l(iproj_l);
 
-			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm] = ps.kb_coeff(iproj_l);
+			for(auto mm = 0; mm < 2*l + 1; mm++) kb_coeff_[iproj_lm + mm] = ps.kb_coeff(iproj_l, iproj_l);
 			
 			if(not double_grid.enabled()) {
 				

@@ -75,7 +75,7 @@ public:
 
 								 });
 
-				kb_coeff_[iproj_lm] = ps.kb_coeff(iproj);
+				kb_coeff_[iproj_lm] = ps.kb_coeff(iproj, iproj);
 				
 				iproj_lm++;
 			}
