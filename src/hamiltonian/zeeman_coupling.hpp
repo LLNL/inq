@@ -16,6 +16,8 @@ private:
 
 public:
 
+    double ge = 2.00231930436256;
+
     zeeman_coupling(int const spin_components):
         spin_components_(spin_components)
     {
@@ -48,15 +50,15 @@ public:
     void compute_zeeman_potential(basis::field<basis::real_space, vector3<double>> const & magnetic_field, VZType & zeeman_pot) const {
 
         gpu::run(zeeman_pot.basis().local_size(),
-            [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                vz[ip][0] +=-0.5*magnetic_[ip][2];
-                vz[ip][1] += 0.5*magnetic_[ip][2];
+            [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear()), ge_=ge] GPU_LAMBDA (auto ip) {
+                vz[ip][0] +=-0.5*ge_*magnetic_[ip][2]/2.0;
+                vz[ip][1] += 0.5*ge_*magnetic_[ip][2]/2.0;
             });
         if (zeeman_pot.set_size() == 4) {
                 gpu::run(zeeman_pot.basis().local_size(),
-                    [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear())] GPU_LAMBDA (auto ip) {
-                        vz[ip][2] +=-0.5*magnetic_[ip][0];
-                        vz[ip][3] +=-0.5*magnetic_[ip][1];
+                    [vz = begin(zeeman_pot.matrix()), magnetic_ = begin(magnetic_field.linear()), ge_=ge] GPU_LAMBDA (auto ip) {
+                        vz[ip][2] +=-0.5*ge_*magnetic_[ip][0]/2.0;
+                        vz[ip][3] +=-0.5*ge_*magnetic_[ip][1]/2.0;
                     });
         }
     }
