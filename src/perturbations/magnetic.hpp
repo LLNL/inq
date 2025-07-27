@@ -46,6 +46,10 @@ public:
 #ifdef INQ_PERTURBATIONS_MAGNETIC_UNIT_TEST
 #undef INQ_PERTURBATIONS_MAGNETIC_UNIT_TEST
 
+#include <catch2/catch_all.hpp>
+using namespace inq;
+using Catch::Approx;
+
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
@@ -64,5 +68,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     uniform_magnetic.magnetic_field(/*time*/ 1000.0, mag_field);
     CHECK(mag_field.linear()[0]     == vector3<double>{0.0, 0.0, 2.0});
+
+    auto par = input::parallelization(comm);
+    auto ions = systems::ions(systems::cell::cubic(10.0_b));
+    ions.insert("H", {0.0_b, 0.0_b, 0.0_b});
+    
+    SECTION("Hydrogen atom perturbation collinear calculation") {
+        auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(5).spin_polarized());
+        ground_state::initial_guess(ions, electrons);
+        bvec = {0.0_beV, 0.0_beV, 0.1_beV};
+        perturbations::magnetic B{bvec};
+        auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(200).mixing(0.1), B);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 0.1);
+
+        bvec ={0.0_beV, 0.0_beV, 1.0_beV};
+        perturbations::magnetic B2{bvec};
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(200).mixing(0.1), B2);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 1.0);
+
+        bvec ={0.0_T, 0.0_T, 17255.974545750545_T};
+        perturbations::magnetic B3{bvec};
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(200).mixing(0.1), B3);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 1.0);
+    }
+
+    SECTION("Hydrogen atom perturbation non collinear calculation") {
+        auto electrons = systems::electrons(par, ions, options::electrons{}.cutoff(30.0_Ha).extra_states(2).spin_non_collinear());
+        ground_state::initial_guess(ions, electrons);
+        bvec = {0.0_beV, 0.0_beV, 0.1_beV};
+        perturbations::magnetic B(bvec);
+        auto result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(1000).mixing(0.1), B);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 0.1);
+
+        bvec = {0.0_beV, 0.0_beV, 0.5_beV};
+        perturbations::magnetic B2(bvec);
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(1000).mixing(0.1), B2);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 0.5);
+
+        bvec = {0.0_T, 0.0_T, 17255.974545750545_T};
+        perturbations::magnetic B3(bvec);
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(1000).mixing(0.1), B3);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 1.0);
+
+        bvec = {0.1_beV, 0.0_beV, 0.0_beV};
+        perturbations::magnetic B4(bvec);
+        result = ground_state::calculate(ions, electrons, options::theory{}.lda(), inq::options::ground_state{}.steepest_descent().energy_tolerance(1.e-9_Ha).max_steps(1000).mixing(0.1), B4);
+        CHECK(Approx(fabs(result.energy.zeeman_energy())*27.2114).margin(1.e-4) == 0.1);
+    }
 }
 #endif
