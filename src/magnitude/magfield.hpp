@@ -64,6 +64,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
     using namespace magnitude;
     using Catch::Approx;
 
+    auto ge = 2.00231930436256;
+    auto muB = 5.78883942514688e-05;
+
     {
         auto mf = 100.0_AMU;
         CHECK(mf.in_atomic_units() == 100.0);
@@ -86,8 +89,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
     {
         auto mf = 1.0_amu;
-        auto muB = 5.78883942514688e-05;
         CHECK(Approx((mf.in_atomic_units()*2.3505e+05*muB*1.0_ev).in_atomic_units()).margin(1.e-4) == 0.5);
+    }
+
+    {
+        auto mf = 1.0_beV;
+        CHECK(Approx(mf.in_atomic_units()*2.3505e+05*ge*muB/2.0).margin(1.e-4) == 1.0);
+    }
+
+    {
+        auto mf = 0.1_beV;
+        CHECK(Approx(mf.in_atomic_units()*2.3505e+05*ge*muB/2.0).margin(1.e-4) == 0.1);
+    }
+
+    {
+        auto mf = 0.01_beV;
+        CHECK(Approx(mf.in_atomic_units()*2.3505e+05*ge*muB/2.0).margin(1.e-4) == 0.01);
     }
 
 }
