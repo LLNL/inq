@@ -11,8 +11,7 @@ inq::utils::match match(3.0e-4);
 
 int main (int argc, char ** argv){
     auto env = input::environment{};
-    vector3<double> b = {0.0, 0.0, 1.0};
-    b = b / b.length();
+    vector3<quantity<magnitude::magfield>> b = {0.0_amu, 0.0_amu, 1.0_amu};
     perturbations::magnetic B{b};
 
     auto ions = systems::ions(systems::cell::cubic(10.0_b));
@@ -35,7 +34,7 @@ int main (int argc, char ** argv){
             my.push_back(data.magnetization()[1]);
         };
 
-        vector3<double> b2 = {3.0, 0.0, 0.0};
+        vector3<quantity<magnitude::magfield>> b2 = {3.0_amu, 0.0_amu, 0.0_amu};
         perturbations::magnetic B2{b2};
         real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(100).dt(0.03_atomictime), B2);
 
@@ -67,8 +66,8 @@ int main (int argc, char ** argv){
             my.push_back(data.magnetization()[1]);
         };
         
-        vector3<double> Db = {6.0, 0.0, -6.0};
-        vector3<double> b2 = {1.0, 0.0, -1.0};
+        vector3<quantity<magnitude::magfield>> Db = {6.0_amu, 0.0_amu, -6.0_amu};
+        vector3<quantity<magnitude::magfield>> b2 = {1.0_amu, 0.0_amu, -1.0_amu};
         perturbations::magnetic_pulse B2{b, Db, b2, 10.0_ev, 1000.0_attosecond, 1.0_invfs2, 100.0_attosecond, 0.0};
         real_time::propagate<>(ions, electrons, output, options::theory{}.lda(), options::real_time{}.num_steps(100).dt(0.03_atomictime), B2);
         
