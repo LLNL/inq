@@ -462,6 +462,9 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
 	SECTION("rr"){
 
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(  0), 2.23,  [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);}) == 2.23_a);
+		CHECK(gpu::run(gpu::reduce(  0), gpu::reduce(100), 2.23,  [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);}) == 2.23_a);		
+
 		const long maxsize = 2*625;
 
 		int rank = 0;
@@ -479,7 +482,10 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
   }
 
 	SECTION("rrr"){
-
+		CHECK(gpu::run(gpu::reduce(  0), gpu::reduce(100), gpu::reduce(100), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(  0), gpu::reduce(100), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(100), gpu::reduce(  0), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);		
+		
 		const long maxsize = 125;
 
 		int rank = 0;
