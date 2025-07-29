@@ -99,7 +99,9 @@ Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, Ke
 
 	auto const sizex = redx.size;	
 	auto const sizey = redy.size;	
-  
+
+	if(sizex == 0 or sizey == 0) return init;
+	
 #ifndef ENABLE_GPU
 
   auto accumulator = init;
@@ -111,21 +113,26 @@ Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, Ke
   return accumulator;
 
 #else
-
-	const int bsizex = 1024;
-	const int bsizey = 1;
+	
+	auto blocksize = max_blocksize(reduce_kernel_rr<KernelType, decltype(begin(std::declval<gpu::array<Type, 2>&>()))>);
+	
+	const unsigned bsizex = blocksize;
+	const unsigned bsizey = 1;
 
 	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
 	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
-	
+
+	assert(nblockx > 0);
+	assert(nblocky > 0);
+
 	gpu::array<Type, 2> result({nblockx, nblocky});
 
 	struct dim3 dg{nblockx, nblocky};
 	struct dim3 db{bsizex, bsizey};
-
+	
 	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(Type)>>>(sizex, sizey, kernel, begin(result));
   check_error(last_error());
-	
+
   if(nblockx*nblocky == 1) {
     gpu::sync();
     return init + result[0][0];
@@ -441,6 +448,8 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 	using Catch::Approx;
 
 	SECTION("r"){
+		CHECK(gpu::run(gpu::reduce(0), -232.8, [] GPU_LAMBDA (auto ii) { return double(ii);} ) == Approx(-232.8));
+		
 		const long maxsize = 129140163;
 		
 		int rank = 0;
@@ -448,9 +457,13 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 			CHECK(gpu::run(gpu::reduce(nn), -232.8, [] GPU_LAMBDA (auto ii) { return double(ii);} ) == Approx(-232.8 + (nn*(nn - 1.0)/2.0)));
 			rank++;
 		}
+		
 	}
 
 	SECTION("rr"){
+
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(  0), 2.23,  [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);}) == 2.23_a);
+		CHECK(gpu::run(gpu::reduce(  0), gpu::reduce(100), 2.23,  [] GPU_LAMBDA (auto ix, auto iy) {return double(ix)*double(iy);}) == 2.23_a);		
 
 		const long maxsize = 2*625;
 
@@ -469,7 +482,10 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
   }
 
 	SECTION("rrr"){
-
+		CHECK(gpu::run(gpu::reduce(  0), gpu::reduce(100), gpu::reduce(100), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(  0), gpu::reduce(100), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);
+		CHECK(gpu::run(gpu::reduce(100), gpu::reduce(100), gpu::reduce(  0), 17.89, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix)*double(iy)*double(iz);}) == 17.89_a);		
+		
 		const long maxsize = 125;
 
 		int rank = 0;
