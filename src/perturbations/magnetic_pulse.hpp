@@ -28,17 +28,17 @@ class magnetic_pulse : public perturbations::none {
     double phase_shift_;
 
 public:
-    magnetic_pulse(vector3<double> magnetic_vector,
-        vector3<double> pulse_vector,
-        vector3<double> step_vector,
+    magnetic_pulse(vector3<quantity<magnitude::magfield>> magnetic_vector,
+        vector3<quantity<magnitude::magfield>> pulse_vector,
+        vector3<quantity<magnitude::magfield>> step_vector,
         quantity<magnitude::energy> frequency,
         quantity<magnitude::time> width,
         quantity<magnitude::chirp> chirp,
         quantity<magnitude::time> time_shift,
         double phase_shift):
-        magnetic_vector_(magnetic_vector),
-        pulse_vector_(pulse_vector),
-        step_vector_(step_vector),
+        magnetic_vector_(vector3<double> {magnetic_vector[0].in_atomic_units(), magnetic_vector[1].in_atomic_units(), magnetic_vector[2].in_atomic_units()}),
+        pulse_vector_(vector3<double> {pulse_vector[0].in_atomic_units(), pulse_vector[1].in_atomic_units(), pulse_vector[2].in_atomic_units()}),
+        step_vector_(vector3<double> {step_vector[0].in_atomic_units(), step_vector[1].in_atomic_units(), step_vector[2].in_atomic_units()}),
         frequency_(frequency.in_atomic_units()),
         width_(width.in_atomic_units()),
         chirp_(chirp.in_atomic_units()),
@@ -88,7 +88,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
     
     parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-    perturbations::magnetic_pulse uniform_mag_pulse{{0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0_ev, 1.0_attosecond, 1.0_invfs2, 100.0_attosecond, 0.0};
+    perturbations::magnetic_pulse uniform_mag_pulse{{0.0_amu, 0.0_amu, 1.0_amu}, {0.0_amu, 0.0_amu, 0.0_amu}, {0.0_amu, 0.0_amu, 0.0_amu}, 1.0_ev, 1.0_attosecond, 1.0_invfs2, 100.0_attosecond, 0.0};
 
     CHECK(uniform_mag_pulse.has_magnetic_field());
 
