@@ -68,7 +68,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, Arra
 	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
 	
 	// each thread loads one element from global to shared mem
-	unsigned int tid = threadIdx.x;
+	unsigned int tid = threadIdx.y*blockDim.x + threadIdx.x;
 	unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;	
 
@@ -81,7 +81,7 @@ __global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, Arra
 	__syncthreads();
 
 	// do reduction in shared mem
-	for (unsigned int s = blockDim.x/2; s > 0; s >>= 1){
+	for (unsigned int s = (blockDim.x*blockDim.y)/2; s > 0; s >>= 1){
 		if (tid < s) {
 			reduction_buffer[tid] += reduction_buffer[tid + s];
 		}
@@ -129,7 +129,7 @@ Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, Ke
 
 	struct dim3 dg{nblockx, nblocky};
 	struct dim3 db{bsizex, bsizey};
-	
+
 	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(Type)>>>(sizex, sizey, kernel, begin(result));
   check_error(last_error());
 
@@ -151,7 +151,7 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType
 	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
 	
 	// each thread loads one element from global to shared mem
-	unsigned int tid = threadIdx.x;
+	unsigned int tid = (threadIdx.z*blockDim.y + threadIdx.y)*blockDim.x + threadIdx.x;
 	unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
 	unsigned int iz = blockIdx.z*blockDim.z + threadIdx.z;	
@@ -165,7 +165,7 @@ __global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType
 	__syncthreads();
 
 	// do reduction in shared mem
-	for (unsigned int s = blockDim.x/2; s > 0; s >>= 1){
+	for (unsigned int s = (blockDim.x*blockDim.y*blockDim.z)/2; s > 0; s >>= 1){
 		if (tid < s) {
 			reduction_buffer[tid] += reduction_buffer[tid + s];
 		}
@@ -200,6 +200,7 @@ Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type con
   return accumulator;
 	
 #else
+
 
 	auto blocksize = max_blocksize(reduce_kernel_rrr<KernelType, decltype(begin(std::declval<gpu::array<Type, 3>&>()))>);
 	
@@ -337,7 +338,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 	
 	// each thread loads one element from global to shared mem
   unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int tid = threadIdx.y;
+	unsigned int tid = threadIdx.z*blockDim.y + threadIdx.y;
 	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
 	unsigned int iz = blockIdx.z*blockDim.z + threadIdx.z;
 
@@ -351,7 +352,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 	__syncthreads();
 
 	// do reduction in shared mem
-	for (unsigned int s = blockDim.y/2; s > 0; s >>= 1){
+	for (unsigned int s = (blockDim.y*blockDim.z)/2; s > 0; s >>= 1){
 		if (tid < s) {
 			reduction_buffer[threadIdx.x + blockDim.x*tid] += reduction_buffer[threadIdx.x + blockDim.x*(tid + s)];
 		}
