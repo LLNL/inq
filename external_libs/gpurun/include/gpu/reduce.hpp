@@ -23,6 +23,7 @@
 #include <gpu/run.hpp>
 #include <gpu/array.hpp>
 #include <gpu/host.hpp>
+#include <gpu/indices.hpp>
 
 namespace gpu {
 
@@ -60,40 +61,6 @@ Type run(reduce const & red, Type const init, KernelType kernel) {
 #endif
 }
 
-#ifdef ENABLE_GPU
-template <typename KernelType, typename ArrayType>
-__global__ void reduce_kernel_rr(long sizex, long sizey, KernelType kernel, ArrayType odata) {
-
-	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
-	
-	// each thread loads one element from global to shared mem
-	unsigned int tid = threadIdx.y*blockDim.x + threadIdx.x;
-	unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;	
-
-	if(ix < sizex and iy < sizey){
-		reduction_buffer[tid] = kernel(ix, iy);
-	} else {
-		reduction_buffer[tid] = (typename ArrayType::element) 0.0;
-	}
-
-	__syncthreads();
-
-	// do reduction in shared mem
-	for (unsigned int s = (blockDim.x*blockDim.y)/2; s > 0; s >>= 1){
-		if (tid < s) {
-			reduction_buffer[tid] += reduction_buffer[tid + s];
-		}
-		__syncthreads();
-	}
-	
-	// write result for this block to global mem
-	if (tid == 0) odata[blockIdx.x][blockIdx.y] = reduction_buffer[0];
-
-}
-#endif
-
 template <typename Type, typename KernelType>
 Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, KernelType kernel) {
 
@@ -113,70 +80,19 @@ Type run(gpu::reduce const & redx, gpu::reduce const & redy, Type const init, Ke
   return accumulator;
 
 #else
-	
-	auto blocksize = max_blocksize(reduce_kernel_rr<KernelType, decltype(begin(std::declval<gpu::array<Type, 2>&>()))>);
-	
-	const unsigned bsizex = blocksize;
-	const unsigned bsizey = 1;
 
-	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
-	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
+	auto range = boost::multi::extension_t{0l, sizex*sizey};
+	return thrust::transform_reduce(thrust::device, range.begin(), range.end(),
+																	[sizex, kernel] GPU_LAMBDA (auto ind) {
 
-	assert(nblockx > 0);
-	assert(nblocky > 0);
-
-	gpu::array<Type, 2> result({nblockx, nblocky});
-
-	struct dim3 dg{nblockx, nblocky};
-	struct dim3 db{bsizex, bsizey};
-
-	reduce_kernel_rr<<<dg, db, bsizex*bsizey*sizeof(Type)>>>(sizex, sizey, kernel, begin(result));
-  check_error(last_error());
-
-  if(nblockx*nblocky == 1) {
-    gpu::sync();
-    return init + result[0][0];
-  } else {
-    return run(gpu::reduce(nblockx*nblocky), init, array_access<decltype(begin(result.flatted()))>{begin(result.flatted())});
-  }
+																		int ix, iy;
+																		linear_to_bidimensional(ind, sizex, ix, iy);
+																		return kernel(ix, iy);
+																		
+																	}, init, std::plus<>{});
   
 #endif
 }
-
-#ifdef ENABLE_GPU
-template <typename KernelType, typename ArrayType>
-__global__ void reduce_kernel_rrr(long sizex, long sizey, long sizez, KernelType kernel, ArrayType odata) {
-
-	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
-	
-	// each thread loads one element from global to shared mem
-	unsigned int tid = (threadIdx.z*blockDim.y + threadIdx.y)*blockDim.x + threadIdx.x;
-	unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
-	unsigned int iz = blockIdx.z*blockDim.z + threadIdx.z;	
-
-	if(ix < sizex and iy < sizey and iz < sizez){
-		reduction_buffer[tid] = kernel(ix, iy, iz);
-	} else {
-		reduction_buffer[tid] = (typename ArrayType::element) 0.0;
-	}
-
-	__syncthreads();
-
-	// do reduction in shared mem
-	for (unsigned int s = (blockDim.x*blockDim.y*blockDim.z)/2; s > 0; s >>= 1){
-		if (tid < s) {
-			reduction_buffer[tid] += reduction_buffer[tid + s];
-		}
-		__syncthreads();
-	}
-	
-	// write result for this block to global mem
-	if (tid == 0) odata[blockIdx.x][blockIdx.y][blockIdx.z] = reduction_buffer[0];
-
-}
-#endif
 
 template <typename Type, typename KernelType>
 Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type const init, KernelType kernel) {
@@ -201,32 +117,16 @@ Type run(reduce const & redx, reduce const & redy, reduce const & redz, Type con
 	
 #else
 
+	auto range = boost::multi::extension_t{0l, sizex*sizey*sizez};
+	return thrust::transform_reduce(thrust::device, range.begin(), range.end(),
+																	[sizex, sizey, kernel] GPU_LAMBDA (auto ind) {
 
-	auto blocksize = max_blocksize(reduce_kernel_rrr<KernelType, decltype(begin(std::declval<gpu::array<Type, 3>&>()))>);
-	
-	const unsigned bsizex = blocksize;
-	const unsigned bsizey = 1;
-	const unsigned bsizez = 1;
-
-	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
-	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
-	unsigned nblockz = (sizez + bsizez - 1)/bsizez;
-
-	gpu::array<Type, 3> result({nblockx, nblocky, nblockz});
-
-	struct dim3 dg{nblockx, nblocky, nblockz};
-	struct dim3 db{bsizex, bsizey, bsizez};
-
-	reduce_kernel_rrr<<<dg, db, bsizex*bsizey*bsizez*sizeof(Type)>>>(sizex, sizey, sizez, kernel, begin(result));
-	check_error(last_error());
-
-  if(nblockx*nblocky*nblockz == 1) {
-    gpu::sync();
-    return init + result[0][0][0];
-  } else {
-    return run(gpu::reduce(nblockx*nblocky*nblockz), init, array_access<decltype(begin(result.flatted().flatted()))>{begin(result.flatted().flatted())});
-  }
-  
+																		int ix, iy, iz;
+																		linear_to_tridimensional(ind, sizex, sizey, ix, iy, iz);
+																		return kernel(ix, iy, iz);
+																		
+																	}, init, std::plus<>{});
+    
 #endif
 }
 
