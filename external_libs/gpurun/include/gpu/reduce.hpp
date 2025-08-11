@@ -188,7 +188,7 @@ gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const init, Kernel
 
 	gpu::array<Type, 2> result;
 	
-	auto blocksize = max_blocksize(reduce_kernel_vr<KernelType, decltype(begin(result))>);
+	auto blocksize = pow2_floor(max_blocksize(reduce_kernel_vr<KernelType, decltype(begin(result))>));
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
@@ -289,7 +289,7 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 
 	gpu::array<Type, 3> result;
 	
-	auto blocksize = max_blocksize(reduce_kernel_vrr<KernelType, decltype(begin(result))>);
+	auto blocksize = pow2_floor(max_blocksize(reduce_kernel_vrr<KernelType, decltype(begin(result))>));
 	
 	unsigned bsizex = 4; //this seems to be the optimal value
 	if(sizex <= 2) bsizex = sizex;
