@@ -36,6 +36,21 @@ GPU_FUNCTION void linear_to_tridimensional(Int1 ind, Int2 sizex, Int3 sizey, Int
   iz = ind/(sizex*sizey);
 }
 
+template <typename Int>
+GPU_FUNCTION auto pow2_ceil(Int val){
+	assert(val > 0);
+	Int ceil = 1;
+	while(ceil < val) ceil *=2;
+	return ceil;
+}
+
+template <typename Int>
+GPU_FUNCTION auto pow2_floor(Int val){
+	auto floor = pow2_ceil(val);
+	if(floor != val) floor /= 2;
+	return floor;
+}
+
 }
 #endif
 
@@ -70,7 +85,7 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
     CHECK(idx == nii*njj);
   }
 
-    SECTION("2D") {
+	SECTION("3D") {
   
     auto nii = 456;
     auto njj = 519;
@@ -96,7 +111,28 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
     
     CHECK(idx == nii*njj*nkk);
   }
-  
+
+	SECTION("pow2_ceil") {
+		CHECK(pow2_ceil(1)    == 1);
+		CHECK(pow2_ceil(2)    == 2);
+		CHECK(pow2_ceil(3)    == 4);
+		CHECK(pow2_ceil(27)   == 32);
+		CHECK(pow2_ceil(192)  == 256);
+		CHECK(pow2_ceil(127)  == 128);
+		CHECK(pow2_ceil(128)  == 128);
+		CHECK(pow2_ceil(1023) == 1024);
+	}
+
+	SECTION("pow2_floor") {
+		CHECK(pow2_floor(1)    == 1);
+		CHECK(pow2_floor(2)    == 2);
+		CHECK(pow2_floor(3)    == 2);
+		CHECK(pow2_floor(27)   == 16);
+		CHECK(pow2_floor(192)  == 128);
+		CHECK(pow2_floor(127)  == 64);
+		CHECK(pow2_floor(128)  == 128);
+		CHECK(pow2_floor(1023) == 512);
+	}
   
 }
 #endif
