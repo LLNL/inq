@@ -194,15 +194,93 @@ public:
 		auto nst = get<2>(sizes(projections_all));
 		
 		auto copy = projections_all;
-		
-		gpu::run(nst, max_nlm_, nprojs_,
-						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
-						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+		auto copy2 = projections_all;
+
+		gpu::run(nst, nprojs_,
+						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), cop2 = begin(copy2), nlm = max_nlm_]
+						 GPU_LAMBDA (auto ist, auto iproj){
 							 using type = typename ProjectionsType::element_type;
 
-							 auto acc = zero<type>();
-							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
-							 proj[iproj][ilm][ist] = acc;
+							 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
+							 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
+							 gpu::array<double, 2> mat({nlm, nlm}, 0.0);
+		
+
+							 for(int ilm = 0; ilm < nlm; ilm++) {
+								 for(int jlm = 0; jlm < nlm; jlm++) {
+									 if(ilm >= jlm) umat[jlm][ilm] = coe[iproj][ilm][jlm];									 
+								 }
+							 }
+
+							 if(ist == 0 and iproj == 0) {
+								 std::cout << "UMAT---------------------------------------------------" << std::endl;
+
+								 for(int ilm = 0; ilm < nlm; ilm++) {
+									 for(int jlm = 0; jlm < nlm; jlm++) {
+										 std::cout << umat[ilm][jlm] << '\t';
+									 }
+									 std::cout << std::endl;
+								 }
+								 
+								 std::cout << "---------------------------------------------------" << std::endl;
+								 
+							 }
+							 
+							 for(int ilm = 0; ilm < nlm; ilm++) {
+								 for(int jlm = 0; jlm < nlm; jlm++) {
+									 if(ilm < jlm) lmat[jlm][ilm] = coe[iproj][ilm][jlm];									 
+								 }
+								 lmat[ilm][ilm] = 1.0;
+							 }
+
+							 if(ist == 0 and iproj == 0) {
+								 std::cout << "LMAT---------------------------------------------------" << std::endl;
+
+								 for(int ilm = 0; ilm < nlm; ilm++) {
+									 for(int jlm = 0; jlm < nlm; jlm++) {
+										 std::cout << lmat[ilm][jlm] << '\t';
+									 }
+									 std::cout << std::endl;
+								 }
+								 
+								 std::cout << "---------------------------------------------------" << std::endl;
+								 
+							 }
+							 
+							 for(int ilm = 0; ilm < nlm; ilm++) {
+								 for(int jlm = 0; jlm < nlm; jlm++) {
+									 for(int klm = 0; klm < nlm; klm++) {
+										 mat[ilm][jlm] += lmat[ilm][klm]*umat[klm][jlm];
+									 }
+								 }
+							 }
+
+							 if(ist == 0 and iproj == 0) {
+								 std::cout << "MAT---------------------------------------------------" << std::endl;
+
+								 for(int ilm = 0; ilm < nlm; ilm++) {
+									 for(int jlm = 0; jlm < nlm; jlm++) {
+										 std::cout << mat[ilm][jlm] << '\t';
+									 }
+									 std::cout << std::endl;
+								 }
+								 
+								 std::cout << "---------------------------------------------------" << std::endl;
+								 
+							 }
+														 
+							 //							 for(int ilm = 0; ilm < nlm; ilm++) {
+								 //								 auto acc = zero<type>();
+								 //								 for(int jlm = 0; jlm < nlm; jlm++) acc += umat[ilm][jlm]*cop[iproj][jlm][ist];
+								 //								 cop2[iproj][ilm][ist] = acc;
+								 //							 }
+
+							 for(int ilm = 0; ilm < nlm; ilm++) {
+								 auto acc = zero<type>();
+								 for(int jlm = 0; jlm < nlm; jlm++) acc += mat[ilm][jlm]*cop[iproj][jlm][ist];
+								 proj[iproj][ilm][ist] = acc;
+							 }
+							 
 						 });
 		
 	}
@@ -290,10 +368,38 @@ public:
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
 											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+
+
+												 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
+												 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
+												 gpu::array<double, 2> mat({nlm, nlm}, 0.0);
+												 
+												 
+												 for(int ilm = 0; ilm < nlm; ilm++) {
+													 for(int jlm = 0; jlm < nlm; jlm++) {
+														 if(ilm >= jlm) umat[jlm][ilm] = coe[iproj][ilm][jlm];									 
+													 }
+												 }
+												 
+												 for(int ilm = 0; ilm < nlm; ilm++) {
+													 for(int jlm = 0; jlm < nlm; jlm++) {
+														 if(ilm < jlm) lmat[jlm][ilm] = coe[iproj][ilm][jlm];									 
+													 }
+													 lmat[ilm][ilm] = 1.0;
+												 }
+
+												 for(int ilm = 0; ilm < nlm; ilm++) {
+													 for(int jlm = 0; jlm < nlm; jlm++) {
+														 for(int klm = 0; klm < nlm; klm++) {
+															 mat[ilm][jlm] += lmat[ilm][klm]*umat[klm][jlm];
+														 }
+													 }
+												 }
+												 
 												 auto ist_spinor = ist%spinor_size;
 												 double acc = 0.0;
 												 auto pp = conj(proj[iproj][ilm][ist]);
-												 for(int jlm = 0; jlm < nlm; jlm++) acc += real(pp*coe[iproj][ilm][jlm]*proj[iproj][jlm][ist]);
+												 for(int jlm = 0; jlm < nlm; jlm++) acc += real(pp*mat[ilm][jlm]*proj[iproj][jlm][ist]);
 												 return occ[ist_spinor]*acc;
 											 });
 		
