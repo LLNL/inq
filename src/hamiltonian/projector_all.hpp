@@ -192,25 +192,24 @@ public:
 		CALI_CXX_MARK_FUNCTION;
 
 		auto nst = get<2>(sizes(projections_all));
-		
-		auto copy = projections_all;
-		auto copy2 = projections_all;
 
 		gpu::run(nst, nprojs_,
-						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), cop2 = begin(copy2), nlm = max_nlm_]
+						 [proj = begin(projections_all), coe = begin(coeff_), nlm = max_nlm_]
 						 GPU_LAMBDA (auto ist, auto iproj){
 							 using type = typename ProjectionsType::element_type;
-
+							 
+							 //multiply by U in place
 							 for(int ilm = 0; ilm < nlm; ilm++) {
 								 auto acc = zero<type>();
-								 for(int jlm = ilm; jlm < nlm; jlm++) acc += coe[iproj][jlm][ilm]*cop[iproj][jlm][ist];
-								 cop2[iproj][ilm][ist] = acc;
+								 for(int jlm = ilm; jlm < nlm; jlm++) acc += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
+								 proj[iproj][ilm][ist] = acc;
 							 }
 
-							 for(int ilm = 0; ilm < nlm; ilm++) {
-								 auto acc = cop2[iproj][ilm][ist];
-								 for(int jlm = 0; jlm < ilm; jlm++) acc += coe[iproj][jlm][ilm]*cop2[iproj][jlm][ist];
-								 proj[iproj][ilm][ist] = acc;
+							 //multiply by L in place
+							 for(int ilm = nlm - 1; ilm >= 0; ilm--) {
+								 auto acc = zero<type>();
+								 for(int jlm = 0; jlm < ilm; jlm++) acc += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
+								 proj[iproj][ilm][ist] += acc;
 							 }
 							 
 						 });
