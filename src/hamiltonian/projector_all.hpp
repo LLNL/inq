@@ -303,7 +303,6 @@ public:
 
 												 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
 												 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
-												 gpu::array<double, 2> mat({nlm, nlm}, 0.0);
 												 
 												 
 												 for(int ilm = 0; ilm < nlm; ilm++) {
@@ -318,19 +317,15 @@ public:
 													 }
 													 lmat[ilm][ilm] = 1.0;
 												 }
-
-												 for(int ilm = 0; ilm < nlm; ilm++) {
-													 for(int jlm = 0; jlm < nlm; jlm++) {
-														 for(int klm = 0; klm < nlm; klm++) {
-															 mat[ilm][jlm] += lmat[ilm][klm]*umat[klm][jlm];
-														 }
-													 }
-												 }
 												 
 												 auto ist_spinor = ist%spinor_size;
 												 double acc = 0.0;
 												 auto pp = conj(proj[iproj][ilm][ist]);
-												 for(int jlm = 0; jlm < nlm; jlm++) acc += real(pp*mat[ilm][jlm]*proj[iproj][jlm][ist]);
+												 for(int jlm = 0; jlm < nlm; jlm++) {
+													 auto mat = 0.0;
+													 for(int klm = 0; klm < nlm; klm++) mat += lmat[ilm][klm]*umat[klm][jlm];
+													 acc += real(pp*mat*proj[iproj][jlm][ist]);
+												 }
 												 return occ[ist_spinor]*acc;
 											 });
 		
