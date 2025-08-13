@@ -300,21 +300,12 @@ public:
 											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 
-
-												 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
-												 
-												 for(int ilm = 0; ilm < nlm; ilm++) {
-													 for(int jlm = 0; jlm < nlm; jlm++) {
-														 if(ilm >= jlm) umat[jlm][ilm] = coe[iproj][ilm][jlm];									 
-													 }
-												 }
-
 												 auto pp = proj[iproj][ilm][ist];
 												 for(int jlm = ilm + 1; jlm < nlm; jlm++) pp += proj[iproj][jlm][ist]*coe[iproj][ilm][jlm];
 
 												 double acc = 0.0;
-												 for(int jlm = 0; jlm < nlm; jlm++) {
-													 acc += real(conj(pp)*umat[ilm][jlm]*proj[iproj][jlm][ist]);
+												 for(int jlm = ilm; jlm < nlm; jlm++) {
+													 acc += real(conj(pp)*coe[iproj][jlm][ilm]*proj[iproj][jlm][ist]);
 												 }
 
 												 auto ist_spinor = ist%spinor_size;
