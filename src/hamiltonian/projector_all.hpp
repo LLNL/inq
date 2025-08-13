@@ -320,15 +320,16 @@ public:
 												 
 												 auto ist_spinor = ist%spinor_size;
 												 double acc = 0.0;
-												 auto pp = conj(proj[iproj][ilm][ist]);
+												 auto pp = zero<complex>();
+												 for(int klm = 0; klm < nlm; klm++) pp += lmat[klm][ilm]*proj[iproj][klm][ist];
+
 												 for(int jlm = 0; jlm < nlm; jlm++) {
-													 auto mat = 0.0;
-													 for(int klm = 0; klm < nlm; klm++) mat += lmat[ilm][klm]*umat[klm][jlm];
-													 acc += real(pp*mat*proj[iproj][jlm][ist]);
+													 acc += real(conj(pp)*umat[ilm][jlm]*proj[iproj][jlm][ist]);
 												 }
+
 												 return occ[ist_spinor]*acc;
 											 });
-		
+
 		if(reduce_states and phi.set_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("projector_all::energy::reduce_states");
 			phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
