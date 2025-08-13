@@ -302,31 +302,22 @@ public:
 
 
 												 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
-												 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
-												 
 												 
 												 for(int ilm = 0; ilm < nlm; ilm++) {
 													 for(int jlm = 0; jlm < nlm; jlm++) {
 														 if(ilm >= jlm) umat[jlm][ilm] = coe[iproj][ilm][jlm];									 
 													 }
 												 }
-												 
-												 for(int ilm = 0; ilm < nlm; ilm++) {
-													 for(int jlm = 0; jlm < nlm; jlm++) {
-														 if(ilm < jlm) lmat[jlm][ilm] = coe[iproj][ilm][jlm];									 
-													 }
-													 lmat[ilm][ilm] = 1.0;
-												 }
-												 
-												 auto ist_spinor = ist%spinor_size;
-												 double acc = 0.0;
-												 auto pp = zero<complex>();
-												 for(int klm = 0; klm < nlm; klm++) pp += lmat[klm][ilm]*proj[iproj][klm][ist];
 
+												 auto pp = proj[iproj][ilm][ist];
+												 for(int jlm = ilm + 1; jlm < nlm; jlm++) pp += proj[iproj][jlm][ist]*coe[iproj][ilm][jlm];
+
+												 double acc = 0.0;
 												 for(int jlm = 0; jlm < nlm; jlm++) {
 													 acc += real(conj(pp)*umat[ilm][jlm]*proj[iproj][jlm][ist]);
 												 }
 
+												 auto ist_spinor = ist%spinor_size;
 												 return occ[ist_spinor]*acc;
 											 });
 
