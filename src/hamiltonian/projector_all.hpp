@@ -300,11 +300,10 @@ public:
 											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 
-												 auto pp = proj[iproj][ilm][ist];
-												 for(int jlm = ilm + 1; jlm < nlm; jlm++) pp += proj[iproj][jlm][ist]*coe[iproj][ilm][jlm];
-
-												 auto qq = zero<complex>();
-												 for(int jlm = ilm; jlm < nlm; jlm++) {
+												 auto pp = proj[iproj][ilm][ist]; // the L diagonal values are 1.0
+												 auto qq = coe[iproj][ilm][ilm]*proj[iproj][ilm][ist];
+												 for(int jlm = ilm + 1; jlm < nlm; jlm++) {
+													 pp += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
 													 qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
 												 }
 
