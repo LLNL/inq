@@ -203,7 +203,6 @@ public:
 
 							 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
 							 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
-							 gpu::array<double, 2> mat({nlm, nlm}, 0.0);
 		
 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
@@ -212,20 +211,6 @@ public:
 								 }
 							 }
 
-							 if(ist == 0 and iproj == 0) {
-								 std::cout << "UMAT---------------------------------------------------" << std::endl;
-
-								 for(int ilm = 0; ilm < nlm; ilm++) {
-									 for(int jlm = 0; jlm < nlm; jlm++) {
-										 std::cout << umat[ilm][jlm] << '\t';
-									 }
-									 std::cout << std::endl;
-								 }
-								 
-								 std::cout << "---------------------------------------------------" << std::endl;
-								 
-							 }
-							 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
 								 for(int jlm = 0; jlm < nlm; jlm++) {
 									 if(ilm < jlm) lmat[jlm][ilm] = coe[iproj][ilm][jlm];									 
@@ -233,51 +218,15 @@ public:
 								 lmat[ilm][ilm] = 1.0;
 							 }
 
-							 if(ist == 0 and iproj == 0) {
-								 std::cout << "LMAT---------------------------------------------------" << std::endl;
-
-								 for(int ilm = 0; ilm < nlm; ilm++) {
-									 for(int jlm = 0; jlm < nlm; jlm++) {
-										 std::cout << lmat[ilm][jlm] << '\t';
-									 }
-									 std::cout << std::endl;
-								 }
-								 
-								 std::cout << "---------------------------------------------------" << std::endl;
-								 
-							 }
-							 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
-								 for(int jlm = 0; jlm < nlm; jlm++) {
-									 for(int klm = 0; klm < nlm; klm++) {
-										 mat[ilm][jlm] += lmat[ilm][klm]*umat[klm][jlm];
-									 }
-								 }
+								 auto acc = zero<type>();
+								 for(int jlm = 0; jlm < nlm; jlm++) acc += umat[ilm][jlm]*cop[iproj][jlm][ist];
+								 cop2[iproj][ilm][ist] = acc;
 							 }
-
-							 if(ist == 0 and iproj == 0) {
-								 std::cout << "MAT---------------------------------------------------" << std::endl;
-
-								 for(int ilm = 0; ilm < nlm; ilm++) {
-									 for(int jlm = 0; jlm < nlm; jlm++) {
-										 std::cout << mat[ilm][jlm] << '\t';
-									 }
-									 std::cout << std::endl;
-								 }
-								 
-								 std::cout << "---------------------------------------------------" << std::endl;
-								 
-							 }
-														 
-							 //							 for(int ilm = 0; ilm < nlm; ilm++) {
-								 //								 auto acc = zero<type>();
-								 //								 for(int jlm = 0; jlm < nlm; jlm++) acc += umat[ilm][jlm]*cop[iproj][jlm][ist];
-								 //								 cop2[iproj][ilm][ist] = acc;
-								 //							 }
 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
 								 auto acc = zero<type>();
-								 for(int jlm = 0; jlm < nlm; jlm++) acc += mat[ilm][jlm]*cop[iproj][jlm][ist];
+								 for(int jlm = 0; jlm < nlm; jlm++) acc += lmat[ilm][jlm]*cop2[iproj][jlm][ist];
 								 proj[iproj][ilm][ist] = acc;
 							 }
 							 
