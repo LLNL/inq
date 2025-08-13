@@ -92,30 +92,7 @@ public: // for CUDA
 			}
 		}
 
-		std::cout << "---------------------------------------------------" << std::endl;
-		
-		for(int iproj_lm = 0; iproj_lm < ps.num_projectors_lm(); iproj_lm++){
-			for(int jproj_lm = 0; jproj_lm < ps.num_projectors_lm(); jproj_lm++){
-				std::cout << kb_coeff_[iproj_lm][jproj_lm] << '\t';
-			}
-			std::cout << std::endl;
-		}
-
-		std::cout << "---------------------------------------------------" << std::endl;
-		
 		matrix::lu_raw(kb_coeff_);
-
-		std::cout << "---------------------------------------------------" << std::endl;
-		
-		for(int iproj_lm = 0; iproj_lm < ps.num_projectors_lm(); iproj_lm++){
-			for(int jproj_lm = 0; jproj_lm < ps.num_projectors_lm(); jproj_lm++){
-				std::cout << kb_coeff_[iproj_lm][jproj_lm] << '\t';
-			}
-			std::cout << std::endl;
-		}
-
-		std::cout << "---------------------------------------------------" << std::endl;
-
 
 	}
 	
