@@ -303,13 +303,13 @@ public:
 												 auto pp = proj[iproj][ilm][ist];
 												 for(int jlm = ilm + 1; jlm < nlm; jlm++) pp += proj[iproj][jlm][ist]*coe[iproj][ilm][jlm];
 
-												 double acc = 0.0;
+												 auto qq = zero<complex>();
 												 for(int jlm = ilm; jlm < nlm; jlm++) {
-													 acc += real(conj(pp)*coe[iproj][jlm][ilm]*proj[iproj][jlm][ist]);
+													 qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
 												 }
 
 												 auto ist_spinor = ist%spinor_size;
-												 return occ[ist_spinor]*acc;
+												 return occ[ist_spinor]*real(conj(pp)*qq);
 											 });
 
 		if(reduce_states and phi.set_comm().size() > 1) {
