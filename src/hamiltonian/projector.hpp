@@ -17,7 +17,6 @@
 #include <basis/real_space.hpp>
 #include <basis/spherical_grid.hpp>
 #include <hamiltonian/atomic_potential.hpp>
-#include <matrix/lu.hpp>
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
@@ -91,8 +90,6 @@ public: // for CUDA
 				}
 			}
 		}
-
-		matrix::lu_raw(kb_coeff_);
 
 	}
 	
