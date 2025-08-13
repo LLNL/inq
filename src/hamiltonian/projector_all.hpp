@@ -201,15 +201,7 @@ public:
 						 GPU_LAMBDA (auto ist, auto iproj){
 							 using type = typename ProjectionsType::element_type;
 
-							 gpu::array<double, 2> umat({nlm, nlm}, 0.0);
 							 gpu::array<double, 2> lmat({nlm, nlm}, 0.0);
-		
-
-							 for(int ilm = 0; ilm < nlm; ilm++) {
-								 for(int jlm = 0; jlm < nlm; jlm++) {
-									 if(ilm >= jlm) umat[jlm][ilm] = coe[iproj][ilm][jlm];									 
-								 }
-							 }
 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
 								 for(int jlm = 0; jlm < nlm; jlm++) {
@@ -220,7 +212,7 @@ public:
 
 							 for(int ilm = 0; ilm < nlm; ilm++) {
 								 auto acc = zero<type>();
-								 for(int jlm = 0; jlm < nlm; jlm++) acc += umat[ilm][jlm]*cop[iproj][jlm][ist];
+								 for(int jlm = ilm; jlm < nlm; jlm++) acc += coe[iproj][jlm][ilm]*cop[iproj][jlm][ist];
 								 cop2[iproj][ilm][ist] = acc;
 							 }
 
