@@ -20,6 +20,7 @@
 #include <utils/profiling.hpp>
 #include <utils/raw_pointer_cast.hpp>
 
+
 namespace inq {
 namespace hamiltonian {
 
