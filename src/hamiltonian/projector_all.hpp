@@ -329,10 +329,9 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-
 	
-	template <typename PhiType, typename GPhiType, typename OccsType, typename KPoint>
-	void force_stress(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, vector3<vector3<double>> & stress) const {
+	template <typename Phi, typename GPhi, typename Occupations, typename KPoint>
+	void force_stress(Phi & phi, GPhi const & gphi, Occupations const & occupations, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, vector3<vector3<double>> & stress) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
@@ -353,7 +352,7 @@ public:
 			
 				CALI_CXX_MARK_SCOPE("projector_force_sum");
 				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																[oc = begin(occs), pphi = begin(sphere_proj_phi[iproj]), gphi = begin(sphere_gphi[iproj]), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto ist, auto ip) {
+																[oc = begin(occupations), pphi = begin(sphere_proj_phi[iproj]), gphi = begin(sphere_gphi[iproj]), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto ist, auto ip) {
 																	auto ist_spinor = ist%spinor_size;
 																	return -2.0*oc[ist_spinor]*real(pphi[ip][ist]*conj(gphi[ip][ist]));
 																});
