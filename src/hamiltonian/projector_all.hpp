@@ -326,10 +326,16 @@ public:
 
 	
 	template <typename PhiType, typename GPhiType, typename OccsType, typename KPoint>
-	void force(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+	void force_stress(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, vector3<vector3<double>> & stress) const {
 
 		CALI_CXX_MARK_FUNCTION;
 
+		for(auto alpha = 0; alpha < 3; alpha++){
+			for(auto beta = 0; beta < 3; beta++){
+				stress[alpha][beta] = 0.0;
+			}
+		}
+		
 		namespace blas = boost::multi::blas;
 
 		auto sphere_gphi_all = gather(gphi, kpoint);
