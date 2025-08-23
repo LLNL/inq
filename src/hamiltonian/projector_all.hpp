@@ -330,16 +330,10 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
-	template <typename Phi, typename GPhi, typename Occupations, typename KPoint>
-	void force_stress(Phi & phi, GPhi const & gphi, Occupations const & occupations, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, vector3<vector3<double>> & stress) const {
+	template <typename Phi, typename GPhi, typename Occupations, typename KPoint, typename Stress>
+	void force_stress(Phi & phi, GPhi const & gphi, Occupations const & occupations, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, Stress & stress) const {
 
 		CALI_CXX_MARK_FUNCTION;
-
-		for(auto alpha = 0; alpha < 3; alpha++){
-			for(auto beta = 0; beta < 3; beta++){
-				stress[alpha][beta] = 0.0;
-			}
-		}
 		
 		namespace blas = boost::multi::blas;
 
