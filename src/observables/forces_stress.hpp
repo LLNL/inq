@@ -131,15 +131,15 @@ private:
 		basis::field<basis::real_space, vector3<double, covariant>> gdensity(electrons.density_basis());
 		gdensity.fill(vector3<double, covariant>{0.0, 0.0, 0.0});
 		
-		gpu::array<vector3<double>, 1> forces_non_local(ions.size(), {0.0, 0.0, 0.0});
-
+		gpu::array<vector3<double>, 1> forces_non_local(ions.size() + 3, {0.0, 0.0, 0.0}); //extra space to reduce the stress
+		stress_type stress_non_local = zero<stress_type>();
+		
 		auto iphi = 0;
 		for(auto & phi : electrons.kpin()){
 			
 			auto gphi = operations::gradient(phi, /* factor = */ 1.0, /*shift = */ phi.kpoint() + ham.uniform_vector_potential());
 			observables::density::calculate_gradient_add(electrons.occupations()[iphi], phi, gphi, gdensity);
 
-			stress_type stress_non_local;
 			ham.projectors_all().force_stress(phi, gphi, electrons.occupations()[iphi], phi.kpoint() + ham.uniform_vector_potential(), forces_non_local, stress_non_local);
 
 			stress += stress_non_local;
@@ -155,7 +155,15 @@ private:
 		
 		if(electrons.full_comm().size() > 1){
 			CALI_CXX_MARK_SCOPE("forces_nonlocal::reduce");
+			forces_non_local[ions.size() + 0] = stress_non_local[0];
+			forces_non_local[ions.size() + 1] = stress_non_local[1];
+			forces_non_local[ions.size() + 2] = stress_non_local[2];
+
 			electrons.full_comm().all_reduce_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
+
+			stress_non_local[0] = forces_non_local[ions.size() + 0];
+			stress_non_local[1] = forces_non_local[ions.size() + 1];
+			stress_non_local[2] = forces_non_local[ions.size() + 2];
 		}
 		
 		auto ionic_forces = ionic::interaction_forces(ions.cell(), ions, electrons.atomic_pot());
