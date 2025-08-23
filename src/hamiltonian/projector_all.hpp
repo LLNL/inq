@@ -294,6 +294,20 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template <typename Proj, typename Coe>
+  GPU_FUNCTION static auto energy_term(int const nlm, int const ist, int const ilm, int const iproj, Proj const & proj, Coe const & coe) {
+		auto pp = proj[iproj][ilm][ist]; // the L diagonal values are 1.0
+		auto qq = coe[iproj][ilm][ilm]*proj[iproj][ilm][ist];
+		for(int jlm = ilm + 1; jlm < nlm; jlm++) {
+			pp += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
+			qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
+		}
+		
+		return real(conj(pp)*qq);
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename KpointType, typename Occupations>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations, bool const reduce_states = true) const {
 
@@ -302,16 +316,8 @@ public:
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
 											 [proj = begin(projections_all), coe = begin(lu_coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-
-												 auto pp = proj[iproj][ilm][ist]; // the L diagonal values are 1.0
-												 auto qq = coe[iproj][ilm][ilm]*proj[iproj][ilm][ist];
-												 for(int jlm = ilm + 1; jlm < nlm; jlm++) {
-													 pp += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
-													 qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
-												 }
-
 												 auto ist_spinor = ist%spinor_size;
-												 return occ[ist_spinor]*real(conj(pp)*qq);
+												 return occ[ist_spinor]*energy_term(nlm, ist, ilm, iproj, proj, coe);
 											 });
 
 		if(reduce_states and phi.set_comm().size() > 1) {
