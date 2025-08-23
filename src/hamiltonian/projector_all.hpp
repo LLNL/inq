@@ -339,19 +339,14 @@ public:
 
 		auto sphere_gphi = gather(gphi, kpoint);
 		auto sphere_proj_phi = project(phi, kpoint);
-		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
-			
-		for(auto iproj = 0; iproj < nprojs_; iproj++) {
-			if(locally_empty_[iproj]) continue;
-			
-				CALI_CXX_MARK_SCOPE("projector_force_sum");
-				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																[oc = begin(occupations), pphi = begin(sphere_proj_phi[iproj]), gphi = begin(sphere_gphi[iproj]), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto ist, auto ip) {
-																	auto ist_spinor = ist%spinor_size;
-																	return -2.0*oc[ist_spinor]*real(pphi[ip][ist]*conj(gphi[ip][ist]));
-																});
-		}
 
+		CALI_CXX_MARK_SCOPE("projector_force_sum");
+		auto force = gpu::run(nprojs_, gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
+													[oc = begin(occupations), pphi = begin(sphere_proj_phi), gphi = begin(sphere_gphi), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto iproj, auto ist, auto ip) {
+														auto ist_spinor = ist%spinor_size;
+														return -2.0*oc[ist_spinor]*real(pphi[iproj][ip][ist]*conj(gphi[iproj][ip][ist]));
+													});
+		
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			if(locally_empty_[iproj]) continue;
 			
