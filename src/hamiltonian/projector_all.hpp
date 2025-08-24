@@ -355,6 +355,26 @@ public:
 			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*phi.basis().cell().metric().to_cartesian(force[iproj]);
 		}
 		
+		auto lstress = gpu::run(gpu::reduce(nprojs_), gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<Stress>(),
+														[oc = begin(occupations), pphi = begin(sphere_proj_phi), gphi = begin(sphere_gphi), spinor_size = phi.local_spinor_set_size(),
+														 pos = begin(positions_), metric = phi.basis().cell().metric()]
+														GPU_LAMBDA (auto iproj, auto ist, auto ip) {
+															auto stress = zero<Stress>();
+															
+															auto grad_cart = metric.to_cartesian(gphi[iproj][ip][ist]);
+															auto pos_cart = metric.to_cartesian(pos[iproj][ip]);
+															
+															for(auto alpha = 0; alpha < 3; alpha++) {
+																for(auto beta = 0; beta < 3; beta++) {
+																	stress[alpha][beta] = real(conj(grad_cart[alpha])*pos_cart[beta]*pphi[iproj][ip][ist]);
+																}
+															}
+															
+															auto ist_spinor = ist%spinor_size;
+															return oc[ist_spinor]*stress;
+														});
+		stress += -4.0*phi.basis().volume_element()*lstress;
+
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
