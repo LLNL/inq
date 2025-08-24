@@ -294,6 +294,20 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
+	template <typename Proj, typename Coe>
+  GPU_FUNCTION static auto energy_term(int const nlm, int const ist, int const ilm, int const iproj, Proj const & proj, Coe const & coe) {
+		auto pp = proj[iproj][ilm][ist]; // the L diagonal values are 1.0
+		auto qq = coe[iproj][ilm][ilm]*proj[iproj][ilm][ist];
+		for(int jlm = ilm + 1; jlm < nlm; jlm++) {
+			pp += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
+			qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
+		}
+		
+		return real(conj(pp)*qq);
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	template <typename KpointType, typename Occupations>
 	double energy(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, Occupations const & occupations, bool const reduce_states = true) const {
 
@@ -302,16 +316,8 @@ public:
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
 											 [proj = begin(projections_all), coe = begin(lu_coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-
-												 auto pp = proj[iproj][ilm][ist]; // the L diagonal values are 1.0
-												 auto qq = coe[iproj][ilm][ilm]*proj[iproj][ilm][ist];
-												 for(int jlm = ilm + 1; jlm < nlm; jlm++) {
-													 pp += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
-													 qq += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
-												 }
-
 												 auto ist_spinor = ist%spinor_size;
-												 return occ[ist_spinor]*real(conj(pp)*qq);
+												 return occ[ist_spinor]*energy_term(nlm, ist, ilm, iproj, proj, coe);
 											 });
 
 		if(reduce_states and phi.set_comm().size() > 1) {
@@ -323,36 +329,52 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-
 	
-	template <typename PhiType, typename GPhiType, typename OccsType, typename KPoint>
-	void force(PhiType & phi, GPhiType const & gphi, OccsType const & occs, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local) const {
+	template <typename Phi, typename GPhi, typename Occupations, typename KPoint, typename Stress>
+	void force_stress(Phi & phi, GPhi const & gphi, Occupations const & occupations, KPoint const & kpoint, gpu::array<vector3<double>, 1> & forces_non_local, Stress & stress) const {
 
 		CALI_CXX_MARK_FUNCTION;
-
+		
 		namespace blas = boost::multi::blas;
 
-		auto sphere_gphi_all = gather(gphi, kpoint);
-		auto sphere_phi_all = project(phi, kpoint);
-		gpu::array<vector3<double, covariant>, 1> force(nprojs_, {0.0, 0.0, 0.0});
-			
-		for(auto iproj = 0; iproj < nprojs_; iproj++) {
-			if(locally_empty_[iproj]) continue;
-			
-				CALI_CXX_MARK_SCOPE("projector_force_sum");
-				force[iproj] = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
-																[oc = begin(occs), phi = begin(sphere_phi_all[iproj]), gphi = begin(sphere_gphi_all[iproj]), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto ist, auto ip) {
-																	auto ist_spinor = ist%spinor_size;
-																	return -2.0*oc[ist_spinor]*real(phi[ip][ist]*conj(gphi[ip][ist]));
-																});
-		}
+		auto sphere_gphi = gather(gphi, kpoint);
+		auto sphere_proj_phi = project(phi, kpoint);
 
+		if(nprojs_ == 0 or max_sphere_size_ == 0) return;
+
+		CALI_CXX_MARK_SCOPE("projector_force_sum");
+		auto force = gpu::run(nprojs_, gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
+													[oc = begin(occupations), pphi = begin(sphere_proj_phi), gphi = begin(sphere_gphi), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto iproj, auto ist, auto ip) {
+														auto ist_spinor = ist%spinor_size;
+														return -2.0*oc[ist_spinor]*real(pphi[iproj][ip][ist]*conj(gphi[iproj][ip][ist]));
+													});
+		
 		for(auto iproj = 0; iproj < nprojs_; iproj++) {
 			if(locally_empty_[iproj]) continue;
 			
 			forces_non_local[iatom_[iproj]] += phi.basis().volume_element()*phi.basis().cell().metric().to_cartesian(force[iproj]);
 		}
 		
+		auto lstress = gpu::run(gpu::reduce(nprojs_), gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<Stress>(),
+														[oc = begin(occupations), pphi = begin(sphere_proj_phi), gphi = begin(sphere_gphi), spinor_size = phi.local_spinor_set_size(),
+														 pos = begin(positions_), metric = phi.basis().cell().metric()]
+														GPU_LAMBDA (auto iproj, auto ist, auto ip) {
+															auto stress = zero<Stress>();
+															
+															auto grad_cart = metric.to_cartesian(gphi[iproj][ip][ist]);
+															auto pos_cart = metric.to_cartesian(pos[iproj][ip]);
+															
+															for(auto alpha = 0; alpha < 3; alpha++) {
+																for(auto beta = 0; beta < 3; beta++) {
+																	stress[alpha][beta] = real(conj(grad_cart[alpha])*pos_cart[beta]*pphi[iproj][ip][ist]);
+																}
+															}
+															
+															auto ist_spinor = ist%spinor_size;
+															return oc[ist_spinor]*stress;
+														});
+		stress += -4.0*phi.basis().volume_element()*lstress;
+
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
