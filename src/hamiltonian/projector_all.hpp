@@ -340,6 +340,8 @@ public:
 		auto sphere_gphi = gather(gphi, kpoint);
 		auto sphere_proj_phi = project(phi, kpoint);
 
+		if(nprojs_ == 0 or max_sphere_size_ == 0) return;
+
 		CALI_CXX_MARK_SCOPE("projector_force_sum");
 		auto force = gpu::run(nprojs_, gpu::reduce(phi.local_set_size()), gpu::reduce(max_sphere_size_), zero<vector3<double, covariant>>(),
 													[oc = begin(occupations), pphi = begin(sphere_proj_phi), gphi = begin(sphere_gphi), spinor_size = phi.local_spinor_set_size()] GPU_LAMBDA (auto iproj, auto ist, auto ip) {
