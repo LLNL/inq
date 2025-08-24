@@ -142,8 +142,6 @@ private:
 
 			ham.projectors_all().force_stress(phi, gphi, electrons.occupations()[iphi], phi.kpoint() + ham.uniform_vector_potential(), forces_non_local, stress_non_local);
 
-			stress += stress_non_local;
-			
 			for(auto & pr : ham.projectors_rel()) pr.force(phi, gphi, electrons.occupations()[iphi], phi.kpoint() + ham.uniform_vector_potential(), forces_non_local);
 
 			stress += stress_kinetic(gphi, electrons.occupations()[iphi]);
@@ -165,6 +163,10 @@ private:
 			stress_non_local[1] = forces_non_local[ions.size() + 1];
 			stress_non_local[2] = forces_non_local[ions.size() + 2];
 		}
+
+		for(auto alpha = 0; alpha < 3; alpha++) stress_non_local[alpha][alpha] -= energy.non_local();
+
+		stress += stress_non_local;
 		
 		auto ionic_forces = ionic::interaction_forces(ions.cell(), ions, electrons.atomic_pot());
 		
