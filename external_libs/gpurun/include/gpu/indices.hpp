@@ -51,6 +51,11 @@ GPU_FUNCTION auto pow2_floor(Int val){
 	return floor;
 }
 
+template <typename Size, typename Blocksize>
+auto num_blocks(Size size, Blocksize blocksize) {
+	return (size + blocksize - 1)/blocksize;
+}
+
 }
 #endif
 

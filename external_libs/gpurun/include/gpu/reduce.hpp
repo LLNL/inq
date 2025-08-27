@@ -196,8 +196,8 @@ gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const init, Kernel
 
 	assert(bsizey > 1);
 	
-	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
-	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
+	unsigned nblockx = num_blocks(sizex, bsizex);
+	unsigned nblocky = num_blocks(sizey, bsizey);
 		
 	result.reextent({nblocky, sizex});
 
@@ -299,10 +299,10 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 	assert(bsizey > 1);
 	assert(bsizex*bsizey*bsizez == blocksize);
 	
-	unsigned nblockx = (sizex + bsizex - 1)/bsizex;
-	unsigned nblocky = (sizey + bsizey - 1)/bsizey;
-	unsigned nblockz = (sizez + bsizez - 1)/bsizez;
-		
+	unsigned nblockx = num_blocks(sizex, bsizex);
+	unsigned nblocky = num_blocks(sizey, bsizey);
+	unsigned nblockz = num_blocks(sizez, bsizez);
+	
 	result.reextent({nblocky, nblockz, sizex});
 
 	struct dim3 dg{nblockx, nblocky, nblockz};
