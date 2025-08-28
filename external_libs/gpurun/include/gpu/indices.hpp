@@ -11,6 +11,8 @@
 
 #include <gpu/host.hpp>
 
+#define MAX_DIM_YZ 65535
+
 namespace gpu {
 
 template <typename Int1, typename Int2, typename Int3>
