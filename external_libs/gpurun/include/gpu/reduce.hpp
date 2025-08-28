@@ -237,18 +237,20 @@ gpu::array<Type, 1> run(long sizex, reduce const & redy, Type const init, Kernel
 
 #ifdef ENABLE_GPU
 template <typename KernelType, typename ArrayType>
-__global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType kernel, ArrayType odata) {
+__global__ void reduce_kernel_vrr(long sizex, long sizey, long sizez, KernelType kernel, ArrayType odata) {
 
 	extern __shared__ char shared_mem[];
-	auto reduction_buffer = (typename ArrayType::element *) shared_mem; // {blockDim.x, blockDim.y}
+	auto reduction_buffer = (typename ArrayType::element *) shared_mem;
 	
 	// each thread loads one element from global to shared mem
   unsigned int ix = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int tid = threadIdx.z*blockDim.y + threadIdx.y;
-	unsigned int iy = blockIdx.y*blockDim.y + threadIdx.y;
-	unsigned int iz = blockIdx.z*blockDim.z + threadIdx.z;
+	unsigned int iyz = gridDim.y*blockDim.y*(blockIdx.z*blockDim.z + threadIdx.z) + blockIdx.y*blockDim.y + threadIdx.y;
 
 	if(ix >= sizex) return;
+
+	int iy, iz;
+	linear_to_bidimensional(iyz, sizey, iy, iz);
 	
 	if(iy < sizey and iz < sizez){
 		reduction_buffer[threadIdx.x + blockDim.x*tid] = kernel(ix, iy, iz);
@@ -266,7 +268,7 @@ __global__ void reduce_kernel_vrr(long sizex, long sizey,long sizez, KernelType 
 	}
 	
 	// write result for this block to global mem
-	if (tid == 0) odata[blockIdx.y][blockIdx.z][ix] = reduction_buffer[threadIdx.x];
+	if (tid == 0) odata[blockIdx.z*gridDim.y + blockIdx.y][ix] = reduction_buffer[threadIdx.x];
 
 }
 #endif
@@ -293,7 +295,7 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
   
 #else
 
-	gpu::array<Type, 3> result;
+	gpu::array<Type, 2> result;
 	
 	auto blocksize = pow2_floor(max_blocksize(reduce_kernel_vrr<KernelType, decltype(begin(result))>));
 	
@@ -305,11 +307,12 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 	assert(bsizey > 1);
 	assert(bsizex*bsizey*bsizez == blocksize);
 	
-	unsigned nblockx = num_blocks(sizex, bsizex);
-	unsigned nblocky = num_blocks(sizey, bsizey);
-	unsigned nblockz = num_blocks(sizez, bsizez);
+	unsigned nblockx  = num_blocks(sizex, bsizex);
+	unsigned nblockyz = num_blocks(sizey*sizez, bsizey);
+	unsigned nblockz  = num_blocks(nblockyz, MAX_DIM_YZ);
+	unsigned nblocky  = num_blocks(nblockyz, nblockz);
 	
-	result.reextent({nblocky, nblockz, sizex});
+	result.reextent({nblockyz, sizex});
 
 	struct dim3 dg{nblockx, nblocky, nblockz};
   struct dim3 db{bsizex, bsizey, bsizez};
@@ -321,19 +324,19 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
   reduce_kernel_vrr<<<dg, db, shared_mem_size>>>(sizex, sizey, sizez, kernel, begin(result));	
   check_error(last_error());
 	
-  if(nblocky*nblockz == 1) {
+  if(nblockyz == 1) {
     gpu::sync();
 
-		assert(result[0][0].size() == sizex);
+		assert(result[0].size() == sizex);
 
-		gpu::run(result[0][0].size(), [res = begin(result[0][0]), init] GPU_LAMBDA (auto ii) {
+		gpu::run(result[0].size(), [res = begin(result[0]), init] GPU_LAMBDA (auto ii) {
 			res[ii] += init;
 		});
 				
-    return result[0][0];
+    return result[0];
   } else {
-		auto && reduce_buffer = result.flatted().transposed();
-    return run(sizex, reduce(nblocky*nblockz), init, array_access<decltype(begin(reduce_buffer))>{begin(reduce_buffer)});
+		auto && reduce_buffer = result.transposed();
+    return run(sizex, reduce(nblockyz), init, array_access<decltype(begin(reduce_buffer))>{begin(reduce_buffer)});
   }
   
 #endif
@@ -455,6 +458,13 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 				}
 			}
 		}
+
+		auto dim = 65535*338 + 27;
+		auto lred = gpu::run(4, gpu::reduce(3), gpu::reduce(dim), 0.0, [] GPU_LAMBDA (auto ix, auto iy, auto iz) {return double(ix + 1)*double(iz + 1.0);});
+		CHECK(lred[0] ==  3*dim*(dim + 1.0)/2.0);
+		CHECK(lred[1] ==  6*dim*(dim + 1.0)/2.0);
+		CHECK(lred[2] ==  9*dim*(dim + 1.0)/2.0);
+		CHECK(lred[3] == 12*dim*(dim + 1.0)/2.0);
 		
   }
 
