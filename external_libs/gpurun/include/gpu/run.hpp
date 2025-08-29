@@ -12,6 +12,7 @@
 #include <inq_config.h>
 
 #include <gpu/host.hpp>
+#include <gpu/indices.hpp>
 
 #define CUDA_MAX_DIM1 2147483647ULL
 #define CUDA_MAX_DIM23 65535
@@ -69,7 +70,7 @@ void run(size_t size, kernel_type kernel){
 
 	auto blocksize = max_blocksize(run_kernel_1<kernel_type>);
 
-	unsigned nblock = (size + blocksize - 1)/blocksize;
+	unsigned nblock = num_blocks(size, blocksize);
   
 	run_kernel_1<<<nblock, blocksize>>>(size, kernel);
 	check_error(last_error());
@@ -103,7 +104,7 @@ void run(size_t sizex, size_t sizey, kernel_type kernel){
 	auto blocksize = max_blocksize(run_kernel_2<kernel_type>);
 
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
-	unsigned nblock = (sizex + blocksize - 1)/blocksize;
+	unsigned nblock = num_blocks(sizex, blocksize);
 	
 	size_t dim2, dim3;
 	factorize(sizey, CUDA_MAX_DIM23, dim2, dim3);
@@ -144,7 +145,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, kernel_type kernel){
 	auto blocksize = max_blocksize(run_kernel_3<kernel_type>);
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
-	unsigned nblock = (sizex + blocksize - 1)/blocksize;
+	unsigned nblock = num_blocks(sizex, blocksize);
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
 	run_kernel_3<<<dg, db>>>(sizex, sizey, sizez, kernel);
@@ -191,7 +192,7 @@ void run(size_t sizex, size_t sizey, size_t sizez, size_t sizew, kernel_type ker
 	auto blocksize = max_blocksize(run_kernel_4<kernel_type>);
 	
 	//OPTIMIZATION, this is not ideal if sizex < blocksize
-	unsigned nblock = (sizex + blocksize - 1)/blocksize;
+	unsigned nblock = num_blocks(sizex, blocksize);
 	struct dim3 dg{nblock, unsigned(sizey), unsigned(sizez)};
 	struct dim3 db{unsigned(blocksize), 1, 1};
 	run_kernel_4<<<dg, db>>>(sizex, sizey, sizez, sizew, kernel);

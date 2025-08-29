@@ -11,6 +11,8 @@
 
 #include <gpu/host.hpp>
 
+#define MAX_DIM_YZ 65535
+
 namespace gpu {
 
 template <typename Int1, typename Int2, typename Int3>
@@ -49,6 +51,11 @@ GPU_FUNCTION auto pow2_floor(Int val){
 	auto floor = pow2_ceil(val);
 	if(floor != val) floor /= 2;
 	return floor;
+}
+
+template <typename Size, typename Blocksize>
+auto num_blocks(Size size, Blocksize blocksize) {
+	return (size + blocksize - 1)/blocksize;
 }
 
 }
