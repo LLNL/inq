@@ -29,7 +29,6 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 
 	systems::electrons::kpin_type save;
 
-	int iphi = 0;
 	for(auto & phi : electrons.kpin()){
 		
 		//propagate half step and full step with H(t)
@@ -37,8 +36,6 @@ void etrs(double const time, double const dt, systems::ions & ions, systems::ele
 		{ CALI_CXX_MARK_SCOPE("etrs:save");
 		  save.emplace_back(std::move(halfstep_phi));
 		}
-									 		
-		iphi++;
 	}
 
 	electrons.spin_density() = observables::density::calculate(electrons);
