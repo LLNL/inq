@@ -293,9 +293,9 @@ public:
 			}
 			
 			logger()->info("real-space parallelization:");
-			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_part(0).size(), states_basis_.part().size(), states_basis_.cubic_part(0).comm_size());
+			logger()->info("  {} slices ({} points) divided among {} partitions", states_basis_.cubic_part(1).size(), states_basis_.part().size(), states_basis_.cubic_part(1).comm_size());
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)",
-										 states_basis_.cubic_part(0).local_size(0), states_basis_.cubic_part(0).local_size(states_basis_.part().comm_size() - 1),
+										 states_basis_.cubic_part(1).local_size(0), states_basis_.cubic_part(1).local_size(states_basis_.part().comm_size() - 1),
 										 states_basis_.part().local_size(0), states_basis_.part().local_size(states_basis_.part().comm_size() - 1));
 
 			if(states_basis_.part().local_size(states_basis_.part().comm_size() - 1) == 0) {
@@ -303,9 +303,9 @@ public:
 			}
 			
 			logger()->info("fourier-space parallelization:");
-			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_part(2).size(), fourier_basis.part().size(), fourier_basis.cubic_part(2).comm_size());
+			logger()->info("  {} slices ({} points) divided among {} partitions", fourier_basis.cubic_part(0).size(), fourier_basis.part().size(), fourier_basis.cubic_part(0).comm_size());
 			logger()->info("  partition 0 has {} slices and the last partition has {} slices ({} and {} points)\n",
-										 fourier_basis.cubic_part(2).local_size(0), fourier_basis.cubic_part(2).local_size(fourier_basis.part().comm_size() - 1),
+										 fourier_basis.cubic_part(0).local_size(0), fourier_basis.cubic_part(0).local_size(fourier_basis.part().comm_size() - 1),
 										 fourier_basis.part().local_size(0), fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1));
 
 			if(fourier_basis.part().local_size(fourier_basis.part().comm_size() - 1) == 0) {
