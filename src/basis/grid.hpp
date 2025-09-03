@@ -38,8 +38,8 @@ namespace basis {
 		const static int dimension = 3;
 		
 		grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
-			base(nr[0], comm),
-			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
+			base(nr[1], comm),
+			cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr){
 
@@ -51,7 +51,7 @@ namespace basis {
 				covspacing_[idir] = 2.0*M_PI;				
 			}
 
-			base::part_ *= nr_[1]*long(nr_[2]);
+			base::part_ *= nr_[0]*long(nr_[2]);
 			
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
