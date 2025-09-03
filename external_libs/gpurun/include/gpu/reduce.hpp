@@ -362,10 +362,8 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		
 		const long maxsize = 129140163;
 		
-		int rank = 0;
 		for(long nn = 1; nn <= maxsize; nn *= 3){
 			CHECK(gpu::run(gpu::reduce(nn), -232.8, [] GPU_LAMBDA (auto ii) { return double(ii);} ) == Approx(-232.8 + (nn*(nn - 1.0)/2.0)));
-			rank++;
 		}
 		
 	}
@@ -377,7 +375,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
 		const long maxsize = 2*625;
 
-		int rank = 0;
 		for(long nx = 1; nx <= maxsize; nx *= 5){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
@@ -385,7 +382,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 				
 				CHECK(typeid(decltype(res)) == typeid(double));
 				CHECK(res == Approx(2.23 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0));
-				rank++;
 			}
 		}
 		
@@ -398,7 +394,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 		
 		const long maxsize = 125;
 
-		int rank = 0;
 		for(long nx = 1; nx <= 10000; nx *= 10){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
@@ -407,7 +402,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 					
 					CHECK(typeid(decltype(res)) == typeid(double));
 					CHECK(res == Approx(17.89 + nx*(nx - 1.0)/2.0*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0));
-					rank++;
 				}
 			}
 		}
@@ -418,7 +412,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
 		const long maxsize = 390625;
 
-		int rank = 0;
 		for(long nx = 1; nx <= 10000; nx *= 10){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 
@@ -427,7 +420,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 				CHECK(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
 				CHECK(res.size() == nx);
 				for(long ix = 0; ix < 1; ix++) CHECK(res[ix] == Approx(-7.7 + double(ix)*ny*(ny - 1.0)/2.0));
-				rank++;
 			}
 		}
 		
@@ -443,7 +435,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 
 		const long maxsize = 625;
 
-		int rank = 0;
 		for(long nx = 1; nx <= 10000; nx *= 10){
 			for(long ny = 1; ny <= maxsize; ny *= 5){
 				for(long nz = 1; nz <= maxsize; nz *= 5){
@@ -454,7 +445,6 @@ TEST_CASE(GPURUN_TEST_FILE, GPURUN_TEST_TAG) {
 					
 					CHECK(res.size() == nx);
 					for(long ix = 0; ix < nx; ix++) CHECK(res[ix] == Approx(10.0 + double(ix)*ny*(ny - 1.0)/2.0*nz*(nz - 1.0)/2.0));
-					rank++;
 				}
 			}
 		}
