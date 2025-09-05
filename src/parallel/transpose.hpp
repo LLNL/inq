@@ -45,7 +45,7 @@ void transpose(parallel::communicator & comm, PartX const & partx, PartY const &
 	
 	gpu::run(partx.max_local_size(), party.max_local_size(), comm.size(),
 					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto ix, auto iy, auto iproc) { 
-						 if(iy < party.local_size(iproc) and ix < party.local_size()) mat[party.start(iproc) + iy][ix] = buf[iproc][ix + iy*partx.max_local_size()];
+						 if(iy < party.local_size(iproc) and ix < partx.local_size()) mat[party.start(iproc) + iy][ix] = buf[iproc][ix + iy*partx.max_local_size()];
 					 });
 
 }
@@ -136,6 +136,41 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 						{18, 24}});
 			}
 		}
+	}
+
+	SECTION("Multiple sizes") {
+
+		std::vector<int> dims({235, 666, 757, 1080, 1427});
+
+		for(auto nx : dims) {
+			for(auto ny : dims) {
+
+				auto partx = parallel::partition(nx, comm);
+				auto party = parallel::partition(ny, comm);
+
+				gpu::array<complex, 2> matrix({nx, party.local_size()}, NAN);
+
+				for(int ix = 0; ix < partx.size(); ix++){
+					for(int iy = 0; iy < party.local_size(); iy++){
+						matrix[ix][iy] = complex{double(ix), party.start() + double(iy)};
+					}
+				}
+
+				parallel::transpose(comm, partx, party, matrix);
+
+
+				CHECK(get<0>(sizes(matrix)) == party.size());
+				CHECK(get<1>(sizes(matrix)) == partx.local_size());
+
+				for(int iy = 0; iy < party.size(); iy++){
+					for(int ix = 0; ix < partx.local_size(); ix++){
+						CHECK(real(matrix[iy][ix]) == partx.start() + double(ix));
+						CHECK(imag(matrix[iy][ix]) == double(iy));
+					}
+				}
+			}
+		}
+
 	}
 	
 }
