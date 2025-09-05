@@ -28,8 +28,6 @@ template <typename PartX, typename PartY, typename Matrix>
 void transpose(parallel::communicator & comm, PartX const & partx, PartY const & party, Matrix & matrix){
 	CALI_CXX_MARK_FUNCTION;
 
-	using type = typename Matrix::element_type;
-
 	auto bsize = partx.max_local_size()*party.max_local_size();
 	
 	Matrix buffer({comm.size(), bsize});
