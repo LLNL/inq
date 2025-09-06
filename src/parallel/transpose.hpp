@@ -31,23 +31,55 @@ void transpose(parallel::communicator & comm, PartX const & partx, PartY const &
 	auto bsize = partx.max_local_size()*party.max_local_size();
 	
 	Matrix buffer({comm.size(), bsize});
-	
+
 	gpu::run(party.max_local_size(), partx.max_local_size(), comm.size(),
-					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto iy, auto ix, auto iproc) { 
+					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto iy, auto ix, auto iproc) {
 						 if(long(ix) < partx.local_size(iproc) and long(iy) < party.local_size()) buf[iproc][ix + iy*partx.max_local_size()] = mat[partx.start(iproc) + ix][iy];
 					 });
 
 	parallel::alltoall(buffer, comm);
 
 	matrix.reextent({party.size(), partx.local_size()});
-	
+
 	gpu::run(partx.max_local_size(), party.max_local_size(), comm.size(),
-					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto ix, auto iy, auto iproc) { 
+					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto ix, auto iy, auto iproc) {
 						 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) mat[party.start(iproc) + iy][ix] = buf[iproc][ix + iy*partx.max_local_size()];
 					 });
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename PartX, typename PartY, typename Array>
+void transpose_forward(parallel::communicator & comm, PartX const & partx, PartY const & party, Array & array){
+	CALI_CXX_MARK_FUNCTION;
+
+	assert(get<0>(sizes(array)) == partx.size());
+	assert(get<1>(sizes(array)) == party.local_size());
+	auto nz = get<2>(sizes(array));
+	auto nw = get<3>(sizes(array));
+	
+	Array buffer({comm.size(), party.max_local_size()*partx.max_local_size(), nz, nw});
+
+	for(int iproc = 0; iproc < comm.size(); iproc++) {
+		gpu::run(nw, nz, party.max_local_size(), partx.max_local_size(),
+						 [arr = begin(array), buf = begin(buffer), partx, party, iproc] GPU_LAMBDA (auto iw, auto iz, auto iy, auto ix) {
+							 if(long(ix) < partx.local_size(iproc) and long(iy) < party.local_size()) buf[iproc][ix + iy*partx.max_local_size()][iz][iw] = arr[partx.start(iproc) + ix][iy][iz][iw];
+						 });
+	}
+	
+	parallel::alltoall(buffer, comm);
+
+	array.reextent({party.size(), nz, partx.local_size(), nw});
+
+	for(int iproc = 0; iproc < comm.size(); iproc++) {
+		gpu::run(nw, nz, partx.max_local_size(), party.max_local_size(),
+						 [arr = begin(array), buf = begin(buffer), partx, party, iproc] GPU_LAMBDA (auto iw, auto iz, auto ix, auto iy) {
+							 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) arr[party.start(iproc) + iy][iz][ix][iw] = buf[iproc][ix + iy*partx.max_local_size()][iz][iw];
+						 });
+	}
+
+}
 
 }
 }
@@ -170,7 +202,50 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 
 	}
+
+	
+	SECTION("4D") {
+		
+		auto nx = 20;
+		auto ny = 24;
+		auto nz = 17;
+		auto nw = 32;
+
+		auto partx = parallel::partition(nx, comm);
+		auto party = parallel::partition(ny, comm);
+		
+		gpu::array<complex, 4> array({nx, party.local_size(), nz, nw}, NAN);
+		
+		for(int ix = 0; ix < partx.size(); ix++){
+			for(int iy = 0; iy < party.local_size(); iy++){
+				for(int iz = 0; iz < nz; iz++){
+					for(int iw = 0; iw < nw; iw++){
+						array[ix][iy][iz][iw] = complex{double(ix), party.start() + double(iy)};
+					}
+				}
+			}
+		}
+		
+		parallel::transpose_forward(comm, partx, party, array);
+		
+		CHECK(get<0>(sizes(array)) == party.size());
+		CHECK(get<1>(sizes(array)) == nz);
+		CHECK(get<2>(sizes(array)) == partx.local_size());
+		CHECK(get<3>(sizes(array)) == nw);
+		
+		for(int iy = 0; iy < party.size(); iy++){
+			for(int ix = 0; ix < partx.local_size(); ix++){
+				for(int iz = 0; iz < nz; iz++){
+					for(int iw = 0; iw < nw; iw++){
+						CHECK(real(array[iy][iz][ix][iw]) == partx.start() + double(ix));
+						CHECK(imag(array[iy][iz][ix][iw]) == double(iy));
+					}
+				}
+			}
+		}
+	}
 	
 }
+
 
 #endif
