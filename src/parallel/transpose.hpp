@@ -204,7 +204,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	}
 
 	
-	SECTION("4D") {
+	SECTION("forward") {
 		
 		auto nx = 20;
 		auto ny = 24;
@@ -220,7 +220,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int iy = 0; iy < party.local_size(); iy++){
 				for(int iz = 0; iz < nz; iz++){
 					for(int iw = 0; iw < nw; iw++){
-						array[ix][iy][iz][iw] = complex{double(ix), party.start() + double(iy)};
+						array[ix][iy][iz][iw] = complex{double(ix)*1000 + iw, party.start() + double(iy) + iz*10000};
 					}
 				}
 			}
@@ -237,8 +237,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			for(int ix = 0; ix < partx.local_size(); ix++){
 				for(int iz = 0; iz < nz; iz++){
 					for(int iw = 0; iw < nw; iw++){
-						CHECK(real(array[iy][iz][ix][iw]) == partx.start() + double(ix));
-						CHECK(imag(array[iy][iz][ix][iw]) == double(iy));
+						CHECK(real(array[iy][iz][ix][iw]) == (partx.start() + double(ix))*1000 + iw);
+						CHECK(imag(array[iy][iz][ix][iw]) == double(iy) + iz*10000);
 					}
 				}
 			}
