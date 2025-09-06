@@ -26,7 +26,7 @@ class partition {
 	
 public:
 
-	auto local_size() const {
+	constexpr auto local_size() const {
 		return end_ - start_;
 	}
 	
