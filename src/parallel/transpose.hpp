@@ -34,7 +34,7 @@ void transpose(parallel::communicator & comm, PartX const & partx, PartY const &
 	
 	gpu::run(party.max_local_size(), partx.max_local_size(), comm.size(),
 					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto iy, auto ix, auto iproc) { 
-						 if(ix < partx.local_size(iproc) and iy < party.local_size()) buf[iproc][ix + iy*partx.max_local_size()] = mat[partx.start(iproc) + ix][iy];
+						 if(long(ix) < partx.local_size(iproc) and long(iy) < party.local_size()) buf[iproc][ix + iy*partx.max_local_size()] = mat[partx.start(iproc) + ix][iy];
 					 });
 
 	parallel::alltoall(buffer, comm);
@@ -43,7 +43,7 @@ void transpose(parallel::communicator & comm, PartX const & partx, PartY const &
 	
 	gpu::run(partx.max_local_size(), party.max_local_size(), comm.size(),
 					 [mat = begin(matrix), buf = begin(buffer), partx, party] GPU_LAMBDA (auto ix, auto iy, auto iproc) { 
-						 if(iy < party.local_size(iproc) and ix < partx.local_size()) mat[party.start(iproc) + iy][ix] = buf[iproc][ix + iy*partx.max_local_size()];
+						 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) mat[party.start(iproc) + iy][ix] = buf[iproc][ix + iy*partx.max_local_size()];
 					 });
 
 }
