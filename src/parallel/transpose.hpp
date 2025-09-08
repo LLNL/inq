@@ -54,6 +54,9 @@ template <typename PartX, typename PartY, typename Array>
 void transpose_forward(parallel::communicator & comm, PartX const & partx, PartY const & party, Array & array){
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(comm.size() == party.comm_size());
+	assert(comm.size() == partx.comm_size());
+	
 	assert(get<0>(sizes(array)) == partx.size());
 	assert(get<1>(sizes(array)) == party.local_size());
 	auto nz = get<2>(sizes(array));
@@ -87,6 +90,9 @@ template <typename PartX, typename PartY, typename Array>
 void transpose_backward(parallel::communicator & comm, PartX const & partx, PartY const & party, Array & array){
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(comm.size() == party.comm_size());
+	assert(comm.size() == partx.comm_size());
+	
 	assert(get<0>(sizes(array)) == party.size());
 	auto nz = get<1>(sizes(array));
 	assert(get<2>(sizes(array)) == partx.local_size());
