@@ -28,6 +28,8 @@ template <typename ArrayType>
 void alltoall(ArrayType & buf, parallel::communicator & comm){
 	CALI_CXX_MARK_FUNCTION;
 
+	assert(buf.size() == comm.size());
+	
 	using type = typename ArrayType::element_type;
 	auto mpi_type = boost::mpi3::detail::basic_datatype<type>();
 	auto count = buf[0].num_elements();

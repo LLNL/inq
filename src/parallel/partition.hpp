@@ -26,7 +26,7 @@ class partition {
 	
 public:
 
-	auto local_size() const {
+	constexpr auto local_size() const {
 		return end_ - start_;
 	}
 	
@@ -70,7 +70,7 @@ public:
 		return part;
 	}
 	
-	auto size() const {
+	constexpr auto size() const {
 		return size_;
 	}
 	
@@ -94,19 +94,19 @@ public:
 		return end(part) - start(part);
 	}
 	
-	auto parallel() const {
+	constexpr auto parallel() const {
 		return comm_size_ > 1;
 	}
 	
-	auto contains(long index) const {
+	constexpr auto contains(long index) const {
 		return start() <= index and index < end();
 	}
 
-	auto contains(long index, int part) const {
+	constexpr auto contains(long index, int part) const {
 		return start(part) <= index and index < end(part);
 	}
 
-	auto contains(parallel::global_index index) const {
+	constexpr auto contains(parallel::global_index index) const {
 		return start() <= index.value() and index.value() < end();
 	}
 
@@ -118,23 +118,23 @@ public:
 		return global_i.value() - start_;
 	}
 	
-	auto comm_size() const {
+	constexpr auto comm_size() const {
 		return comm_size_;
 	}
 
-	auto max_local_size() const {
+	constexpr auto max_local_size() const {
 		return bsize_;
 	}
 	
-	auto location(long global_i) const {
+	constexpr auto location(long global_i) const {
 		return global_i/bsize_;
 	}
 
-	auto location(global_index global_i) const {
+	constexpr auto location(global_index global_i) const {
 		return global_i.value()/bsize_;
 	}
 	
-	auto waste() const {
+	constexpr auto waste() const {
 		auto total_elements = bsize_*comm_size();
 		return (total_elements - size())/double(size());
 	}
