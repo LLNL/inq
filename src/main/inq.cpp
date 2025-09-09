@@ -69,6 +69,10 @@ int main(int argc, char* argv[]) {
 			run_opts.debug = true;
 			continue;
 		}
+ 
+		if(arg.size() > 1 and arg[0] == '-' and std::isalpha(arg[1])) {
+			interface::actions::error(comm, "Unknown inq option '" + arg + "'.");
+		}
 
 		//if it's a filename, don't do anything to it
 		if(args.size() > 0 and args.back() == "file") {
