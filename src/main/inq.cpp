@@ -9,6 +9,7 @@
 #include <inq/inq.hpp>
 #include <interface/aggregate.hpp>
 #include <interface/aliases.hpp>
+#include <interface/runtime_options.hpp>
 
 using namespace inq;
 
@@ -41,16 +42,15 @@ int main(int argc, char* argv[]) {
 		+ interface::item(interface::results);
 		
 	interface::history_file.add_entry(argc, argv);
-	
-	auto quiet = false;
-	auto debug = false;
+
+	interface::runtime_options run_opts;
 	
 	auto uniformize = [](auto arg){
 		arg = utils::lowercase(arg);
 		std::replace(arg.begin(), arg.end(), '_', '-'); //replace underscores with dashes
 		return arg;
 	};
-	
+
 	std::vector<std::string> args;
 	for(int iarg = 1; iarg < argc; iarg++) {
 		auto arg = std::string(argv[iarg]);
@@ -61,12 +61,12 @@ int main(int argc, char* argv[]) {
 		}
 		
 		if(arg == "-q" or arg == "--quiet") {
-			quiet = true;
+			run_opts.quiet = true;
 			continue;
 		}
 
 		if(arg == "-d" or arg == "--debug") {
-			debug = true;
+			run_opts.debug = true;
 			continue;
 		}
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 		args.emplace_back(arg);
 	}
 
-	if(debug) {
+	if(run_opts.debug) {
 		std::cout << "Processed arguments: ";
 		for(auto const & arg : args){
 			std::cout << "|" << arg;
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 	auto command = args[0];
 	args.erase(args.begin());
 
-	all_commands.execute(command, args, quiet);
+	all_commands.execute(command, args, run_opts.quiet);
 	
 	if(command == "help") {
 		if(args.size() == 0){
