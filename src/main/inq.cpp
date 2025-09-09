@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 	auto command = args[0];
 	args.erase(args.begin());
 
-	all_commands.execute(command, args, run_opts.quiet);
+	all_commands.execute(command, args, run_opts);
 	
 	if(command == "help") {
 		if(args.size() == 0){

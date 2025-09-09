@@ -242,7 +242,7 @@ These are the options available:
 	}
 	
 	template <typename ArgsType>
-	void command(ArgsType const & args, bool quiet) const {
+	void command(ArgsType const & args, runtime_options const & run_opts) const {
 		
 		using utils::str_to;
 		
