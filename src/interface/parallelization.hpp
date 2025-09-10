@@ -145,6 +145,9 @@ values must be equal to the number of processors, if you leave some
 options to the default 'auto', inq will fill them with the appropriate
 values.
 
+For the moment there is no option to control the parallelization from
+python. We are working on this.
+
 )"""";
 	}
 		
