@@ -39,7 +39,8 @@ int main(int argc, char* argv[]) {
 
 	auto all_helpers =
 		interface::item(interface::units)
-		+ interface::item(interface::results);
+		+ interface::item(interface::results)
+		+ interface::item(interface::parallelization);
 		
 	interface::history_file.add_entry(argc, argv);
 
