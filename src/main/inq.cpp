@@ -69,6 +69,39 @@ int main(int argc, char* argv[]) {
 			run_opts.debug = true;
 			continue;
 		}
+
+		if(arg == "-pd") {
+			auto par = uniformize(std::string(argv[iarg + 1]));
+			if(par == "auto") {
+				run_opts.par_domains = boost::mpi3::fill;
+			} else {
+				run_opts.par_domains = utils::str_to<long>(par);
+			}
+			iarg++;
+			continue;
+		}
+
+		if(arg == "-ps") {
+			auto par = uniformize(std::string(argv[iarg + 1]));
+			if(par == "auto") {
+				run_opts.par_states = boost::mpi3::fill;
+			} else {
+				run_opts.par_states = utils::str_to<long>(par);
+			}
+			iarg++;
+			continue;
+		}
+		
+		if(arg == "-pk") {
+			auto par = uniformize(std::string(argv[iarg + 1]));
+			if(par == "auto") {
+				run_opts.par_kpoints = boost::mpi3::fill;
+			} else {
+				run_opts.par_kpoints = utils::str_to<long>(par);
+			}
+			iarg++;
+			continue;
+		}
  
 		if(arg.size() > 1 and arg[0] == '-' and std::isalpha(arg[1])) {
 			interface::actions::error(comm, "Unknown inq option '" + arg + "'.");
@@ -97,7 +130,7 @@ int main(int argc, char* argv[]) {
 				iarg++;
 			}
 		}
-		
+
 		if(iarg + 2 < argc){
 			auto fusion = uniformize(arg + argv[iarg + 1] + argv[iarg + 2]);
 			auto search = aliases.find(fusion);
@@ -140,6 +173,9 @@ int main(int argc, char* argv[]) {
 				std::cout << interface::list_item("-h,--help",  "Prints this help dialog");
 				std::cout << interface::list_item("-q,--quiet", "Run silently, do not print information unless explicitly asked to");
 				std::cout << interface::list_item("-d,--debug", "Print debug information (useful for inq developers)");
+				std::cout << interface::list_item("-pd,--parallelization-domains N", "Set the number of parallel domains used in the run. The default is 'auto'. Check `inq help parallelization` for details.");
+				std::cout << interface::list_item("-ps,--parallelization-states  N", "Set the number of processors the states are divided in. The default is 'auto'. Check `inq help parallelization` for details.");
+				std::cout << interface::list_item("-pk,--parallelization-kpoints N", "Set the number of processors the kpoints are divided in. The default is 'auto'. Check `inq help parallelization` for details.");
 				std::cout << "\nTo get more information about any command use: inq help <command>\n";
 				std::cout << "\nBesides commands, there is also some additional help topics you can read with 'help':\n\n";
 				std::cout << all_helpers.list();
