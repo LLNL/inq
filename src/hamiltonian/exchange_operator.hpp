@@ -61,7 +61,11 @@ namespace hamiltonian {
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 
-			assert(el.states_comm().size() == 1 or el.kpin_comm().size() == 1); //this is not supported right now since we don't have a way to construct the communicator with combined dimensions
+			if(el.states_comm().size() > 1 and el.kpin_comm().size() > 1){
+				//TODO: this is not supported right now since we don't have a way to construct the communicator with combined dimensions
+				throw std::runtime_error("INQ: k-point and state parallelization cannot be combined when using Hartree-Fock or hybrid functionals.");
+			}
+
 			auto par_dim = input::parallelization::dimension_kpoints();
 			if(el.kpin_comm().size() == 1) par_dim = input::parallelization::dimension_states();
 			
