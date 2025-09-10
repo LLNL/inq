@@ -15,12 +15,17 @@ namespace inq {
 namespace interface {
 
 struct runtime_options {
-  bool quiet;
-  bool debug;
-
+	bool quiet;
+	bool debug;
+	int  par_domains;
+	int  par_states;
+	int  par_kpoints;
   runtime_options():
-    quiet(false),
-    debug(false) {
+		quiet(false),
+		debug(false),
+		par_domains(boost::mpi3::fill),
+		par_states (boost::mpi3::fill),
+		par_kpoints(boost::mpi3::fill) {
   }
 };
 
@@ -36,11 +41,6 @@ struct runtime_options {
 #undef INQ_INTERFACE_RUNTIME_OPTIONS_UNIT_TEST
 
 #include <catch2/catch_all.hpp>
-#include <basis/real_space.hpp>
-
-#include <interface/cell.hpp>
-#include <interface/ions.hpp>
-#include <interface/run.hpp>
 
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
@@ -50,10 +50,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	using namespace interface;
 
-  runtime_options ro;
+	runtime_options ro;
 
-  CHECK(ro.quiet == false);
-  CHECK(ro.debug == false);
+	CHECK(ro.quiet == false);
+	CHECK(ro.debug == false);
 }
 
 #endif
