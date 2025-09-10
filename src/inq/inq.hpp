@@ -32,6 +32,7 @@
 #include <interface/history.hpp>
 #include <interface/ions.hpp>
 #include <interface/kpoints.hpp>
+#include <interface/parallelization.hpp>
 #include <interface/perturbations.hpp>
 #include <interface/real_time.hpp>
 #include <interface/results.hpp>

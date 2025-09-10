@@ -11,6 +11,7 @@
 
 #include <input/environment.hpp>
 #include <interface/actions.hpp>
+#include <interface/runtime_options.hpp>
 #include <systems/electrons.hpp>
 
 namespace inq {
@@ -185,7 +186,7 @@ the user.
 	}
 	
 	template <typename ArgsType>
-	void command(ArgsType const & args, bool quiet) const {
+	void command(ArgsType const & args, runtime_options const & run_opts) const {
 
 		using utils::str_to;
 		
@@ -200,7 +201,7 @@ the user.
 			if(args.size() >= 3) actions::error(input::environment::global().comm(), "Too many arguments to extra_states argument");
 
 			extra_states(str_to<int>(args[1]));
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 		
@@ -210,7 +211,7 @@ the user.
 			if(args.size() >= 3) actions::error(input::environment::global().comm(), "Too many arguments to extra_electrons argument");
 
 			extra_electrons(str_to<double>(args[1]));
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
@@ -221,7 +222,7 @@ the user.
 
 			cutoff(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
@@ -232,25 +233,25 @@ the user.
 
 			spacing(magnitude::length::parse(str_to<double>(args[1]), args[2]));
 			
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 		
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "unpolarized"){
 			spin_unpolarized();
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "polarized"){
 			spin_polarized();
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
 		if(args.size() == 2 and args[0] == "spin" and args[1] == "non-collinear") {
 			spin_non_collinear();
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
@@ -261,7 +262,7 @@ the user.
 
 			temperature(magnitude::energy::parse(str_to<double>(args[1]), args[2]));
 			
-			if(not quiet) operator()();
+			if(not run_opts.quiet) operator()();
 			actions::normal_exit();
 		}
 
