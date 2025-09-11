@@ -109,10 +109,10 @@ class fourier_space;
 				return metric_.length(rvector(ix, iy, iz));
 			}
 			
-			GPU_FUNCTION auto & cubic_part() const {
-				return cubic_part_;
+			GPU_FUNCTION auto & cubic_part(int idim) const {
+				return cubic_part_[idim];
 			}
-
+			
 			GPU_FUNCTION auto & metric() const {
 				return metric_;
 			}				

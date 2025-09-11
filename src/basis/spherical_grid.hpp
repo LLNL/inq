@@ -105,9 +105,9 @@ namespace basis {
 									 parallel::global_index ii1(ii[1]);
 									 parallel::global_index ii2(ii[2]);
 									 
-									 int ixl = point_op.cubic_part()[0].global_to_local(ii0);
-									 int iyl = point_op.cubic_part()[1].global_to_local(ii1);
-									 int izl = point_op.cubic_part()[2].global_to_local(ii2);
+									 int ixl = point_op.cubic_part(0).global_to_local(ii0);
+									 int iyl = point_op.cubic_part(1).global_to_local(ii1);
+									 int izl = point_op.cubic_part(2).global_to_local(ii2);
 									 
 									 if(ixl < 0 or ixl >= local_sizes[0]) return;
 									 if(iyl < 0 or iyl >= local_sizes[1]) return;
