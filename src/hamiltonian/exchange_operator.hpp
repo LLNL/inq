@@ -55,21 +55,24 @@ namespace hamiltonian {
 
 			CALI_CXX_MARK_SCOPE("exchage_operator::update");
 
-			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), el.kpin_states_comm());
-			
+			assert(input::parallelization::dimension_domains() == 0);
+			assert(input::parallelization::dimension_states()  == 1);
+			assert(input::parallelization::dimension_kpoints() == 2);
+
+			auto shape = el.full_comm().shape();
+			auto merged_comm = parallel::cartesian_communicator<2>(el.full_comm(), {shape[0], shape[1]*shape[2]});
+
+			if(el.full_comm().coordinates()[0] != merged_comm.coordinates()[0]) {
+				std::logic_error("INQ: failed flatten of communicator.");
+			}
+
+			auto part = parallel::arbitrary_partition(el.max_local_set_size()*el.kpin_size(), merged_comm.axis(1));
+
 			occupations_ = el.occupations().flatted();
 			kpoints_.reextent(part.local_size());
 			kpoint_indices_.reextent(part.local_size());
 
-			if(el.states_comm().size() > 1 and el.kpin_comm().size() > 1){
-				//TODO: this is not supported right now since we don't have a way to construct the communicator with combined dimensions
-				throw std::runtime_error("INQ: k-point and state parallelization cannot be combined when using Hartree-Fock or hybrid functionals.");
-			}
-
-			auto par_dim = input::parallelization::dimension_kpoints();
-			if(el.kpin_comm().size() == 1) par_dim = input::parallelization::dimension_states();
-			
-			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, el.full_comm().plane(input::parallelization::dimension_domains(), par_dim));
+			if(not orbitals_.has_value()) orbitals_.emplace(el.states_basis(), part, merged_comm);
 
 			{
 				auto ist = 0;
