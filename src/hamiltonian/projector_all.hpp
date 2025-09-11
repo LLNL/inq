@@ -29,6 +29,7 @@ class projector_all {
 	gpu::array<vector3<int>, 2> points_;
 	gpu::array<vector3<float, contravariant>, 2> positions_;
 	gpu::array<double, 3> coeff_;
+	gpu::array<double, 3> overlap_coeff_;
 	gpu::array<double, 3> matrices_;
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
@@ -51,6 +52,7 @@ public: // for CUDA
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
 		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
+    overlap_coeff_ = decltype(overlap_coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		
     auto iproj = 0;
@@ -75,6 +77,8 @@ public: // for CUDA
 							 });
 
 			coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->kb_coeff_;
+			overlap_coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->overlap_mat_;
+
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
