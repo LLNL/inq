@@ -39,7 +39,6 @@ class fourier_space;
 
 			base::part_ = cubic_part_[1];
 			base::part_ *= nr_[0]*long(nr_[2]);
-			
 			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();		
     }
 		
@@ -291,6 +290,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
       CHECK(rs3x.sizes()[1] == 3*39);
 			CHECK(rs3x.sizes()[2] == 3*64);
 
+			CHECK(rs3x.cubic_part(0).comm_size() == 1);
+			CHECK(rs3x.cubic_part(1).comm_size() == rs.comm().size());
+			CHECK(rs3x.cubic_part(2).comm_size() == 1);
+
+			CHECK(rs3x.part().comm_size() == rs.comm().size());
+			CHECK(rs3x.part().local_size() == rs3x.cubic_part(1).local_size()*rs3x.cubic_part(0).size()*rs3x.cubic_part(2).size());
+			
 			auto rs_fine = rs.refine(2);
 			
       CHECK(rs_fine.rspacing()[0] == Approx(0.5*0.3613953488));
