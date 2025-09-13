@@ -167,6 +167,14 @@ public:
 	constexpr auto & rank() const {
 		return rank_;
 	}
+
+	void shift() {
+		rank_++;
+		if(rank_ == comm_size_) rank_ = 0;
+		local_size_ = local_size(rank_);
+		start_      = start(rank_);
+		end_        = end(rank_);
+	}
 	
 };
 }
@@ -305,6 +313,52 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(apart.local_size(4) == 2);
 		CHECK(apart.start(4)      == 33);
 		CHECK(apart.end(4)        == 35);
+	
+	}
+
+		SECTION("Shift"){
+		auto apart = parallel::arbitrary_partition({12, 4, 7, 10, 2}, 1);
+
+		CHECK(apart.size()            == 35);
+		CHECK(apart.comm_size()       == 5);
+		CHECK(apart.max_local_size()  == 12);
+
+		CHECK(apart.rank()        == 1);
+		CHECK(apart.local_size()  == 4);
+		CHECK(apart.start()       == 12);
+		CHECK(apart.end()         == 16);
+
+		apart.shift();
+		CHECK(apart.rank()        == 2);
+		CHECK(apart.local_size()  == 7);
+		CHECK(apart.start()       == 16);
+		CHECK(apart.end()         == 23);
+
+		apart.shift();
+		CHECK(apart.rank()        == 3);
+		CHECK(apart.local_size()  == 10);
+		CHECK(apart.start()       == 23);
+		CHECK(apart.end()         == 33);
+
+		apart.shift();
+		CHECK(apart.rank()        == 4);
+		CHECK(apart.local_size()  == 2);
+		CHECK(apart.start()       == 33);
+		CHECK(apart.end()         == 35);
+
+		apart.shift();
+		CHECK(apart.rank()        == 0);
+		CHECK(apart.local_size()  == 12);
+		CHECK(apart.start()       == 0);
+		CHECK(apart.end()         == 12);
+
+		apart.shift();
+		CHECK(apart.rank()        == 1);
+		CHECK(apart.local_size()  == 4);
+		CHECK(apart.start()       == 12);
+		CHECK(apart.end()         == 16);
+
+
 	
 	}
 
