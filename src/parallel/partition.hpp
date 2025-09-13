@@ -148,6 +148,17 @@ public:
 		auto total_elements = bsize_*comm_size();
 		return (total_elements - size())/double(size());
 	}
+
+	constexpr auto & rank() const {
+		return rank_;
+	}
+
+	void shift() {
+		rank_++;
+		if(rank_ == comm_size_) rank_ = 0;
+		start_ = start(rank_);
+		end_   = end(rank_);
+	}
 	
 };
 }
@@ -172,6 +183,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	inq::parallel::partition part(NN, comm);
 
+	CHECK(part.comm_size() == comm.size());
+	CHECK(part.rank() == comm.rank());
+	
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;
   
@@ -357,6 +371,56 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		CHECK(part.waste() == 0.1764705882_a);
 	}
+
+	SECTION("Shift"){
+		inq::parallel::partition part(17, 5, 0);
+
+		CHECK(part.max_local_size() == 4);
+
+		//part 0
+		CHECK(part.rank()       == 0);
+		CHECK(part.local_size() == 4);
+		CHECK(part.start()      == 0);
+		CHECK(part.end()        == 4);
+
+		//part 1
+		part.shift();
+		CHECK(part.rank()       == 1);
+		CHECK(part.local_size() == 4);
+		CHECK(part.start()      == 4);
+		CHECK(part.end()        == 8);
+
+		//part 2
+		part.shift();
+		CHECK(part.rank()       == 2);
+		CHECK(part.local_size() == 4);
+		CHECK(part.start()      == 8);
+		CHECK(part.end()        == 12);
+
+		//part 3
+		part.shift();
+		CHECK(part.rank()       == 3);
+		CHECK(part.local_size() == 4);
+		CHECK(part.start()      == 12);
+		CHECK(part.end()        == 16);
+
+		//part 4
+		part.shift();
+		CHECK(part.rank()       == 4);
+		CHECK(part.local_size() == 1);
+		CHECK(part.start()      == 16);
+		CHECK(part.end()        == 17);
+
+		//part 0
+		part.shift();
+		CHECK(part.rank()       == 0);
+		CHECK(part.local_size() == 4);
+		CHECK(part.start()      == 0);
+		CHECK(part.end()        == 4);
+
+	}
+
+	
 
 }
 #endif
