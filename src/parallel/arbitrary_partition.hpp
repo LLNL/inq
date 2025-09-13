@@ -26,10 +26,11 @@ class arbitrary_partition {
 	std::vector<long> starts;
 	long size_;
 	long max_local_size_;
-	long comm_size_;
 	long start_;
 	long end_;
-
+	int comm_size_;
+	int rank_;
+	
 public:
 	
 	auto local_size() const {
@@ -42,12 +43,13 @@ public:
 	arbitrary_partition(long const local_size, CommType comm):
 		local_size_(local_size),
 		lsizes_(comm.size()),
-		comm_size_(comm.size())
+		comm_size_(comm.size()),
+		rank_(comm.rank())
 	{
 
 		MPI_Allgather(&local_size, 1, MPI_LONG, lsizes_.data(), 1, MPI_LONG, comm.get());
 
-		assert(lsizes_[comm.rank()] == local_size);
+		assert(lsizes_[rank_] == local_size);
 		
 		size_ = 0;
 		max_local_size_ = 0;
@@ -57,7 +59,7 @@ public:
 		for(unsigned ipart = 0; ipart < lsizes_.size(); ipart++){
 			size_ += lsizes_[ipart];
 			max_local_size_ = std::max(max_local_size_, lsizes_[ipart]);
-			if(ipart < (unsigned) comm.rank()) start_ += lsizes_[ipart];
+			if(ipart < (unsigned) rank_) start_ += lsizes_[ipart];
 		}
 		end_ = start_ + local_size_;
 	}
@@ -136,6 +138,11 @@ public:
 		return (total_elements - size())/double(size());
 	}
 	
+	constexpr auto & rank() const {
+		return rank_;
+	}
+
+	
 };
 }
 }
@@ -159,6 +166,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	inq::parallel::arbitrary_partition part(local_size, comm);
 
+	CHECK(comm.rank() == part.rank());
+	CHECK(comm.size() == part.comm_size());
+	
   auto next = comm.rank() + 1;
   if(next == comm.size()) next = 0;
   
