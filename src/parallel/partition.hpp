@@ -23,7 +23,16 @@ namespace inq{
 namespace parallel {
 
 class partition {
+
+protected:
 	
+	long size_;
+	long start_;
+	long end_;
+	long bsize_;
+	int  comm_size_;
+	int  rank_;
+
 public:
 
 	constexpr auto local_size() const {
@@ -31,8 +40,9 @@ public:
 	}
 	
 	partition(const long size, int comm_size, int comm_rank)
-		:comm_size_(comm_size),
-		 size_(size)
+		:size_(size),
+		 comm_size_(comm_size),
+		 rank_(comm_rank)
 	{
 		
 		bsize_ = (size_ + comm_size_ - 1)/comm_size_;
@@ -139,14 +149,6 @@ public:
 		return (total_elements - size())/double(size());
 	}
 	
-protected:
-	
-	long comm_size_;
-	long size_;
-	long start_;
-	long end_;
-	long bsize_;
-  
 };
 }
 }
