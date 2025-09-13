@@ -76,6 +76,32 @@ public:
 		start_ = part.start();
 		end_ = part.end();
 	}
+
+	template <typename LocalSizes>
+	arbitrary_partition(LocalSizes const & local_sizes, int rank):
+		local_size_(local_sizes[rank]),
+		lsizes_(local_sizes.begin(), local_sizes.end()),
+		comm_size_(local_sizes.size()),
+		rank_(rank)
+	{
+
+		size_ = 0;
+		max_local_size_ = 0;
+		start_ = 0;
+		end_ = 0;
+
+		for(unsigned ipart = 0; ipart < lsizes_.size(); ipart++){
+			size_ += lsizes_[ipart];
+			max_local_size_ = std::max(max_local_size_, lsizes_[ipart]);
+			if(ipart < (unsigned) rank_) start_ += lsizes_[ipart];
+		}
+		end_ = start_ + local_size_;
+	}
+
+	template <typename Integer>
+	arbitrary_partition(std::initializer_list<Integer> const & local_sizes, int rank):
+		arbitrary_partition(std::vector<Integer>{local_sizes.begin(), local_sizes.end()}, rank){
+	}
 	
 	auto size() const {
 		return size_;
@@ -141,7 +167,6 @@ public:
 	constexpr auto & rank() const {
 		return rank_;
 	}
-
 	
 };
 }
@@ -248,5 +273,40 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 			
 	}
+
+	SECTION("Construct from array"){
+		auto apart = parallel::arbitrary_partition({12, 4, 7, 10, 2}, 1);
+
+		CHECK(apart.size()            == 35);
+		CHECK(apart.comm_size()       == 5);
+		CHECK(apart.max_local_size()  == 12);
+
+		CHECK(apart.rank()        == 1);
+		CHECK(apart.local_size()  == 4);
+		CHECK(apart.start()       == 12);
+		CHECK(apart.end()         == 16);
+
+		CHECK(apart.local_size(0) == 12);
+		CHECK(apart.start(0)      == 0);
+		CHECK(apart.end(0)        == 12);
+
+		CHECK(apart.local_size(1) == 4);
+		CHECK(apart.start(1)      == 12);
+		CHECK(apart.end(1)        == 16);
+
+		CHECK(apart.local_size(2) == 7);
+		CHECK(apart.start(2)      == 16);
+		CHECK(apart.end(2)        == 23);
+
+		CHECK(apart.local_size(3) == 10);
+		CHECK(apart.start(3)      == 23);
+		CHECK(apart.end(3)        == 33);
+
+		CHECK(apart.local_size(4) == 2);
+		CHECK(apart.start(4)      == 33);
+		CHECK(apart.end(4)        == 35);
+	
+	}
+
 }
 #endif
