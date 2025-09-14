@@ -240,6 +240,17 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(rs.sizes() == new_rs.sizes());
 			CHECK(new_rs.local_sizes() == new_rs.sizes());	
 			CHECK(rs.cell().periodicity() == new_rs.cell().periodicity());
+
+			CHECK(rs.part().rank() == comm.rank());
+			CHECK(rs.cubic_part(0).rank() == comm.rank()%rs.cubic_part(0).comm_size());
+			CHECK(rs.cubic_part(1).rank() == comm.rank()%rs.cubic_part(1).comm_size());
+			CHECK(rs.cubic_part(2).rank() == comm.rank()%rs.cubic_part(2).comm_size());
+			
+			rs.shift();
+			CHECK(rs.part().rank() == (comm.rank() + 1)%comm.size());
+			CHECK(rs.cubic_part(0).rank() == (comm.rank() + 1)%rs.cubic_part(0).comm_size());
+			CHECK(rs.cubic_part(1).rank() == (comm.rank() + 1)%rs.cubic_part(1).comm_size());
+			CHECK(rs.cubic_part(2).rank() == (comm.rank() + 1)%rs.cubic_part(2).comm_size());			
 			
     }
 

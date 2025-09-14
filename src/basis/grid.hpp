@@ -176,6 +176,15 @@ namespace basis {
 			return cell_;
 		}
 
+		void shift() {
+			base::part_.shift();
+			for(int idir = 0; idir < 3; idir++) {
+				cubic_part_[idir].shift();
+				nr_local_[idir] = cubic_part_[idir].local_size();
+			}
+		
+		}
+		
   };
 
 }
