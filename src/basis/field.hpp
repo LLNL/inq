@@ -25,15 +25,22 @@
 namespace inq {
 namespace basis {
 	
-	template<class Basis, typename Type>
-	class field {
-
-	public:
-
-		using element_type = Type;
-		using basis_type = Basis;
-		using internal_array_type = gpu::array<element_type, 1>;
-
+template<class Basis, typename Type>
+class field {
+	
+public:
+	
+	using element_type = Type;
+	using basis_type = Basis;
+	using internal_array_type = gpu::array<element_type, 1>;
+	
+private:
+	
+	internal_array_type linear_;
+	basis_type basis_;
+	
+public:
+	
 		template <typename BType, typename EType>
 		using template_type = field<BType, EType>;
 		
@@ -185,12 +192,7 @@ namespace basis {
 			comm.all_reduce_in_place_n(raw_pointer_cast(linear().data_elements()), linear().num_elements(), op);
 		}
 
-	private:
-		internal_array_type linear_;
-		basis_type basis_;
-
-	};
-
+};
 
 field<basis::real_space, complex> complex_field(field<basis::real_space, double> const & rfield) {
 	field<basis::real_space, complex> cfield(rfield.skeleton());        
