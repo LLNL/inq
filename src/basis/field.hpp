@@ -104,6 +104,20 @@ public:
 			return *this;
 		}
 
+	void shift_domains() {
+		auto next_proc = (basis_.comm().rank() + 1)%basis_.comm().size();
+		auto prev_proc = basis_.comm().rank() - 1;
+		if(prev_proc == -1) prev_proc = basis_.comm().size() - 1;
+		
+		auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
+		auto buffer = internal_array_type(basis_.part().max_local_size());
+		buffer({0, basis_.part().local_size()}) = linear_({0, basis_.part().local_size()});
+		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, basis_.comm().get(), MPI_STATUS_IGNORE);
+		basis_.shift();
+		linear_.reextent(basis_.part().local_size());
+		linear_ = buffer({0, basis_.part().local_size()});
+	}
+	
 		auto size() const {
 			return basis_.size();
 		}
@@ -326,6 +340,32 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	for(int ii = 0; ii < red.basis().part().local_size(); ii++){
 		CHECK(red.linear()[ii] == 1.0_a);
 	}
-	
+
+	SECTION("Shift") {
+		basis::field<basis::real_space, complex> fie(rs, comm);
+
+		for(auto ip = 0; ip < fie.basis().local_size(); ip++){
+			fie.linear()[ip] = complex{double(fie.basis().part().start() + ip), double(comm.rank())};
+		}
+
+		auto part = fie.basis().part();
+
+		for(int ishift = 0; ishift < 2*comm.size(); ishift++) {
+			auto shift_rank = (comm.rank() + ishift)%comm.size();
+
+			CHECK(fie.basis().part().rank() == shift_rank);
+			CHECK(fie.basis().part().start() == part.start(shift_rank));
+			CHECK(fie.basis().part().local_size() == part.local_size(shift_rank));
+			
+			for(auto ip = 0; ip < fie.basis().local_size(); ip++){
+				CHECK(real(fie.linear()[ip]) == fie.basis().part().start() + ip);
+				CHECK(imag(fie.linear()[ip]) == shift_rank);
+			}
+			
+			fie.shift_domains();
+		}
+		
+		
+	}
 }
 #endif
