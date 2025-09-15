@@ -43,6 +43,17 @@ public:
 
 	template <typename BType, typename EType>
 	using template_type = field_set<BType, EType>;
+
+private:
+
+	mutable parallel::cartesian_communicator<2> full_comm_;
+	mutable parallel::cartesian_communicator<1> set_comm_;
+	PartitionType set_part_;
+	internal_array_type matrix_;
+	int num_vectors_;
+	basis_type basis_;
+
+public:
 	
 	field_set(const basis_type & basis, PartitionType part, parallel::cartesian_communicator<2> comm)
 		:full_comm_(std::move(comm)),
@@ -203,15 +214,6 @@ public:
 		comm.all_reduce_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
 	}
 		
-private:
-
-	mutable parallel::cartesian_communicator<2> full_comm_;
-	mutable parallel::cartesian_communicator<1> set_comm_;
-	PartitionType set_part_;
-	internal_array_type matrix_;
-	int num_vectors_;
-	basis_type basis_;
-
 };
 
 field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_space, double> const & field) {
