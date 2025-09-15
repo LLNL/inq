@@ -118,6 +118,20 @@ public:
 		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType, PartitionType>>(*this);
 	}
 
+	void shift_domains() {
+		auto next_proc = (basis_.comm().rank() + 1)%basis_.comm().size();
+		auto prev_proc = basis_.comm().rank() - 1;
+		if(prev_proc == -1) prev_proc = basis_.comm().size() - 1;
+		
+		auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
+		auto buffer = internal_array_type({basis_.part().max_local_size(), set_part_.max_local_size()});
+		buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()}) = matrix_({0, basis_.part().local_size()}, {0, set_part_.local_size()});
+		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, basis_.comm().get(), MPI_STATUS_IGNORE);
+		basis_.shift();
+		matrix_.reextent({basis_.part().local_size(), set_part_.local_size()});
+		matrix_ = buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()});
+	}
+
 	template <class OtherType, class AnyPartType>
 	static auto reciprocal(inq::utils::skeleton_wrapper<field_set<basis_type, OtherType, AnyPartType>> const & skeleton){
 		return field_set<typename basis_type::reciprocal_space, element_type, PartitionType>(skeleton.base.basis().reciprocal(), skeleton.base.set_size(), skeleton.base.full_comm());
@@ -386,6 +400,39 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			CHECK(rr.matrix()[ii][jj] == 1.0_a);
 		}
 	}
+
+	SECTION("Shift") {
+		basis::field_set<basis::real_space, complex> fie(rs, 24, cart_comm);
+
+		for(auto ip = 0; ip < fie.basis().local_size(); ip++) {
+			for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+				fie.matrix()[ip][ist] = double(ist + 1.0)*complex{double(fie.basis().part().start() + ip), double(basis_comm.rank())};
+			}
+		}
+
+		auto part = fie.basis().part();
+
+		for(int ishift = 0; ishift < 2*basis_comm.size(); ishift++) {
+			auto shift_rank = (basis_comm.rank() + ishift)%basis_comm.size();
+
+			CHECK(fie.basis().part().rank() == shift_rank);
+			CHECK(fie.basis().part().start() == part.start(shift_rank));
+			CHECK(fie.basis().part().local_size() == part.local_size(shift_rank));
+
+			for(auto ip = 0; ip < fie.basis().local_size(); ip++){
+				for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+					CHECK(real(fie.matrix()[ip][ist]) == double(ist + 1.0)*(fie.basis().part().start() + ip));
+					CHECK(imag(fie.matrix()[ip][ist]) == double(ist + 1.0)*shift_rank);
+				}
+			}
+			
+			fie.shift_domains();
+		}
+		
+		
+	}
+
+	
 	
 }
 #endif
