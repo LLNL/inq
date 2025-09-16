@@ -115,8 +115,16 @@ class fourier_space;
 			
 			GPU_FUNCTION auto & metric() const {
 				return metric_;
-			}				
+			}
 			
+			GPU_FUNCTION auto local_contains(vector3<int> const & ii) const {
+				bool contains = true;
+				for(int idir = 0; idir < 3; idir++){
+					contains = contains and cubic_part_[idir].contains(ii[idir]);
+				}
+				return contains;
+			}
+
 		private:
 			
 			std::array<int, 3> nr_;
