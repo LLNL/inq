@@ -50,23 +50,20 @@ FieldType enlarge(FieldType source, typename FieldType::basis_type const & new_b
 
 		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-			for(int ix = 0; ix < source.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < source.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < source.basis().local_sizes()[2]; iz++){
-	
-						auto ii = source.basis().to_symmetric_range(source.basis().cubic_part(0).start() + ix, source.basis().cubic_part(1).start() + iy, source.basis().cubic_part(2).start() + iz);
-						auto idest = destination.basis().from_symmetric_range(ii);
-
-						if(not destination.basis().local_contains(idest)) continue;
-
-						auto idx = idest[0] - destination.basis().cubic_part(0).start();
-						auto idy = idest[1] - destination.basis().cubic_part(1).start();
-						auto idz = idest[2] - destination.basis().cubic_part(2).start();
-
-						destination.cubic()[idx][idy][idz] = factor*source.cubic()[ix][iy][iz];
-					}
-				}
-			}
+			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
+							 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
+								 auto idest = dbas.from_symmetric_range(ii);
+								 
+								 if(not dbas.local_contains(idest)) return;
+								 
+								 auto idx = idest[0] - dbas.cubic_part(0).start();
+								 auto idy = idest[1] - dbas.cubic_part(1).start();
+								 auto idz = idest[2] - dbas.cubic_part(2).start();
+								 
+								 des[idx][idy][idz] = factor*sou[ix][iy][iz];
+							 });
 
 			source.shift_domains();
 		}
@@ -102,23 +99,21 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> sour
 
 		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-			for(int ix = 0; ix < source.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < source.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < source.basis().local_sizes()[2]; iz++){
-	
-						auto ii = source.basis().to_symmetric_range(source.basis().cubic_part(0).start() + ix, source.basis().cubic_part(1).start() + iy, source.basis().cubic_part(2).start() + iz);
-						auto idest = destination.basis().from_symmetric_range(ii);
-
-						if(not destination.basis().local_contains(idest)) continue;
-
-						auto idx = idest[0] - destination.basis().cubic_part(0).start();
-						auto idy = idest[1] - destination.basis().cubic_part(1).start();
-						auto idz = idest[2] - destination.basis().cubic_part(2).start();
-
-						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[idx][idy][idz][ist] = factor*source.hypercubic()[ix][iy][iz][ist];
-					}
-				}
-			}
+			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
+							 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+							 GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
+								 auto idest = dbas.from_symmetric_range(ii);
+								 
+								 if(not dbas.local_contains(idest)) return;
+								 
+								 auto idx = idest[0] - dbas.cubic_part(0).start();
+								 auto idy = idest[1] - dbas.cubic_part(1).start();
+								 auto idz = idest[2] - dbas.cubic_part(2).start();
+								 
+								 for(int ist = 0; ist < nst; ist++) des[idx][idy][idz][ist] = factor*sou[ix][iy][iz][ist];
+							 });
 
 			source.shift_domains();
 		}
