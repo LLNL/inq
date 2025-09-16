@@ -127,7 +127,11 @@ class real_space;
 			GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
 				return grid::from_symmetric_range(ng_, ii);
 			}
-			
+						
+			GPU_FUNCTION auto & cubic_part(int idim) const {
+				return cubic_part_[idim];
+			}
+
 		private:
 			
 			std::array<int, 3> ng_;
