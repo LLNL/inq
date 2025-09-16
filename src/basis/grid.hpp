@@ -20,6 +20,19 @@ namespace basis {
 
   class grid : public base {
 
+	protected:
+
+		std::array<inq::parallel::partition, 3> cubic_part_;
+		systems::cell cell_;
+    std::array<int, 3> nr_;
+		std::array<int, 3> nr_local_;
+    std::array<int, 3> ng_;
+    vector3<double> rspacing_;
+    vector3<double, contravariant> conspacing_;
+    vector3<double, covariant> covspacing_;
+    vector3<double> rlength_;
+		long npoints_;
+
   public:
 
 		const static int dimension = 3;
@@ -161,27 +174,17 @@ namespace basis {
 
 		auto & cell() const {
 			return cell_;
-		}	
+		}
 
-	protected:
-
-		std::array<inq::parallel::partition, 3> cubic_part_;
-		systems::cell cell_;
-
-    std::array<int, 3> nr_;
-
-		std::array<int, 3> nr_local_;
+		void shift() {
+			base::part_.shift();
+			for(int idir = 0; idir < 3; idir++) {
+				cubic_part_[idir].shift();
+				nr_local_[idir] = cubic_part_[idir].local_size();
+			}
 		
-    std::array<int, 3> ng_;
-
-    vector3<double> rspacing_;
-    vector3<double, contravariant> conspacing_;
-    vector3<double, covariant> covspacing_;
+		}
 		
-    vector3<double> rlength_;
-
-		long npoints_;
-
   };
 
 }

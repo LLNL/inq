@@ -43,6 +43,17 @@ public:
 
 	template <typename BType, typename EType>
 	using template_type = field_set<BType, EType>;
+
+private:
+
+	mutable parallel::cartesian_communicator<2> full_comm_;
+	mutable parallel::cartesian_communicator<1> set_comm_;
+	PartitionType set_part_;
+	internal_array_type matrix_;
+	int num_vectors_;
+	basis_type basis_;
+
+public:
 	
 	field_set(const basis_type & basis, PartitionType part, parallel::cartesian_communicator<2> comm)
 		:full_comm_(std::move(comm)),
@@ -105,6 +116,35 @@ public:
 
 	auto skeleton() const {
 		return inq::utils::skeleton_wrapper<field_set<BasisType, ElementType, PartitionType>>(*this);
+	}
+
+private:
+
+	template <typename Comm, typename Part>
+	void shift(Comm & comm, Part & part) {
+		if(comm.size() == 1) return;
+
+		auto next_proc = (comm.rank() + 1)%comm.size();
+		auto prev_proc = comm.rank() - 1;
+		if(prev_proc == -1) prev_proc = comm.size() - 1;
+		
+		auto mpi_type = boost::mpi3::detail::basic_datatype<element_type>();
+		auto buffer = internal_array_type({basis_.part().max_local_size(), set_part_.max_local_size()});
+		buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()}) = matrix_({0, basis_.part().local_size()}, {0, set_part_.local_size()});
+		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, comm.get(), MPI_STATUS_IGNORE);
+		part.shift();
+		matrix_.reextent({basis_.part().local_size(), set_part_.local_size()});
+		matrix_ = buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()});
+	}
+	
+public:
+
+	void shift_domains() {
+		shift(basis_.comm(), basis_);
+	}
+
+	void shift_states() {
+		shift(set_comm_, set_part_);
 	}
 
 	template <class OtherType, class AnyPartType>
@@ -203,15 +243,6 @@ public:
 		comm.all_reduce_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
 	}
 		
-private:
-
-	mutable parallel::cartesian_communicator<2> full_comm_;
-	mutable parallel::cartesian_communicator<1> set_comm_;
-	PartitionType set_part_;
-	internal_array_type matrix_;
-	int num_vectors_;
-	basis_type basis_;
-
 };
 
 field_set<basis::real_space, inq::complex> complex_field(field_set<basis::real_space, double> const & field) {
@@ -384,6 +415,70 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 			CHECK(rr.matrix()[ii][jj] == 1.0_a);
 		}
 	}
+
+	SECTION("Shift domains") {
+		basis::field_set<basis::real_space, complex> fie(rs, 24, cart_comm);
+
+		for(auto ip = 0; ip < fie.basis().local_size(); ip++) {
+			for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+				fie.matrix()[ip][ist] = double(ist + 1.0)*complex{double(fie.basis().part().start() + ip), double(basis_comm.rank())};
+			}
+		}
+
+		auto part = fie.basis().part();
+
+		for(int ishift = 0; ishift < 2*basis_comm.size(); ishift++) {
+			auto shift_rank = (basis_comm.rank() + ishift)%basis_comm.size();
+
+			CHECK(fie.basis().part().rank() == shift_rank);
+			CHECK(fie.basis().part().start() == part.start(shift_rank));
+			CHECK(fie.basis().part().local_size() == part.local_size(shift_rank));
+
+			for(auto ip = 0; ip < fie.basis().local_size(); ip++){
+				for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+					CHECK(real(fie.matrix()[ip][ist]) == double(ist + 1.0)*(fie.basis().part().start() + ip));
+					CHECK(imag(fie.matrix()[ip][ist]) == double(ist + 1.0)*shift_rank);
+				}
+			}
+			
+			fie.shift_domains();
+		}
+		
+		
+	}
+	
+	SECTION("Shift states") {
+		
+		basis::field_set<basis::real_space, complex> fie(rs, 24, cart_comm);
+
+		for(auto ip = 0; ip < fie.basis().local_size(); ip++) {
+			for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+				fie.matrix()[ip][ist] = double(ip + 1.0)*complex{double(fie.set_part().start() + ist), double(set_comm.rank())};
+			}
+		}
+
+		auto part = fie.set_part();
+
+		for(int ishift = 0; ishift < 2*set_comm.size(); ishift++) {
+			auto shift_rank = (set_comm.rank() + ishift)%set_comm.size();
+
+			CHECK(fie.set_part().rank() == shift_rank);
+			CHECK(fie.set_part().start() == part.start(shift_rank));
+			CHECK(fie.set_part().local_size() == part.local_size(shift_rank));
+
+			for(auto ip = 0; ip < fie.basis().local_size(); ip++){
+				for(auto ist = 0; ist < fie.local_set_size(); ist++) {
+					CHECK(real(fie.matrix()[ip][ist]) == double(ip + 1.0)*(fie.set_part().start() + ist));
+					CHECK(imag(fie.matrix()[ip][ist]) == double(ip + 1.0)*shift_rank);
+				}
+			}
+			
+			fie.shift_states();
+		}
+		
+		
+	}
+	
 	
 }
 #endif
