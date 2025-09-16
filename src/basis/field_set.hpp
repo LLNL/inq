@@ -122,6 +122,8 @@ private:
 
 	template <typename Comm, typename Part>
 	void shift(Comm & comm, Part & part) {
+		if(comm.size() == 1) return;
+
 		auto next_proc = (comm.rank() + 1)%comm.size();
 		auto prev_proc = comm.rank() - 1;
 		if(prev_proc == -1) prev_proc = comm.size() - 1;

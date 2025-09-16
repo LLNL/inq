@@ -105,6 +105,8 @@ public:
 		}
 
 	void shift_domains() {
+		if(basis_.comm().size() == 1) return;
+
 		auto next_proc = (basis_.comm().rank() + 1)%basis_.comm().size();
 		auto prev_proc = basis_.comm().rank() - 1;
 		if(prev_proc == -1) prev_proc = basis_.comm().size() - 1;
