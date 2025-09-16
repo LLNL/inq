@@ -131,7 +131,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> sour
 //////////////////////////////////////////////////////////
 		
 template <class FieldType>
-FieldType shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+FieldType shrink(FieldType source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -152,13 +152,11 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 
 	} else {
 
-		gpu::array<long, 1> point_list(destination.basis().local_size());
+		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-		{
-			long ip = 0;
 			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
 				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){
 
 						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
 						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
@@ -166,29 +164,19 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 						
 						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
 						auto isource = source.basis().from_symmetric_range(ii);
+
+						if(not source.basis().local_contains(isource)) continue;
+
+						auto isx = isource[0] - source.basis().cubic_part(0).start();
+						auto isy = isource[1] - source.basis().cubic_part(1).start();
+						auto isz = isource[2] - source.basis().cubic_part(2).start();
 						
-						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
-						ip++;
+						destination.cubic()[ix][iy][iz] = factor*source.cubic()[isx][isy][isz];
 					}
 				}
 			}
 
-			assert(ip == point_list.size());
-		}
-
-		auto points = parallel::get_remote_points(source, point_list);
-
-		{
-			long ip = 0;
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
-						
-						destination.cubic()[ix][iy][iz] = factor*points[ip];
-						ip++;
-					}
-				}
-			}
+			source.shift_domains();
 		}
 		
 	}
