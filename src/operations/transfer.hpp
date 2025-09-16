@@ -149,27 +149,25 @@ FieldType shrink(FieldType source, typename FieldType::basis_type const & new_ba
 
 		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){
+			gpu::run(destination.basis().local_sizes()[2], destination.basis().local_sizes()[1], destination.basis().local_sizes()[0],
+						 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
-						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_part(2).local_to_global(iz);						
-						
-						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
-						auto isource = source.basis().from_symmetric_range(ii);
+							 auto ixg = dbas.cubic_part(0).local_to_global(ix);
+							 auto iyg = dbas.cubic_part(1).local_to_global(iy);
+							 auto izg = dbas.cubic_part(2).local_to_global(iz);						
+							 
+							 auto ii = dbas.to_symmetric_range(ixg.value(), iyg.value(), izg.value());
+							 auto isource = sbas.from_symmetric_range(ii);
 
-						if(not source.basis().local_contains(isource)) continue;
-
-						auto isx = isource[0] - source.basis().cubic_part(0).start();
-						auto isy = isource[1] - source.basis().cubic_part(1).start();
-						auto isz = isource[2] - source.basis().cubic_part(2).start();
-
-						destination.cubic()[ix][iy][iz] = factor*source.cubic()[isx][isy][isz];
-					}
-				}
-			}
+							 if(not sbas.local_contains(isource)) return;
+							 
+							 auto isx = isource[0] - sbas.cubic_part(0).start();
+							 auto isy = isource[1] - sbas.cubic_part(1).start();
+							 auto isz = isource[2] - sbas.cubic_part(2).start();
+							 
+							 des[ix][iy][iz] = factor*sou[isx][isy][isz];
+						 });
 
 			source.shift_domains();
 		}
@@ -203,29 +201,27 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> sourc
 	} else {
 
 		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
-
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){
-
-						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_part(2).local_to_global(iz);
-
-						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
-						auto isource = source.basis().from_symmetric_range(ii);
-
-						if(not source.basis().local_contains(isource)) continue;
-
-						auto isx = isource[0] - source.basis().cubic_part(0).start();
-						auto isy = isource[1] - source.basis().cubic_part(1).start();
-						auto isz = isource[2] - source.basis().cubic_part(2).start();
-
-						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[ix][iy][iz][ist] = factor*source.hypercubic()[isx][isy][isz][ist];
-
-					}
-				}
-			}
+			
+			gpu::run(destination.basis().local_sizes()[2], destination.basis().local_sizes()[1], destination.basis().local_sizes()[0],
+							 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+							 GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ixg = dbas.cubic_part(0).local_to_global(ix);
+								 auto iyg = dbas.cubic_part(1).local_to_global(iy);
+								 auto izg = dbas.cubic_part(2).local_to_global(iz);
+								 
+								 auto ii = dbas.to_symmetric_range(ixg.value(), iyg.value(), izg.value());
+								 auto isource = sbas.from_symmetric_range(ii);
+								 
+								 if(not sbas.local_contains(isource)) return;
+								 
+								 auto isx = isource[0] - sbas.cubic_part(0).start();
+								 auto isy = isource[1] - sbas.cubic_part(1).start();
+								 auto isz = isource[2] - sbas.cubic_part(2).start();
+								 
+								 for(int ist = 0; ist < nst; ist++) des[ix][iy][iz][ist] = factor*sou[isx][isy][isz][ist];
+								 
+							 });
 
 			source.shift_domains();
 		}
