@@ -31,6 +31,15 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 	operations::rotate_trs(olap, phi);
 }
 
+template <class field_set_type, typename Operator>
+void orthogonalize(field_set_type & phi, field_set_type const & phi2, Operator op){
+	CALI_CXX_MARK_FUNCTION;
+
+	auto olap = overlap(phi,op(phi));
+	matrix::cholesky(olap);
+	operations::rotate_trs(olap, phi);
+}
+
 template <class field_set_type>
 void orthogonalize(field_set_type & phi1, field_set_type const & phi2){
 	CALI_CXX_MARK_FUNCTION;

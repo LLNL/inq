@@ -48,6 +48,7 @@ namespace hamiltonian {
 		pseudo::set default_pseudo_set_;
 		std::unordered_map<std::string, pseudopotential_type> pseudopotential_list_;
 		bool has_nlcc_;
+		bool has_overlap_;
 		basis::double_grid double_grid_;
 
 	public:
@@ -64,6 +65,7 @@ namespace hamiltonian {
 			gcutoff *= double_grid_.spacing_factor(); 
 			
 			has_nlcc_ = false;
+			has_overlap_= false;
 
 			for(auto const & species : species_list) {
 				if(pseudopotential_list_.find(species.symbol()) != pseudopotential_list_.end()) throw std::runtime_error("INQ Error: duplicated species");
@@ -86,6 +88,7 @@ namespace hamiltonian {
 				auto & pseudo = insert.first->second;
 				
 				has_nlcc_ = has_nlcc_ or pseudo.has_nlcc_density();
+				has_overlap_ = has_overlap_ or pseudo.has_overlap();
 			}
 
 		}
@@ -253,6 +256,12 @@ namespace hamiltonian {
 
 			density.all_reduce(comm);
 			return density;			
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+		auto has_overlap() const {
+			return has_overlap_;
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////

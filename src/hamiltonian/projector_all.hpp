@@ -192,7 +192,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename Type>
-	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all) const {
+	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all, bool apply_overlap = false) const {
 		
 		CALI_CXX_MARK_FUNCTION;
 
@@ -200,8 +200,14 @@ public:
 
 		gpu::array<Type, 3> dest(extensions(projections_all));
 		
+		gpu::array<double, 3> coeff;
+		if (apply_overlap) {
+			coeff = overlap_coeff_;
+		} else {
+			coeff = coeff_;
+		}
 		gpu::run(nst, max_nlm_, nprojs_,
-						 [proj = begin(projections_all), coe = begin(coeff_), des = begin(dest), nlm = max_nlm_]
+						 [proj = begin(projections_all), coe = begin(coeff), des = begin(dest), nlm = max_nlm_]
 						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 							 auto acc = zero<Type>();
 							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
@@ -215,11 +221,11 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KpointType>
-	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, bool apply_overlap = false) const {
 		
 		auto projections_all = calculate_projections(phi, kpoint);
 
-		multiply_by_coefficients(projections_all);
+		multiply_by_coefficients(projections_all, apply_overlap);
 		
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		

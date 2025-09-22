@@ -17,6 +17,12 @@
 #include <observables/density.hpp>
 #include <systems/electrons.hpp>
 
+//Debugging remove below line later
+#include <operations/overlap.hpp>
+#include <matrix/diagonalize.hpp>
+#include <operations/rotate.hpp>
+#include <matrix/cholesky.hpp>
+
 namespace inq {
 namespace ground_state {
 	
@@ -25,7 +31,28 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons, s
 	int iphi = 0;
 	for(auto & phi : electrons.kpin()) {
 		operations::randomize(phi, iphi + electrons.kpin_part().start());
-		operations::orthogonalize(phi);
+		if(electrons.atomic_pot().has_overlap()){
+			hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions, 0.0, /* use_ace = */ true);
+			auto overlap_operator = std::bind(&hamiltonian::ks_hamiltonian<double>::overlap, &ham, std::placeholders::_1);
+			operations::orthogonalize(phi,phi,overlap_operator);
+
+			auto olap_2 = operations::overlap(phi,overlap_operator(phi));
+			auto olap_array = matrix::all_gather(olap_2);
+			/*
+			if(electrons.root()){
+				std::cout << "MINH DEBUG Sij" << std::endl;
+				std::cout << "sij array:" << std::endl;
+				for (int i = 0; i < olap_array.size(); ++i) { 
+					for (int j = 0; j < olap_array[i].size(); ++j) { 
+						std::cout << real(olap_array[i][j]) << " ";
+					}
+					std::cout << std::endl;
+				}
+			}
+			*/
+		} else {
+			operations::orthogonalize(phi);
+		}
 		for(long ist = 0; ist < phi.local_spinor_set_size(); ist++) electrons.eigenvalues()[iphi][ist] = ist + phi.spinor_set_part().start() + (iphi + electrons.kpin_part().start())/double(electrons.kpin_part().size());
 
 		iphi++;
