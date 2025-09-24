@@ -115,6 +115,7 @@ public:
 		auto buffer = internal_array_type(basis_.part().max_local_size());
 		buffer({0, basis_.part().local_size()}) = linear_({0, basis_.part().local_size()});
 		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, basis_.comm().get(), MPI_STATUS_IGNORE);
+		basis_.comm().barrier();
 		basis_.shift();
 		linear_.reextent(basis_.part().local_size());
 		linear_ = buffer({0, basis_.part().local_size()});

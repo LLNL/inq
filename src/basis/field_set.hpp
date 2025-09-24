@@ -132,6 +132,7 @@ private:
 		auto buffer = internal_array_type({basis_.part().max_local_size(), set_part_.max_local_size()});
 		buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()}) = matrix_({0, basis_.part().local_size()}, {0, set_part_.local_size()});
 		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, comm.get(), MPI_STATUS_IGNORE);
+		comm.barrier();
 		part.shift();
 		matrix_.reextent({basis_.part().local_size(), set_part_.local_size()});
 		matrix_ = buffer({0, basis_.part().local_size()}, {0, set_part_.local_size()});
