@@ -189,7 +189,7 @@ public:
 		
 		if(functional.family() == XC_FAMILY_LDA){
 			xc_lda_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()),
-										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()));
+										 edens.data(), raw_pointer_cast(vfunctional.matrix().data_elements()));
 			gpu::sync();
 			
 		} else if(functional.family() == XC_FAMILY_GGA){
@@ -207,7 +207,7 @@ public:
 							 });
 
 			xc_gga_exc_vxc(functional.libxc_func_ptr(), density.basis().local_size(), raw_pointer_cast(density.matrix().data_elements()), raw_pointer_cast(sig.matrix().data_elements()),
-										 raw_pointer_cast(edens.linear().data_elements()), raw_pointer_cast(vfunctional.matrix().data_elements()), raw_pointer_cast(vsig.matrix().data_elements()));
+										 edens.data(), raw_pointer_cast(vfunctional.matrix().data_elements()), raw_pointer_cast(vsig.matrix().data_elements()));
 			gpu::sync();
 
 			basis::field_set<basis::real_space, vector3<double, covariant>> term(vfunctional.skeleton());
