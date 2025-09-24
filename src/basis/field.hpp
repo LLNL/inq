@@ -131,16 +131,16 @@ public:
 			return basis_;
 		}
 
-		auto cubic() const {
-			assert(basis_.local_size() > 0);
-			return linear_.partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
-		}
-
-		auto cubic() {
-			assert(basis_.local_size() > 0);
-			return linear_.partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
-		}
-		
+	auto cubic() const {
+		assert(basis_.local_size() > 0);
+		return linear().partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
+	}
+	
+	auto cubic() {
+		assert(basis().local_size() > 0);
+		return linear().partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
+	}
+	
 		auto data() {
 			return raw_pointer_cast(linear_.data_elements());
 		}
@@ -292,6 +292,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	if(comm.size() == 1) CHECK(ff.linear().size() == 6160);
 	if(comm.size() == 2) CHECK(ff.linear().size() == 3080);
+	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2200);
+	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1760);
 	if(comm.size() == 4) CHECK(ff.linear().size() == 1540);
 
 	if(comm.size() == 1) CHECK(get<1>(sizes(ff.cubic())) == 28);
