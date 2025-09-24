@@ -81,7 +81,7 @@ public:
 			
 			gpu::array<int, 1> rem_points(basis().local_size());
 			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
-			linear_ = parallel::get_remote_points(old, rem_points);
+			linear() = parallel::get_remote_points(old, rem_points);
 		}
 		
 		explicit field(const field & coeff) = default;      //avoid unadverted copies
