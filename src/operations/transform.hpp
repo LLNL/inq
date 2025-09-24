@@ -53,6 +53,13 @@ template <class InArray4D, class OutArray4D>
 void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
+	assert(get<0>(sizes(array_rs)) == real_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_rs)) == real_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_rs)) == real_basis.local_sizes()[2]);
+
+	assert(get<0>(sizes(array_fs)) == fourier_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_fs)) == fourier_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_fs)) == fourier_basis.local_sizes()[2]);
 
 	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
@@ -113,10 +120,16 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 #else
 	namespace fft = multi::fftw;
 #endif
+	
+	assert(get<0>(sizes(array_rs)) == real_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_rs)) == real_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_rs)) == real_basis.local_sizes()[2]);
 
-	assert(get<0>(sizes(array_rs)) == real_basis.cubic_part(0).local_size());
-	assert(get<1>(sizes(array_rs)) == real_basis.cubic_part(1).local_size());
-	assert(get<2>(sizes(array_rs)) == real_basis.cubic_part(2).local_size());
+	assert(get<0>(sizes(array_fs)) == fourier_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_fs)) == fourier_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_fs)) == fourier_basis.local_sizes()[2]);
+
+	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
