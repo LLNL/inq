@@ -45,7 +45,7 @@ public:
 		using template_type = field<BType, EType>;
 		
 		field(const basis_type & basis):
-			linear_(basis.part().local_size()),
+			linear_(basis.part().max_local_size()),
 			basis_(basis){
 			prefetch();
 		}
