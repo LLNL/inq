@@ -110,11 +110,15 @@ public:
 		auto next_proc = (basis_.comm().rank() + 1)%basis_.comm().size();
 		auto prev_proc = basis_.comm().rank() - 1;
 		if(prev_proc == -1) prev_proc = basis_.comm().size() - 1;
+
+		auto tag = basis_.part().rank() - basis_.comm().rank();
+		if(tag < 0) tag += basis_.comm().size();
+		assert(tag >= 0 and tag < basis_.comm().size());
 		
 		auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
 		auto buffer = internal_array_type(basis_.part().max_local_size());
 		buffer({0, basis_.part().local_size()}) = linear_({0, basis_.part().local_size()});
-		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, 0, next_proc, MPI_ANY_TAG, basis_.comm().get(), MPI_STATUS_IGNORE);
+		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, tag, next_proc, tag, basis_.comm().get(), MPI_STATUS_IGNORE);
 		basis_.shift();
 		linear_.reextent(basis_.part().local_size());
 		linear_ = buffer({0, basis_.part().local_size()});

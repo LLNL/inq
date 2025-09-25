@@ -127,6 +127,18 @@ class real_space;
 			GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
 				return grid::from_symmetric_range(ng_, ii);
 			}
+						
+			GPU_FUNCTION auto & cubic_part(int idim) const {
+				return cubic_part_[idim];
+			}
+
+			GPU_FUNCTION auto local_contains(vector3<int> const & ii) const {
+				bool contains = true;
+				for(int idir = 0; idir < 3; idir++){
+					contains = contains and cubic_part_[idir].contains(ii[idir]);
+				}
+				return contains;
+			}
 			
 		private:
 			

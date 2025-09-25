@@ -28,7 +28,7 @@ namespace operations {
 namespace transfer {
 
 template <class FieldType>
-FieldType enlarge(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+FieldType enlarge(FieldType source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -48,46 +48,24 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 		
 	} else {
 
-		std::vector<long> point_list;
+		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-					
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
+			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
+							 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
+								 auto idest = dbas.from_symmetric_range(ii);
+								 
+								 if(not dbas.local_contains(idest)) return;
+								 
+								 auto idx = idest[0] - dbas.cubic_part(0).start();
+								 auto idy = idest[1] - dbas.cubic_part(1).start();
+								 auto idz = idest[2] - dbas.cubic_part(2).start();
+								 
+								 des[idx][idy][idz] = factor*sou[ix][iy][iz];
+							 });
 
-					if(not destination.basis().local_contains(idest)) continue;
-
-					point_list.push_back(source.basis().linear_index(ix, iy, iz));
-					
-				}
-			}
-		}
-
-		gpu::array<long, 1> list(point_list.begin(), point_list.end());
-		
-		auto points = parallel::get_remote_points(source, list);
-		
-		long ip = 0;
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
-
-					if(not destination.basis().local_contains(idest)) continue;
-
-					auto il0 = destination.basis().cubic_part(0).global_to_local(parallel::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_part(1).global_to_local(parallel::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_part(2).global_to_local(parallel::global_index(idest[2]));
-
-					destination.cubic()[il0][il1][il2] = factor*points[ip];
-					ip++;
-					
-				}
-			}
+			source.shift_domains();
 		}
 
 	}
@@ -99,7 +77,7 @@ FieldType enlarge(FieldType const & source, typename FieldType::basis_type const
 //////////////////////////////////////////////////////////
 
 template <class Type, class BasisType>
-basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> source, BasisType const & new_basis, double const factor = 1.0) {
 	CALI_CXX_MARK_FUNCTION;
 	
 	basis::field_set<BasisType, Type> destination(new_basis, source.set_size(), source.full_comm());
@@ -119,48 +97,26 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 		
 	} else {
 
-		std::vector<long> point_list;
+		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-					
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
+			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
+							 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+							 GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
+								 auto idest = dbas.from_symmetric_range(ii);
+								 
+								 if(not dbas.local_contains(idest)) return;
+								 
+								 auto idx = idest[0] - dbas.cubic_part(0).start();
+								 auto idy = idest[1] - dbas.cubic_part(1).start();
+								 auto idz = idest[2] - dbas.cubic_part(2).start();
+								 
+								 for(int ist = 0; ist < nst; ist++) des[idx][idy][idz][ist] = factor*sou[ix][iy][iz][ist];
+							 });
 
-					if(not destination.basis().local_contains(idest)) continue;
-
-					point_list.push_back(source.basis().linear_index(ix, iy, iz));
-					
-				}
-			}
+			source.shift_domains();
 		}
-
-		gpu::array<long, 1> list(point_list.begin(), point_list.end());
-		
-		auto points = parallel::get_remote_points(source, list);
-		
-		long ip = 0;
-		for(int ix = 0; ix < source.basis().sizes()[0]; ix++){
-			for(int iy = 0; iy < source.basis().sizes()[1]; iy++){
-				for(int iz = 0; iz < source.basis().sizes()[2]; iz++){
-	
-					auto ii = source.basis().to_symmetric_range(ix, iy, iz);
-					auto idest = destination.basis().from_symmetric_range(ii);
-
-					if(not destination.basis().local_contains(idest)) continue;
-
-					auto il0 = destination.basis().cubic_part(0).global_to_local(parallel::global_index(idest[0]));
-					auto il1 = destination.basis().cubic_part(1).global_to_local(parallel::global_index(idest[1]));
-					auto il2 = destination.basis().cubic_part(2).global_to_local(parallel::global_index(idest[2]));
-
-					for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[il0][il1][il2][ist] = factor*points[ip][ist];
-					ip++;
-					
-				}
-			}
-		}
-
 	}
 	
 	return destination;			
@@ -170,7 +126,7 @@ basis::field_set<BasisType, Type> enlarge(basis::field_set<BasisType, Type> cons
 //////////////////////////////////////////////////////////
 		
 template <class FieldType>
-FieldType shrink(FieldType const & source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+FieldType shrink(FieldType source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -191,43 +147,29 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 
 	} else {
 
-		gpu::array<long, 1> point_list(destination.basis().local_size());
+		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
-		{
-			long ip = 0;
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
+			gpu::run(destination.basis().local_sizes()[2], destination.basis().local_sizes()[1], destination.basis().local_sizes()[0],
+						 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor]
+						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 
-						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_part(2).local_to_global(iz);						
-						
-						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
-						auto isource = source.basis().from_symmetric_range(ii);
-						
-						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
-						ip++;
-					}
-				}
-			}
+							 auto ixg = dbas.cubic_part(0).local_to_global(ix);
+							 auto iyg = dbas.cubic_part(1).local_to_global(iy);
+							 auto izg = dbas.cubic_part(2).local_to_global(iz);						
+							 
+							 auto ii = dbas.to_symmetric_range(ixg.value(), iyg.value(), izg.value());
+							 auto isource = sbas.from_symmetric_range(ii);
 
-			assert(ip == point_list.size());
-		}
+							 if(not sbas.local_contains(isource)) return;
+							 
+							 auto isx = isource[0] - sbas.cubic_part(0).start();
+							 auto isy = isource[1] - sbas.cubic_part(1).start();
+							 auto isz = isource[2] - sbas.cubic_part(2).start();
+							 
+							 des[ix][iy][iz] = factor*sou[isx][isy][isz];
+						 });
 
-		auto points = parallel::get_remote_points(source, point_list);
-
-		{
-			long ip = 0;
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
-						
-						destination.cubic()[ix][iy][iz] = factor*points[ip];
-						ip++;
-					}
-				}
-			}
+			source.shift_domains();
 		}
 		
 	}
@@ -238,7 +180,7 @@ FieldType shrink(FieldType const & source, typename FieldType::basis_type const 
 //////////////////////////////////////////////////////////
 		
 template <class Type, class BasisType>
-basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const & source, BasisType const & new_basis, double const factor = 1.0) {
+basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> source, BasisType const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
@@ -258,43 +200,30 @@ basis::field_set<BasisType, Type> shrink(basis::field_set<BasisType, Type> const
 		
 	} else {
 
-		gpu::array<long, 1> point_list(destination.basis().local_size());
-		
-		{
-			long ip = 0;
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
-						
-						auto ixg = destination.basis().cubic_part(0).local_to_global(ix);
-						auto iyg = destination.basis().cubic_part(1).local_to_global(iy);
-						auto izg = destination.basis().cubic_part(2).local_to_global(iz);						
-						
-						auto ii = destination.basis().to_symmetric_range(ixg, iyg, izg);
-						auto isource = source.basis().from_symmetric_range(ii);
-						
-						point_list[ip] = source.basis().linear_index(isource[0], isource[1], isource[2]);
-						ip++;
-					}
-				}
-			}
+		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
+			
+			gpu::run(destination.basis().local_sizes()[2], destination.basis().local_sizes()[1], destination.basis().local_sizes()[0],
+							 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+							 GPU_LAMBDA (auto iz, auto iy, auto ix){
+								 
+								 auto ixg = dbas.cubic_part(0).local_to_global(ix);
+								 auto iyg = dbas.cubic_part(1).local_to_global(iy);
+								 auto izg = dbas.cubic_part(2).local_to_global(iz);
+								 
+								 auto ii = dbas.to_symmetric_range(ixg.value(), iyg.value(), izg.value());
+								 auto isource = sbas.from_symmetric_range(ii);
+								 
+								 if(not sbas.local_contains(isource)) return;
+								 
+								 auto isx = isource[0] - sbas.cubic_part(0).start();
+								 auto isy = isource[1] - sbas.cubic_part(1).start();
+								 auto isz = isource[2] - sbas.cubic_part(2).start();
+								 
+								 for(int ist = 0; ist < nst; ist++) des[ix][iy][iz][ist] = factor*sou[isx][isy][isz][ist];
+								 
+							 });
 
-			assert(ip == point_list.size());
-		}
-
-		auto points = parallel::get_remote_points(source, point_list);
-
-		{
-			long ip = 0;
-			for(int ix = 0; ix < destination.basis().local_sizes()[0]; ix++){
-				for(int iy = 0; iy < destination.basis().local_sizes()[1]; iy++){
-					for(int iz = 0; iz < destination.basis().local_sizes()[2]; iz++){	
-						
-						for(int ist = 0; ist < source.set_part().local_size(); ist++) destination.hypercubic()[ix][iy][iz][ist] = factor*points[ip][ist];
-						ip++;
-					}
-				}
-			}
+			source.shift_domains();
 		}
 
 	}
