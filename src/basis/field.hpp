@@ -89,13 +89,15 @@ public:
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 		
-		template <typename ScalarType>
-		void fill(ScalarType const & scalar) {
-			CALI_CXX_MARK_SCOPE("fill(field_set)");
-			
-			linear_.fill(scalar);
-		}
-
+	template <typename ScalarType>
+	void fill(ScalarType const & scalar) {
+		CALI_CXX_MARK_SCOPE("fill(field_set)");
+		
+		gpu::run(basis_.local_size(), [lin = begin(linear_), scalar] GPU_LAMBDA (auto ip) {
+			lin[ip] = scalar;
+		});
+	}
+	
 		template<typename OtherType>
 		field& operator=(field<basis_type, OtherType> const& o){
 			static_assert( std::is_assignable<element_type&, OtherType>{}, "!" );
