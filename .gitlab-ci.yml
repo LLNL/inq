@@ -24,6 +24,7 @@ variables:
 stages:
   - config-check
   - build
+  - gpu-test
   - test
   - clean
   - template
@@ -504,7 +505,7 @@ cuda-mpich-fast-build:
 
 cuda-mpich-fast-1proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -519,7 +520,7 @@ cuda-mpich-fast-1proc:
 
 cuda-mpich-fast-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -534,7 +535,7 @@ cuda-mpich-fast-2proc:
 
 cuda-mpich-fast-4proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -549,7 +550,7 @@ cuda-mpich-fast-4proc:
 
 cuda-mpich-fast-5proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -593,7 +594,7 @@ cuda-mpich-debug-build:
 
 cuda-mpich-debug-1proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -608,7 +609,7 @@ cuda-mpich-debug-1proc:
 
 cuda-mpich-debug-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -623,7 +624,7 @@ cuda-mpich-debug-2proc:
 
 cuda-mpich-debug-3proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -638,7 +639,7 @@ cuda-mpich-debug-3proc:
 
 cuda-mpich-debug-4proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
