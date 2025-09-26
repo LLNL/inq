@@ -430,10 +430,14 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			auto potential = solvers::poisson::solve(density);
 			solvers::poisson::in_place(density_set);
 
+
+			auto errors_field     = 0;
+			auto errors_field_set = 0;
+			
 			for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 				for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
 					for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-						
+					 
 						auto ixg = rs.cubic_part(0).local_to_global(ix);
 						auto iyg = rs.cubic_part(1).local_to_global(iy);
 						auto izg = rs.cubic_part(2).local_to_global(iz);
@@ -442,13 +446,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 						// it should be close to -1/r
 						if(rr > 1) {
-							CHECK(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) < 0.025);
-							for(int ist = 0; ist < nst; ist++) CHECK(fabs(density_set.hypercubic()[ix][iy][iz][ist]*rr/(1.0 + ist) + 1.0) < 0.025);
+							if(fabs(potential.cubic()[ix][iy][iz]*rr + 1.0) >= 0.025) errors_field++;
+							for(int ist = 0; ist < nst; ist++) if(fabs(density_set.hypercubic()[ix][iy][iz][ist]*rr/(1.0 + ist) + 1.0) >= 0.025) errors_field_set++;
 						}
 						
 					}
 				}
 			}
+
+			CHECK(errors_field     == 0);
+			CHECK(errors_field_set == 0);
 			
 			auto & part = potential.basis().part();
 			if(part.contains(0))      CHECK(real(potential.linear()[part.global_to_local(parallel::global_index(0))])      == -27.175214167_a);
