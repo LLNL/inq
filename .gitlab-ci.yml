@@ -24,6 +24,7 @@ variables:
 stages:
   - config-check
   - build
+  - gpu-test
   - test
   - clean
   - template
@@ -94,7 +95,6 @@ config-no-cuda:
 
 gcc-ompi-coverage:
     stage: build
-    needs: []
     script:
       - mkdir build && cd build
       - export CXXFLAGS="-O3 -Wall -Wextra --coverage"      
@@ -138,7 +138,6 @@ gcc-ompi-coverage-4proc:
 
 gcc-mpich:
     stage: build
-    needs: []    
     script:
       - c++ --version
       - mpichversion
@@ -228,7 +227,6 @@ gcc-mpich-5proc:
 
 gcc-ompi-debug:
     stage: build
-    needs: []    
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -288,7 +286,6 @@ gcc-ompi-debug-5proc:
       
 gcc-ompi-fast:
     stage: build
-    needs: []    
     script:
       - mpic++.openmpi --version
       - mkdir build && cd build
@@ -348,7 +345,6 @@ gcc-ompi-fast-5proc:
 
 clang-ompi-debug:
     stage: build
-    needs: []    
     script:
       - apt install --no-install-recommends -y -qq libomp-dev
       - clang++ --version
@@ -416,7 +412,6 @@ clang-ompi-debug-5proc:
 
 clang-ompi-fast:
     stage: build
-    needs: []    
     script:
       - apt install --no-install-recommends -y -qq libomp-dev    
       - clang++ --version
@@ -487,7 +482,6 @@ clang-ompi-fast-5proc:
 cuda-mpich-fast-build:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
     stage: build
-    needs: []
     tags:
       - cuda-docker
     script:
@@ -511,7 +505,7 @@ cuda-mpich-fast-build:
 
 cuda-mpich-fast-1proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -526,7 +520,7 @@ cuda-mpich-fast-1proc:
 
 cuda-mpich-fast-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -541,7 +535,7 @@ cuda-mpich-fast-2proc:
 
 cuda-mpich-fast-4proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -556,7 +550,7 @@ cuda-mpich-fast-4proc:
 
 cuda-mpich-fast-5proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-fast-build]    
     tags:
       - cuda-docker
@@ -600,7 +594,7 @@ cuda-mpich-debug-build:
 
 cuda-mpich-debug-1proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -615,7 +609,7 @@ cuda-mpich-debug-1proc:
 
 cuda-mpich-debug-2proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -630,7 +624,7 @@ cuda-mpich-debug-2proc:
 
 cuda-mpich-debug-3proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -645,7 +639,7 @@ cuda-mpich-debug-3proc:
 
 cuda-mpich-debug-4proc:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
-    stage: test
+    stage: gpu-test
     needs: [cuda-mpich-debug-build]
     tags:
       - cuda-docker
@@ -665,7 +659,6 @@ cuda-mpich-debug-4proc:
 nccl-mpich-debug-build:
     image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
     stage: build
-    needs: []
     tags:
       - cuda-docker
     script:
@@ -777,7 +770,6 @@ clang-ompi-template:
 
 hip-mpich-build:
   stage: build
-  needs: []
   image: rocm/dev-ubuntu-24.04
   script:
     - apt-get -qq update
