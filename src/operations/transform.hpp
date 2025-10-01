@@ -297,76 +297,31 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-
 	auto basis_comm = basis::basis_subcomm(cart_comm);
-	basis::real_space rs(systems::cell::cubic(6.66_b), /*spacing =*/ 0.46320257, basis_comm);
-	auto fs = basis::fourier_space(rs);
-	
-	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 
+	
 	SECTION("zero_outside_sphere"){
-		
+
+		basis::real_space rs(systems::cell::cubic(16.66_b), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
 		basis::field<basis::fourier_space, double> ff(fs);
-		
+
 		ff.fill(1.0);
 		auto vol = operations::integral(ff);
-
-		CHECK(vol == 0.1076560845_a);
 		
+		CHECK(vol == 0.0293659268_a);
+	
 		operations::transform::zero_outside_sphere(ff);
 		
-		CHECK(operations::integral(ff)/vol == 0.5160349854_a /* The limit is M_PI/6.0 for zero spacing */);
-	}
-	
-	SECTION("Zero"){
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++) phi.hypercubic()[ix][iy][iz][ist] = 0.0;
-				}
-			}
-		}
-		
-		auto fphi = operations::transform::to_fourier(phi);
-		
-		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist]);
-					}
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-		
-		diff /= fphi.hypercubic().num_elements();
-
-		CHECK(diff < 1e-15);
-		
-		auto phi2 = operations::transform::to_real(fphi);
-
-		diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++)  diff += fabs(phi.hypercubic()[ix][iy][iz][ist]);
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-		
-		diff /= phi2.hypercubic().num_elements();
-
-		CHECK(diff < 1e-15);
-		
+		CHECK(operations::integral(ff)/vol == 0.5240308896_a /* The limit is M_PI/6.0 for zero spacing */);
 	}
 	
 	SECTION("Gaussian"){
+
+		basis::real_space rs(systems::cell::cubic(16.66_b), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
+		
+		basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
@@ -381,6 +336,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 		
 		auto fphi = operations::transform::to_fourier(phi);
+
+		auto fs_vol = fs.size()*fs.volume_element();
+		CHECK(fs_vol == 0.0293659268_a);
 		
 		double diff = 0.0;
 		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
@@ -389,7 +347,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
 					}
 				}
 			}
@@ -397,10 +355,73 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
 		
-		diff /= fphi.hypercubic().num_elements();
+		diff /= fs.size();
+		CHECK(diff < 1e-3);
 
-		//not sure what is wrong here
-		std::cout << "DIFF1 " << diff << std::endl;
+		auto phi2 = operations::transform::to_real(fphi);
+
+		diff = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						diff += fabs(phi.hypercubic()[ix][iy][iz][ist] - phi2.hypercubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+		
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});   
+
+		diff /= phi2.hypercubic().num_elements();
+		
+		CHECK(diff < 1e-15);
+		
+	}
+
+	SECTION("Gaussian rotated"){
+
+		auto aa = 16.66_b;
+			
+		basis::real_space rs(systems::cell::lattice({aa/sqrt(2.0), aa/2, aa/2}, {-aa/sqrt(2), aa/2, aa/2}, {0.0_b, -aa/sqrt(2.0), aa/sqrt(2.0)}), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
+		
+		basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
+		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					double r2 = rs.point_op().r2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						phi.hypercubic()[ix][iy][iz][ist] = exp(-sigma*r2);
+					}
+				}
+			}
+		}
+		
+		auto fphi = operations::transform::to_fourier(phi);
+
+		auto fs_vol = fs.size()*fs.volume_element();
+		CHECK(fs_vol == 0.0293659268_a);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
+					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
+					}
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
+		diff /= fs.size();
+		CHECK(diff < 1e-3);
 
 		auto phi2 = operations::transform::to_real(fphi);
 
