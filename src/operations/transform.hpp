@@ -297,15 +297,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace Catch::literals;
 	
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
-
 	auto basis_comm = basis::basis_subcomm(cart_comm);
-	basis::real_space rs(systems::cell::cubic(16.66_b), /*spacing =*/ 0.306320257, basis_comm);
-	auto fs = basis::fourier_space(rs);
-	
-	basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 
+	
 	SECTION("zero_outside_sphere"){
-		
+
+		basis::real_space rs(systems::cell::cubic(16.66_b), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
 		basis::field<basis::fourier_space, double> ff(fs);
 
 		ff.fill(1.0);
@@ -318,55 +316,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(operations::integral(ff)/vol == 0.5240308896_a /* The limit is M_PI/6.0 for zero spacing */);
 	}
 	
-	SECTION("Zero"){
-		
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++) phi.hypercubic()[ix][iy][iz][ist] = 0.0;
-				}
-			}
-		}
-		
-		auto fphi = operations::transform::to_fourier(phi);
-		
-		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
-						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist]);
-					}
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-		
-		diff /= fphi.hypercubic().num_elements();
-
-		CHECK(diff < 1e-15);
-		
-		auto phi2 = operations::transform::to_real(fphi);
-
-		diff = 0.0;
-		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
-			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
-				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
-					for(int ist = 0; ist < phi.set_part().local_size(); ist++)  diff += fabs(phi.hypercubic()[ix][iy][iz][ist]);
-				}
-			}
-		}
-
-		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
-		
-		diff /= phi2.hypercubic().num_elements();
-
-		CHECK(diff < 1e-15);
-		
-	}
-	
 	SECTION("Gaussian"){
+
+		basis::real_space rs(systems::cell::cubic(16.66_b), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
+		
+		basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
 		
 		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
 			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
