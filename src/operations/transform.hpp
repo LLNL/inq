@@ -378,6 +378,71 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(diff < 1e-15);
 		
 	}
+
+	SECTION("Gaussian rotated"){
+
+		auto aa = 16.66_b;
+			
+		basis::real_space rs(systems::cell::lattice({aa/sqrt(2.0), aa/2, aa/2}, {-aa/sqrt(2), aa/2, aa/2}, {0.0_b, -aa/sqrt(2.0), aa/sqrt(2.0)}), /*spacing =*/ 0.306320257, basis_comm);
+		auto fs = basis::fourier_space(rs);
+		
+		basis::field_set<basis::real_space, complex> phi(rs, 7, cart_comm);
+		
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					double r2 = rs.point_op().r2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						phi.hypercubic()[ix][iy][iz][ist] = exp(-sigma*r2);
+					}
+				}
+			}
+		}
+		
+		auto fphi = operations::transform::to_fourier(phi);
+
+		auto fs_vol = fs.size()*fs.volume_element();
+		CHECK(fs_vol == 0.0293659268_a);
+		
+		double diff = 0.0;
+		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
+			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
+				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
+					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						double sigma = 0.5*(ist + 1);
+						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
+					}
+				}
+			}
+		}
+
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});
+		
+		diff /= fs.size();
+		CHECK(diff < 1e-3);
+
+		auto phi2 = operations::transform::to_real(fphi);
+
+		diff = 0.0;
+		for(int ix = 0; ix < rs.local_sizes()[0]; ix++){
+			for(int iy = 0; iy < rs.local_sizes()[1]; iy++){
+				for(int iz = 0; iz < rs.local_sizes()[2]; iz++){
+					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+						diff += fabs(phi.hypercubic()[ix][iy][iz][ist] - phi2.hypercubic()[ix][iy][iz][ist]);
+					}
+				}
+			}
+		}
+		
+		cart_comm.all_reduce_in_place_n(&diff, 1, std::plus<>{});   
+
+		diff /= phi2.hypercubic().num_elements();
+		
+		CHECK(diff < 1e-15);
+		
+	}
 	
 }
 #endif
