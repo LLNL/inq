@@ -90,10 +90,12 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 
 		parallel::transpose_forward(real_basis.comm(), fourier_basis.cubic_part(0), real_basis.cubic_part(1), tmp);
 
+		gpu::array<complex, 4> tmp2(extensions(tmp));
+
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_1d");
 			
-			fft::dft_forward({true, true, false, false}, tmp, tmp);
+			fft::dft_forward({true, true, false, false}, tmp, tmp2);
 			gpu::sync();
 		}
 
@@ -102,7 +104,7 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 		//tra  xzsy
 		//unr  yxzs
 		//tra  xyzs
-		array_fs = tmp.rotated().transposed().unrotated().transposed();
+		array_fs = tmp2.rotated().transposed().unrotated().transposed();
 
 	}
 }
@@ -149,28 +151,32 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 		//unr  yzxy
 
 		gpu::array<complex, 4> tmp = array_fs.transposed().rotated().transposed().unrotated(); 
-
+		
 		assert(get<0>(sizes(tmp)) == fourier_basis.cubic_part(1).local_size());
 		assert(get<1>(sizes(tmp)) == fourier_basis.cubic_part(2).local_size());
 		assert(get<2>(sizes(tmp)) == fourier_basis.cubic_part(0).local_size());		
+
+		gpu::array<complex, 4> tmp2(extensions(tmp));
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
 			
-			fft::dft_backward({true, true, false, false}, tmp, tmp);
+			fft::dft_backward({true, true, false, false}, tmp, tmp2);
 			gpu::sync();
 		}
 
-		parallel::transpose_backward(fourier_basis.comm(), partx, party, tmp);
+		tmp.clear();
 
-		assert(get<0>(sizes(tmp)) == real_basis.cubic_part(0).local_size());
-		assert(get<1>(sizes(tmp)) == real_basis.cubic_part(1).local_size());
-		assert(get<2>(sizes(tmp)) == real_basis.cubic_part(2).local_size());
+		parallel::transpose_backward(fourier_basis.comm(), partx, party, tmp2);
+
+		assert(get<0>(sizes(tmp2)) == real_basis.cubic_part(0).local_size());
+		assert(get<1>(sizes(tmp2)) == real_basis.cubic_part(1).local_size());
+		assert(get<2>(sizes(tmp2)) == real_basis.cubic_part(2).local_size());
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
 
-			fft::dft_backward({true, false, false, false}, tmp, array_rs);
+			fft::dft_backward({true, false, false, false}, tmp2, array_rs);
 			gpu::sync();
 		}
 
