@@ -242,7 +242,7 @@ field<basis::real_space, vector3<inq::complex, VectorSpace>> complex_field(field
 field<basis::real_space, double> real_field(field<basis::real_space, complex> const & cfield) {
 	field<basis::real_space, double> rfield(cfield.skeleton());     
 	gpu::run(rfield.basis().local_size(),
-					 [rf = begin(rfield.linear()), cf(cfield.linear())] GPU_LAMBDA (auto ip) {
+					 [rf = begin(rfield.linear()), cf = begin(cfield.linear())] GPU_LAMBDA (auto ip) {
 						 rf[ip] = real(cf[ip]);
 					 });
 	return rfield;
