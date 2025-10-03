@@ -16,6 +16,7 @@
 #include <basis/field.hpp>
 #include <basis/field_set.hpp>
 #include <basis/fourier_space.hpp>
+#include <parallel/transpose.hpp>
 #include <states/orbital_set.hpp>
 
 #ifdef ENABLE_GPU
@@ -52,6 +53,13 @@ template <class InArray4D, class OutArray4D>
 void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space const & fourier_basis, InArray4D const & array_rs, OutArray4D && array_fs) {
 
 	CALI_CXX_MARK_FUNCTION;
+	assert(get<0>(sizes(array_rs)) == real_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_rs)) == real_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_rs)) == real_basis.local_sizes()[2]);
+
+	assert(get<0>(sizes(array_fs)) == fourier_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_fs)) == fourier_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_fs)) == fourier_basis.local_sizes()[2]);
 
 	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
 	
@@ -65,61 +73,38 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_forward_3d");
 
+		assert(extensions(array_rs) == extensions(array_fs));
+		
 		fft::dft_forward({true, true, true, false}, array_rs, array_fs);
 		gpu::sync();
 
 	} else {
 
-		auto & comm = real_basis.comm();
-		
-		int xblock = real_basis.cubic_part(0).max_local_size();
-		int zblock = fourier_basis.cubic_part(2).max_local_size();
-		assert(real_basis.local_sizes()[1] == fourier_basis.local_sizes()[1]);
+		gpu::array<complex, 4> tmp(extensions(array_rs));
 
-		auto last_dim = get<3>(sizes(array_rs));
-
-		gpu::array<complex, 4> tmp({xblock, real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-		
-		gpu::prefetch(tmp);
-		
 		{
-			CALI_CXX_MARK_SCOPE("fft_forward_2d");
-
-			auto const real_x = real_basis.local_sizes();
-			fft::dft_forward({false, true, true, false}, array_rs, tmp({0, real_x[0]}, {0, real_x[1]}, {0, real_x[2]}));
+			CALI_CXX_MARK_SCOPE("fft_forward_1d");
+			fft::dft_forward({true, false, false, false}, array_rs, tmp);
 			gpu::sync();
 		}
-		
-		CALI_MARK_BEGIN("fft_forward_transpose");   
-		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
 
-		for(int i4 = 0; i4 < comm.size(); i4++){
-			gpu::run(last_dim, zblock, real_basis.local_sizes()[1], xblock, 
-							 [i4,
-								buf = begin(buffer),
-								rot = begin(tmp.unrotated().unrotated().partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-							 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-								 buf[i4][i3][i2][i1][i0] = rot[i4][i3][i2][i1][i0];
-							 });
-		}
-		CALI_MARK_END("fft_forward_transpose");
+		parallel::transpose_forward(real_basis.comm(), fourier_basis.cubic_part(0), real_basis.cubic_part(1), tmp);
 
-		assert(get<4>(sizes(buffer)) == last_dim);
-		
-		tmp.clear();
-
-		{
-			CALI_CXX_MARK_SCOPE("fft_forward_alltoall");
-			parallel::alltoall(buffer, comm);
-		}
+		gpu::array<complex, 4> tmp2(extensions(tmp));
 
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_1d");
 			
-			auto const fourier_x = fourier_basis.local_sizes();
-			fft::dft_forward({true, false, false, false}, buffer.flatted()({0, fourier_x[0]}, {0, fourier_x[1]}, {0, fourier_x[2]}), array_fs);
+			fft::dft_forward({true, true, false, false}, tmp, tmp2);
 			gpu::sync();
 		}
+
+		//from yzxs to xyzs
+		//rot  zxsy
+		//tra  xzsy
+		//unr  yxzs
+		//tra  xyzs
+		array_fs = tmp2.rotated().transposed().unrotated().transposed();
 
 	}
 }
@@ -137,7 +122,17 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 #else
 	namespace fft = multi::fftw;
 #endif
+	
+	assert(get<0>(sizes(array_rs)) == real_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_rs)) == real_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_rs)) == real_basis.local_sizes()[2]);
 
+	assert(get<0>(sizes(array_fs)) == fourier_basis.local_sizes()[0]);
+	assert(get<1>(sizes(array_fs)) == fourier_basis.local_sizes()[1]);
+	assert(get<2>(sizes(array_fs)) == fourier_basis.local_sizes()[2]);
+
+	assert(get<3>(sizes(array_rs)) == get<3>(sizes(array_fs)));
+	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
 
@@ -146,60 +141,45 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 	} else {
 
-		auto & comm = fourier_basis.comm();
-
-		int xblock = real_basis.cubic_part(0).max_local_size();
-		int zblock = fourier_basis.cubic_part(2).max_local_size();
-
-		auto last_dim = get<3>(sizes(array_fs));
+		auto & partx = fourier_basis.cubic_part(0);
+		auto & party = real_basis.cubic_part(1);
 		
-		gpu::array<complex, 5> buffer({comm.size(), xblock, real_basis.local_sizes()[1], zblock, last_dim});
-		gpu::prefetch(buffer);
+		//from xyzs to yzxs
+		//tra  yxzs
+		//rot  xzsy
+		//tra  zxsy
+		//unr  yzxy
+
+		gpu::array<complex, 4> tmp = array_fs.transposed().rotated().transposed().unrotated(); 
+		
+		assert(get<0>(sizes(tmp)) == fourier_basis.cubic_part(1).local_size());
+		assert(get<1>(sizes(tmp)) == fourier_basis.cubic_part(2).local_size());
+		assert(get<2>(sizes(tmp)) == fourier_basis.cubic_part(0).local_size());		
+
+		gpu::array<complex, 4> tmp2(extensions(tmp));
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
 			
-			fft::dft_backward({true, true, false, false}, array_fs, buffer.flatted()({0, fourier_basis.local_sizes()[0]}, {0, fourier_basis.local_sizes()[1]}, {0, fourier_basis.local_sizes()[2]}));
+			fft::dft_backward({true, true, false, false}, tmp, tmp2);
 			gpu::sync();
 		}
 
-		{
-			CALI_CXX_MARK_SCOPE("fft_backward_alltoall");
-			parallel::alltoall(buffer, comm);
-		}
-		
-		gpu::array<complex, 4> tmp({real_basis.local_sizes()[0], real_basis.local_sizes()[1], zblock*comm.size(), last_dim});
-		gpu::prefetch(tmp);
-		
-		{
-			CALI_CXX_MARK_SCOPE("fft_backward_transpose");
-			for(int i4 = 0; i4 < comm.size(); i4++){
-				gpu::run(last_dim, zblock, real_basis.local_sizes()[1], real_basis.local_sizes()[0],
-								 [i4, 
-									buf = begin(buffer),
-									rot = begin(tmp.unrotated().unrotated().partitioned(comm.size()).transposed().rotated().transposed().rotated())]
-								 GPU_LAMBDA (auto i0, auto i1, auto i2, auto i3){
-									 rot[i4][i3][i2][i1][i0] = buf[i4][i3][i2][i1][i0];
-								 });
-			}
-		}
+		tmp.clear();
 
+		parallel::transpose_backward(fourier_basis.comm(), partx, party, tmp2);
+
+		assert(get<0>(sizes(tmp2)) == real_basis.cubic_part(0).local_size());
+		assert(get<1>(sizes(tmp2)) == real_basis.cubic_part(1).local_size());
+		assert(get<2>(sizes(tmp2)) == real_basis.cubic_part(2).local_size());
+		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_1d");
 
-			auto tmpsub = tmp({0, real_basis.local_sizes()[0]}, {0, real_basis.local_sizes()[1]}, {0, real_basis.local_sizes()[2]});
-
-#ifdef ENABLE_GPU
-			//when using cuda, do a loop explicitly over the last dimension (n1), otherwise multi makes a loop over the 2 first ones (n0 and n1). And we know that n3 << n0*n1.
-			for(auto ii : extension(tmpsub.unrotated())) {
-				fft::dft_backward({false, false, true}, tmpsub.unrotated()[ii], array_rs.unrotated()[ii]);
-			}
-#else
-			fft::dft_backward({false, false, true, false}, tmpsub, array_rs);
-#endif
+			fft::dft_backward({true, false, false, false}, tmp2, array_rs);
 			gpu::sync();
-
 		}
+
 	}
 
 	if(normalize){

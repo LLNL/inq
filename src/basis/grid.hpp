@@ -38,8 +38,8 @@ namespace basis {
 		const static int dimension = 3;
 		
 		grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
-			base(nr[0], comm),
-			cubic_part_({base::part_, inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
+			base(nr[1], comm),
+			cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
 			cell_(cell),
 			nr_(nr){
 
@@ -51,7 +51,7 @@ namespace basis {
 				covspacing_[idir] = 2.0*M_PI;				
 			}
 
-			base::part_ *= nr_[1]*long(nr_[2]);
+			base::part_ *= nr_[0]*long(nr_[2]);
 			
 			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
@@ -201,22 +201,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr(cell, {120, 45, 77}, comm);
+	basis::grid gr(cell, {45, 120, 77}, comm);
 
-	CHECK(gr.sizes()[0] == 120);
-	CHECK(gr.sizes()[1] == 45);
+	CHECK(gr.sizes()[0] == 45);
+	CHECK(gr.sizes()[1] == 120);
 	CHECK(gr.sizes()[2] == 77);
 
-	if(comm.size() == 1) CHECK(gr.cubic_part(0).local_size() == 120);
-	if(comm.size() == 2) CHECK(gr.cubic_part(0).local_size() == 60);
-	if(comm.size() == 3) CHECK(gr.cubic_part(0).local_size() == 40);
-	if(comm.size() == 4) CHECK(gr.cubic_part(0).local_size() == 30);
-	if(comm.size() == 5) CHECK(gr.cubic_part(0).local_size() == 24);
-	if(comm.size() == 6) CHECK(gr.cubic_part(0).local_size() == 20);
-	if(comm.size() == 8) CHECK(gr.cubic_part(0).local_size() == 15);
-	if(comm.size() == 10) CHECK(gr.cubic_part(0).local_size() == 12);
-	if(comm.size() == 12) CHECK(gr.cubic_part(0).local_size() == 10);
-	CHECK(gr.cubic_part(1).local_size() == 45);
+	CHECK(gr.cubic_part(0).local_size() == 45);
+	if(comm.size() == 1) CHECK(gr.cubic_part(1).local_size() == 120);
+	if(comm.size() == 2) CHECK(gr.cubic_part(1).local_size() == 60);
+	if(comm.size() == 3) CHECK(gr.cubic_part(1).local_size() == 40);
+	if(comm.size() == 4) CHECK(gr.cubic_part(1).local_size() == 30);
+	if(comm.size() == 5) CHECK(gr.cubic_part(1).local_size() == 24);
+	if(comm.size() == 6) CHECK(gr.cubic_part(1).local_size() == 20);
+	if(comm.size() == 8) CHECK(gr.cubic_part(1).local_size() == 15);
+	if(comm.size() == 10) CHECK(gr.cubic_part(1).local_size() == 12);
+	if(comm.size() == 12) CHECK(gr.cubic_part(1).local_size() == 10);
 	CHECK(gr.cubic_part(2).local_size() == 77);
 
 	for(int ix = 0; ix < gr.local_sizes()[0]; ix++){
@@ -233,12 +233,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		}
 	}
 
-	CHECK(gr.symmetric_range_begin(0) == -60);
-	CHECK(gr.symmetric_range_end(0) == 60);
-
-	CHECK(gr.symmetric_range_begin(1) == -22);
-	CHECK(gr.symmetric_range_end(1) == 23);
+	CHECK(gr.symmetric_range_begin(0) == -22);
+	CHECK(gr.symmetric_range_end(0) == 23);
 	
+	CHECK(gr.symmetric_range_begin(1) == -60);
+	CHECK(gr.symmetric_range_end(1) == 60);
+
 	CHECK(gr.symmetric_range_begin(2) == -38);
 	CHECK(gr.symmetric_range_end(2) == 39);	
 

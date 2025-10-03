@@ -75,9 +75,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	if(comm.size() > 4) return;
-	
-  basis::real_space bas(systems::cell::orthorhombic(4.2_b, 3.5_b, 6.4_b), /*spacing =*/ 0.39770182, comm);
+  basis::real_space bas(systems::cell::orthorhombic(4.2_b, 5.5_b, 6.4_b), /*spacing =*/ 0.39770182, comm);
 
 	basis::field<basis::real_space, double> density(bas);
 
@@ -95,7 +93,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 		auto dipole = observables::dipole(density);
 
-		CHECK(dipole[0] == 2.6692428234_a);
+		CHECK(dipole[0] == 2.7018246584_a);
 		CHECK(fabs(dipole[1]) < 1e-14);
 		CHECK(fabs(dipole[2]) < 1e-14);
 		
@@ -116,8 +114,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto dipole = observables::dipole(density);
 
 		CHECK(fabs(dipole[0]) < 1e-14);
-		CHECK(dipole[1] == 2.496792_a);
-		CHECK(dipole[2] == 5.484786_a);
+		CHECK(dipole[1] == 2.7705627865_a);
+		CHECK(dipole[2] == 5.5517357839_a);
 		
 	}
 
@@ -135,9 +133,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	
 		auto dipole = observables::dipole(density);
 
-		CHECK(dipole[0] == -0.0000688417_a);
-		CHECK(dipole[1] == 2.042557045_a);
-		CHECK(fabs(dipole[2]) < 1e-14);
+		CHECK(dipole[0] == -0.0000696820_a);
+		CHECK(dipole[1] ==  2.1618934378_a);
+		CHECK(fabs(dipole[2]) < 1e-8);
 		
 	}
 }

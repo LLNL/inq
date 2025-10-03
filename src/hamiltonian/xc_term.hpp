@@ -351,6 +351,21 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	basis::real_space bas(systems::cell::orthorhombic(lx*1.0_b, ly*1.0_b, lz*1.0_b), /*spacing =*/ 0.40557787, comm);
 
+	//some variables for testing explicit values in a point
+	auto contains1 = bas.cubic_part(0).contains(20) and bas.cubic_part(1).contains(8) and bas.cubic_part(2).contains(4);
+	auto p1 = vector3{
+		bas.cubic_part(0).global_to_local(parallel::global_index(20)),
+		bas.cubic_part(1).global_to_local(parallel::global_index(8)),
+		bas.cubic_part(2).global_to_local(parallel::global_index(4))
+	};
+
+	auto contains2 = bas.cubic_part(0).contains(1) and bas.cubic_part(1).contains(27) and bas.cubic_part(2).contains(3);
+	auto p2 = vector3{
+		bas.cubic_part(0).global_to_local(parallel::global_index(1)),
+		bas.cubic_part(1).global_to_local(parallel::global_index(27)),
+		bas.cubic_part(2).global_to_local(parallel::global_index(3))
+	};
+	
 	basis::field_set<basis::real_space, double> density_unp(bas, 1);  
 	basis::field_set<basis::real_space, double> density_pol(bas, 2);
 	
@@ -382,11 +397,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	auto grad_unp = std::optional{operations::gradient(density_unp)};
 	auto grad_pol = std::optional{operations::gradient(density_pol)};
 
-	if(bas.part().contains(5439)) {
-		auto index = bas.part().global_to_local(parallel::global_index(5439));
-		CHECK(density_unp.matrix()[index][0] == 0.0024885602_a);
-		CHECK(density_pol.matrix()[index][0] == 0.0009452194_a);
-		CHECK(density_pol.matrix()[index][1] == 0.0015433408_a);
+	if(contains1) {
+		CHECK(density_unp.hypercubic()[p1[0]][p1[1]][p1[2]][0] ==  0.0128010699_a);
+		
+		CHECK(density_pol.hypercubic()[p1[0]][p1[1]][p1[2]][0] ==  0.0105767522_a);
+		CHECK(density_pol.hypercubic()[p1[0]][p1[1]][p1[2]][1] ==  0.0022243176_a);
+	}
+
+	if(contains2) {
+		CHECK(density_unp.hypercubic()[p2[0]][p2[1]][p2[2]][0] ==  0.1170768817_a);
+		
+		CHECK(density_pol.hypercubic()[p2[0]][p2[1]][p2[2]][0] ==  0.1056820298_a);
+		CHECK(density_pol.hypercubic()[p2[0]][p2[1]][p2[2]][1] ==  0.0113948519_a);
 	}
 
 	basis::field_set<basis::real_space, double> vfunc_unp(bas, 1);  
@@ -406,18 +428,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(efunc_unp == -14.0558385758_a);
 		CHECK(efunc_pol == -15.1704508993_a);
 
-		if(bas.part().contains(5439)) {
-			auto index = bas.part().global_to_local(parallel::global_index(5439));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.1334462916_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.1217618773_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.1433797225_a);
+		if(contains1) {
+			CHECK(vfunc_unp.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.2303593706_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.2723440571_a);
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][1] == -0.161956877_a);
 		}
 
-		if(bas.part().contains(4444)) {
-			auto index = bas.part().global_to_local(parallel::global_index(4444));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.3276348215_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.3784052378_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.2527984139_a);
+		if(contains2) {
+			CHECK(vfunc_unp.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.4817416283_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.5865893510_a);
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][1] == -0.2791922475_a);
 		}
 
 	}
@@ -435,19 +457,19 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		CHECK(efunc_unp == -1.8220292936_a);
 		CHECK(efunc_pol == -1.5664843681_a);
-
-		if(bas.part().contains(5439)) {
-			auto index = bas.part().global_to_local(parallel::global_index(5439));
-			CHECK(vfunc_unp.matrix()[index][0] == 0.0005467193_a);
-			CHECK(vfunc_pol.matrix()[index][0] == 0.0005956583_a);
-			CHECK(vfunc_pol.matrix()[index][1] == 0.0005978958_a);
+		
+		if(contains1) {
+			CHECK(vfunc_unp.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.0204483039_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.014103878_a);
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][1] == -0.0153619746_a);
 		}
 
-		if(bas.part().contains(4444)) {
-			auto index = bas.part().global_to_local(parallel::global_index(4444));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.0798456253_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.0667968142_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.0830118308_a);
+		if(contains2) {
+			CHECK(vfunc_unp.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.0489985993_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.0262851169_a);
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][1] == -0.1106176588_a);
 		}
 
 	}
@@ -465,21 +487,20 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 		CHECK(efunc_unp == -13.2435562623_a);
 		CHECK(efunc_pol == -13.8397387159_a);
-
-		if(bas.part().contains(5439)) {
-			auto index = bas.part().global_to_local(parallel::global_index(5439));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.6495909727_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.6398010386_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.6142058762_a);
+		
+		if(contains1) {
+			CHECK(vfunc_unp.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.0448677831_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][0] == -0.1086130115_a);
+			CHECK(vfunc_pol.hypercubic()[p1[0]][p1[1]][p1[2]][1] == -0.0174509282_a);
 		}
 
-		if(bas.part().contains(4444)) {
-			auto index = bas.part().global_to_local(parallel::global_index(4444));
-			CHECK(vfunc_unp.matrix()[index][0] == -0.2879332051_a);
-			CHECK(vfunc_pol.matrix()[index][0] == -0.3195127242_a);
-			CHECK(vfunc_pol.matrix()[index][1] == -0.2368583776_a);
+		if(contains2) {
+			CHECK(vfunc_unp.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.5250404983_a);
+			
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][0] == -0.5098472410_a);
+			CHECK(vfunc_pol.hypercubic()[p2[0]][p2[1]][p2[2]][1] == -0.4995086042_a);
 		}
-
 	}
 
 	SECTION("xc_term object") {
@@ -557,5 +578,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(nvxc2 == target);
 		CHECK(exc2 == target2);
 	}
+	
+
 }
 #endif
