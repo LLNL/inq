@@ -99,12 +99,13 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 			gpu::sync();
 		}
 
-		//from yzxs to xyzs
+		//from zyxs to xyzs
+		//tra  yzxy
 		//rot  zxsy
 		//tra  xzsy
 		//unr  yxzs
 		//tra  xyzs
-		array_fs = tmp2.rotated().transposed().unrotated().transposed();
+		array_fs = tmp2.transposed().rotated().transposed().unrotated().transposed();
 
 	}
 }
@@ -144,16 +145,17 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 		auto & partx = fourier_basis.cubic_part(0);
 		auto & party = real_basis.cubic_part(1);
 		
-		//from xyzs to yzxs
+		//from xyzs to zyxs
 		//tra  yxzs
 		//rot  xzsy
 		//tra  zxsy
-		//unr  yzxy
+		//unr  yzxs
+		//tra  zyxs
 
-		gpu::array<complex, 4> tmp = array_fs.transposed().rotated().transposed().unrotated(); 
+		gpu::array<complex, 4> tmp = array_fs.transposed().rotated().transposed().unrotated().transposed();
 		
-		assert(get<0>(sizes(tmp)) == fourier_basis.cubic_part(1).local_size());
-		assert(get<1>(sizes(tmp)) == fourier_basis.cubic_part(2).local_size());
+		assert(get<0>(sizes(tmp)) == fourier_basis.cubic_part(2).local_size());
+		assert(get<1>(sizes(tmp)) == fourier_basis.cubic_part(1).local_size());
 		assert(get<2>(sizes(tmp)) == fourier_basis.cubic_part(0).local_size());		
 
 		gpu::array<complex, 4> tmp2(extensions(tmp));
