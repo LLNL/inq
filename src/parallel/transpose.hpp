@@ -73,12 +73,12 @@ void transpose_forward(parallel::communicator & comm, PartX const & partx, PartY
 	
 	parallel::alltoall(buffer, comm);
 
-	array.reextent({party.size(), nz, partx.local_size(), nw});
+	array.reextent({nz, party.size(), partx.local_size(), nw});
 
 	for(int iproc = 0; iproc < comm.size(); iproc++) {
 		gpu::run(nw, nz, partx.max_local_size(), party.max_local_size(),
 						 [arr = begin(array), buf = begin(buffer), partx, party, iproc] GPU_LAMBDA (auto iw, auto iz, auto ix, auto iy) {
-							 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) arr[party.start(iproc) + iy][iz][ix][iw] = buf[iproc][ix + iy*partx.max_local_size()][iz][iw];
+							 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) arr[iz][party.start(iproc) + iy][ix][iw] = buf[iproc][ix + iy*partx.max_local_size()][iz][iw];
 						 });
 	}
 
@@ -92,9 +92,9 @@ void transpose_backward(parallel::communicator & comm, PartX const & partx, Part
 
 	assert(comm.size() == party.comm_size());
 	assert(comm.size() == partx.comm_size());
-	
-	assert(get<0>(sizes(array)) == party.size());
-	auto nz = get<1>(sizes(array));
+
+	auto nz = get<0>(sizes(array));
+	assert(get<1>(sizes(array)) == party.size());
 	assert(get<2>(sizes(array)) == partx.local_size());
 	auto nw = get<3>(sizes(array));
 	
@@ -103,7 +103,7 @@ void transpose_backward(parallel::communicator & comm, PartX const & partx, Part
 	for(int iproc = 0; iproc < comm.size(); iproc++) {
 		gpu::run(nw, nz, party.max_local_size(), partx.max_local_size(),
 						 [arr = begin(array), buf = begin(buffer), partx, party, iproc] GPU_LAMBDA (auto iw, auto iz, auto iy, auto ix) {
-							 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) buf[iproc][ix + iy*partx.max_local_size()][iz][iw] = arr[party.start(iproc) + iy][iz][ix][iw];
+							 if(long(iy) < party.local_size(iproc) and long(ix) < partx.local_size()) buf[iproc][ix + iy*partx.max_local_size()][iz][iw] = arr[iz][party.start(iproc) + iy][ix][iw];
 						 });
 	}
 	
@@ -265,18 +265,18 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 		
 		parallel::transpose_forward(comm, partx, party, array);
-		
-		CHECK(get<0>(sizes(array)) == party.size());
-		CHECK(get<1>(sizes(array)) == nz);
+
+		CHECK(get<0>(sizes(array)) == nz);
+		CHECK(get<1>(sizes(array)) == party.size());
 		CHECK(get<2>(sizes(array)) == partx.local_size());
 		CHECK(get<3>(sizes(array)) == nw);
-		
-		for(int iy = 0; iy < party.size(); iy++){
-			for(int ix = 0; ix < partx.local_size(); ix++){
-				for(int iz = 0; iz < nz; iz++){
+
+		for(int iz = 0; iz < nz; iz++){
+			for(int iy = 0; iy < party.size(); iy++){
+				for(int ix = 0; ix < partx.local_size(); ix++){
 					for(int iw = 0; iw < nw; iw++){
-						CHECK(real(array[iy][iz][ix][iw]) == (partx.start() + ix)*1000.0 + iw);
-						CHECK(imag(array[iy][iz][ix][iw]) == iy + iz*10000.0);
+						CHECK(real(array[iz][iy][ix][iw]) == (partx.start() + ix)*1000.0 + iw);
+						CHECK(imag(array[iz][iy][ix][iw]) == iy + iz*10000.0);
 					}
 				}
 			}
@@ -293,13 +293,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		auto partx = parallel::partition(nx, comm);
 		auto party = parallel::partition(ny, comm);
 		
-		gpu::array<complex, 4> array({ny, nz, partx.local_size(), nw}, NAN);
-		
-		for(int iy = 0; iy < party.size(); iy++){
-			for(int iz = 0; iz < nz; iz++){
+		gpu::array<complex, 4> array({nz, ny, partx.local_size(), nw}, NAN);
+
+		for(int iz = 0; iz < nz; iz++){
+			for(int iy = 0; iy < party.size(); iy++){
 				for(int ix = 0; ix < partx.local_size(); ix++){
 					for(int iw = 0; iw < nw; iw++){
-						array[iy][iz][ix][iw] = complex{(partx.start() + ix)*1000.0 + iw, iy + iz*10000.0};
+						array[iz][iy][ix][iw] = complex{(partx.start() + ix)*1000.0 + iw, iy + iz*10000.0};
 					}
 				}
 			}
