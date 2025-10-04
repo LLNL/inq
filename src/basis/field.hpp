@@ -89,13 +89,15 @@ public:
 		field & operator=(const field & coeff) = default;
 		field & operator=(field && coeff) = default;
 		
-		template <typename ScalarType>
-		void fill(ScalarType const & scalar) {
-			CALI_CXX_MARK_SCOPE("fill(field_set)");
-			
-			linear_.fill(scalar);
-		}
-
+	template <typename ScalarType>
+	void fill(ScalarType const & scalar) {
+		CALI_CXX_MARK_SCOPE("fill(field_set)");
+		
+		gpu::run(basis_.local_size(), [lin = begin(linear_), scalar] GPU_LAMBDA (auto ip) {
+			lin[ip] = scalar;
+		});
+	}
+	
 		template<typename OtherType>
 		field& operator=(field<basis_type, OtherType> const& o){
 			static_assert( std::is_assignable<element_type&, OtherType>{}, "!" );
@@ -149,15 +151,15 @@ public:
 		auto data() const {
 			return raw_pointer_cast(linear_.data_elements());
 		}
-
-		auto & linear() const {
-			return linear_;
-		}
-
-		auto & linear() {
-			return linear_;
-		}
-
+	
+	auto linear() const {
+		return linear_({0, basis_.local_size()});
+	}
+	
+	auto linear() {
+		return linear_({0, basis_.local_size()});
+	}
+	
 		// emulate a field_set
 
 		auto hypercubic() const {
@@ -209,14 +211,14 @@ public:
 		template <typename CommunicatorType, typename OpType = std::plus<>>
 		void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
 			if(comm.size() < 2) return;
-			comm.all_reduce_in_place_n(raw_pointer_cast(linear().data_elements()), linear().num_elements(), op);
+			comm.all_reduce_in_place_n(data(), linear().num_elements(), op);
 		}
 
 };
 
 field<basis::real_space, complex> complex_field(field<basis::real_space, double> const & rfield) {
 	field<basis::real_space, complex> cfield(rfield.skeleton());        
-
+	
 	gpu::run(rfield.basis().part().local_size(),
 					 [cp = begin(cfield.linear()), rp = begin(rfield.linear())] GPU_LAMBDA (auto ip){
 						 cp[ip] = inq::complex(rp[ip], 0.0);
@@ -239,7 +241,10 @@ field<basis::real_space, vector3<inq::complex, VectorSpace>> complex_field(field
 
 field<basis::real_space, double> real_field(field<basis::real_space, complex> const & cfield) {
 	field<basis::real_space, double> rfield(cfield.skeleton());     
-	rfield.linear() = boost::multi::blas::real(cfield.linear());
+	gpu::run(rfield.basis().local_size(),
+					 [rf = begin(rfield.linear()), cf = begin(cfield.linear())] GPU_LAMBDA (auto ip) {
+						 rf[ip] = real(cf[ip]);
+					 });
 	return rfield;
 }
 
