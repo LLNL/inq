@@ -51,6 +51,11 @@ public:
 	}
 		
 	class point_operator {
+			
+		std::array<int, 3> ng_;
+		vector3<double, covariant> gspacing_;
+		std::array<inq::parallel::partition, 3> cubic_part_;
+		systems::cell::cell_metric metric_;
 
 	public:
 
@@ -138,13 +143,6 @@ public:
 			}
 			return contains;
 		}
-			
-	private:
-			
-		std::array<int, 3> ng_;
-		vector3<double, covariant> gspacing_;
-		std::array<inq::parallel::partition, 3> cubic_part_;
-		systems::cell::cell_metric metric_;
 			
 	};
 
