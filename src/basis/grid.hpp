@@ -33,10 +33,8 @@ protected:
 	vector3<double> rlength_;
 	long npoints_;
 
-public:
-
-	const static int dimension = 3;
-		
+public:		
+	
 	grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
 		base(nr[1], comm),
 		cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
@@ -58,12 +56,12 @@ public:
 		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
 			
 	}
-		
+
 	grid(grid && old, parallel::communicator new_comm):
 		grid(old.cell_, old.nr_, new_comm)
 	{
 	}
-		
+	
 	GPU_FUNCTION const vector3<double> & rspacing() const{
 		return rspacing_;
 	}
