@@ -18,170 +18,170 @@
 namespace inq {
 namespace basis {
 
-  class grid : public base {
+class grid : public base {
 
-	protected:
+protected:
 
-		std::array<inq::parallel::partition, 3> cubic_part_;
-		systems::cell cell_;
-    std::array<int, 3> nr_;
-		std::array<int, 3> nr_local_;
-    std::array<int, 3> ng_;
-    vector3<double> rspacing_;
-    vector3<double, contravariant> conspacing_;
-    vector3<double, covariant> covspacing_;
-    vector3<double> rlength_;
-		long npoints_;
+	std::array<inq::parallel::partition, 3> cubic_part_;
+	systems::cell cell_;
+	std::array<int, 3> nr_;
+	std::array<int, 3> nr_local_;
+	std::array<int, 3> ng_;
+	vector3<double> rspacing_;
+	vector3<double, contravariant> conspacing_;
+	vector3<double, covariant> covspacing_;
+	vector3<double> rlength_;
+	long npoints_;
 
-  public:
+public:
 
-		const static int dimension = 3;
+	const static int dimension = 3;
 		
-		grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
-			base(nr[1], comm),
-			cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
-			cell_(cell),
-			nr_(nr){
+	grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
+		base(nr[1], comm),
+		cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
+		cell_(cell),
+		nr_(nr){
 
-			for(int idir = 0; idir < 3; idir++){
-				rlength_[idir] = length(cell[idir]);
-				ng_[idir] = nr_[idir];
-				rspacing_[idir] = rlength_[idir]/nr_[idir];
-				conspacing_[idir] = 1.0/nr_[idir];
-				covspacing_[idir] = 2.0*M_PI;				
-			}
+		for(int idir = 0; idir < 3; idir++){
+			rlength_[idir] = length(cell[idir]);
+			ng_[idir] = nr_[idir];
+			rspacing_[idir] = rlength_[idir]/nr_[idir];
+			conspacing_[idir] = 1.0/nr_[idir];
+			covspacing_[idir] = 2.0*M_PI;				
+		}
 
-			base::part_ *= nr_[0]*long(nr_[2]);
+		base::part_ *= nr_[0]*long(nr_[2]);
 			
-			npoints_ = nr_[0]*long(nr_[1])*nr_[2];
+		npoints_ = nr_[0]*long(nr_[1])*nr_[2];
 
-			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
+		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
 			
-		}
+	}
 		
-		grid(grid && old, parallel::communicator new_comm):
-			grid(old.cell_, old.nr_, new_comm)
-		{
-		}
+	grid(grid && old, parallel::communicator new_comm):
+		grid(old.cell_, old.nr_, new_comm)
+	{
+	}
 		
-    GPU_FUNCTION const vector3<double> & rspacing() const{
-      return rspacing_;
-    }
+	GPU_FUNCTION const vector3<double> & rspacing() const{
+		return rspacing_;
+	}
 
-    GPU_FUNCTION const auto & contravariant_spacing() const{
-      return conspacing_;
-    }
+	GPU_FUNCTION const auto & contravariant_spacing() const{
+		return conspacing_;
+	}
 		
-		double diagonal_length() const {
-			return length(rlength_);
-		}
+	double diagonal_length() const {
+		return length(rlength_);
+	}
 		
-    GPU_FUNCTION const vector3<double> & rlength() const{
-      return rlength_;
-    }
+	GPU_FUNCTION const vector3<double> & rlength() const{
+		return rlength_;
+	}
 
-    double min_rlength() const{
-      return std::min(rlength_[0], std::min(rlength_[1], rlength_[2]));
-    }
+	double min_rlength() const{
+		return std::min(rlength_[0], std::min(rlength_[1], rlength_[2]));
+	}
 
 		
-    long size() const {
-      return npoints_;
-    }
+	long size() const {
+		return npoints_;
+	}
 
-		long num_points() const {
-			return npoints_;
-		}
+	long num_points() const {
+		return npoints_;
+	}
 
-		GPU_FUNCTION
-		friend auto sizes(const grid & gr){
-			return gr.nr_;
-		}
+	GPU_FUNCTION
+	friend auto sizes(const grid & gr){
+		return gr.nr_;
+	}
 
-		GPU_FUNCTION
-		auto & sizes() const {
-			return nr_;
-		}
+	GPU_FUNCTION
+	auto & sizes() const {
+		return nr_;
+	}
 
-		auto & local_sizes() const {
-			return nr_local_;
-		}
+	auto & local_sizes() const {
+		return nr_local_;
+	}
 		
-		template<class OStream>
-		friend OStream& operator<<(OStream& out, grid const& self){
-			out << "Basis set:" << std::endl;
-			out << "  Spacing                 = " << self.rspacing()[0] << " " << self.rspacing()[1] << " " << self.rspacing()[2] << " bohr" << std::endl;
-      out << "  Grid size               = " << self.sizes()[0] << " x " << self.sizes()[1] << " x " << self.sizes()[2] << std::endl;
-			out << "  Number of grid points   = " << self.sizes()[0]*self.sizes()[1]*self.sizes()[2] << std::endl;
-			out << std::endl;
-			return out;
-		}
+	template<class OStream>
+	friend OStream& operator<<(OStream& out, grid const& self){
+		out << "Basis set:" << std::endl;
+		out << "  Spacing                 = " << self.rspacing()[0] << " " << self.rspacing()[1] << " " << self.rspacing()[2] << " bohr" << std::endl;
+		out << "  Grid size               = " << self.sizes()[0] << " x " << self.sizes()[1] << " x " << self.sizes()[2] << std::endl;
+		out << "  Number of grid points   = " << self.sizes()[0]*self.sizes()[1]*self.sizes()[2] << std::endl;
+		out << std::endl;
+		return out;
+	}
 
-		constexpr auto & cubic_part(int dim) const {
-			return cubic_part_[dim];
-		}
+	constexpr auto & cubic_part(int dim) const {
+		return cubic_part_[dim];
+	}
 
-		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, const int ix, const int iy, const int iz) {
-			vector3<int> ii{ix, iy, iz};
-			for(int idir = 0; idir < 3; idir++) {
-				if(ii[idir] >= (nr[idir] + 1)/2) ii[idir] -= nr[idir];
-			}
-			return ii;
+	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, const int ix, const int iy, const int iz) {
+		vector3<int> ii{ix, iy, iz};
+		for(int idir = 0; idir < 3; idir++) {
+			if(ii[idir] >= (nr[idir] + 1)/2) ii[idir] -= nr[idir];
 		}
+		return ii;
+	}
 
-		GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) {
-			return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
-		}
+	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) {
+		return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
+	}
 
-		GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, vector3<int> ii) {
-			for(int idir = 0; idir < 3; idir++) {
-				if(ii[idir] < 0) ii[idir] += nr[idir];
-			}
-			return ii;
+	GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, vector3<int> ii) {
+		for(int idir = 0; idir < 3; idir++) {
+			if(ii[idir] < 0) ii[idir] += nr[idir];
 		}
+		return ii;
+	}
 
-		GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
-			return to_symmetric_range(nr_, ix, iy, iz);
-		}
+	GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
+		return to_symmetric_range(nr_, ix, iy, iz);
+	}
 
-		GPU_FUNCTION auto to_symmetric_range(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-			return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
-		}
+	GPU_FUNCTION auto to_symmetric_range(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
+		return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
+	}
 			
-		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
-			return from_symmetric_range(nr_, ii);
-		}
+	GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
+		return from_symmetric_range(nr_, ii);
+	}
 
-		auto symmetric_range_begin(int idir) const {
-			return -nr_[idir]/2;
-		}
+	auto symmetric_range_begin(int idir) const {
+		return -nr_[idir]/2;
+	}
 
-		auto symmetric_range_end(int idir) const {
-			return nr_[idir]/2 + nr_[idir]%2;
-		}
+	auto symmetric_range_end(int idir) const {
+		return nr_[idir]/2 + nr_[idir]%2;
+	}
 
-		auto local_contains(vector3<int> const & ii) const {
-			bool contains = true;
-			for(int idir = 0; idir < 3; idir++){
-				contains = contains and cubic_part_[idir].contains(ii[idir]);
-			}
-			return contains;
+	auto local_contains(vector3<int> const & ii) const {
+		bool contains = true;
+		for(int idir = 0; idir < 3; idir++){
+			contains = contains and cubic_part_[idir].contains(ii[idir]);
 		}
+		return contains;
+	}
 
-		auto & cell() const {
-			return cell_;
-		}
+	auto & cell() const {
+		return cell_;
+	}
 
-		void shift() {
-			base::part_.shift();
-			for(int idir = 0; idir < 3; idir++) {
-				cubic_part_[idir].shift();
-				nr_local_[idir] = cubic_part_[idir].local_size();
-			}
-		
+	void shift() {
+		base::part_.shift();
+		for(int idir = 0; idir < 3; idir++) {
+			cubic_part_[idir].shift();
+			nr_local_[idir] = cubic_part_[idir].local_size();
 		}
 		
-  };
+	}
+		
+};
 
 }
 }
