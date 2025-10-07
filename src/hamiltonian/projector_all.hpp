@@ -187,24 +187,25 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename ProjectionsType>
-	void multiply_by_coefficients(ProjectionsType & projections_all) const {
+	template <typename Type>
+	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all) const {
 		
 		CALI_CXX_MARK_FUNCTION;
 
 		auto nst = get<2>(sizes(projections_all));
 
-		auto copy = projections_all;
+		gpu::array<Type, 3> dest(extensions(projections_all));
 		
 		gpu::run(nst, max_nlm_, nprojs_,
-						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
+						 [proj = begin(projections_all), coe = begin(coeff_), des = begin(dest), nlm = max_nlm_]
 						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
-							 using type = typename ProjectionsType::element_type;
-
-							 auto acc = zero<type>();
-							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
-							 proj[iproj][ilm][ist] = acc;
+							 auto acc = zero<Type>();
+							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
+							 des[iproj][ilm][ist] = acc;
 						 });
+		
+		projections_all = std::move(dest);
+		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
