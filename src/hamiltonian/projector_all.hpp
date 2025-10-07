@@ -28,7 +28,7 @@ class projector_all {
 	int max_nlm_;
 	gpu::array<vector3<int>, 2> points_;
 	gpu::array<vector3<float, contravariant>, 2> positions_;
-	gpu::array<double, 3> lu_coeff_;
+	gpu::array<double, 3> coeff_;
 	gpu::array<double, 3> matrices_;
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
@@ -50,7 +50,7 @@ public: // for CUDA
 
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
 		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
-    lu_coeff_ = decltype(lu_coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
+    coeff_ = decltype(coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		
     auto iproj = 0;
@@ -74,9 +74,7 @@ public: // for CUDA
 								 }
 							 });
 
-			auto coeff = it->kb_coeff_;
-			matrix::lu_raw(coeff);
-			lu_coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = coeff;
+			coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->kb_coeff_;
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
@@ -196,27 +194,17 @@ public:
 
 		auto nst = get<2>(sizes(projections_all));
 
-		gpu::run(nst, nprojs_,
-						 [proj = begin(projections_all), coe = begin(lu_coeff_), nlm = max_nlm_]
-						 GPU_LAMBDA (auto ist, auto iproj){
-							 using type = typename ProjectionsType::element_type;
-							 
-							 //multiply by U in place
-							 for(int ilm = 0; ilm < nlm; ilm++) {
-								 auto acc = zero<type>();
-								 for(int jlm = ilm; jlm < nlm; jlm++) acc += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
-								 proj[iproj][ilm][ist] = acc;
-							 }
-
-							 //multiply by L in place
-							 for(int ilm = nlm - 1; ilm >= 0; ilm--) {
-								 auto acc = zero<type>();
-								 for(int jlm = 0; jlm < ilm; jlm++) acc += coe[iproj][jlm][ilm]*proj[iproj][jlm][ist];
-								 proj[iproj][ilm][ist] += acc;
-							 }
-							 
-						 });
+		auto copy = projections_all;
 		
+		gpu::run(nst, max_nlm_, nprojs_,
+						 [proj = begin(projections_all), coe = begin(coeff_), cop = begin(copy), nlm = max_nlm_]
+						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
+							 using type = typename ProjectionsType::element_type;
+
+							 auto acc = zero<type>();
+							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*cop[iproj][jlm][ist];
+							 proj[iproj][ilm][ist] = acc;
+						 });
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,12 +302,15 @@ public:
 		auto projections_all = calculate_projections(phi, kpoint);
 		
 		auto en = gpu::run(gpu::reduce(phi.local_set_size()), gpu::reduce(max_nlm_), gpu::reduce(nprojs_), 0.0,
-											 [proj = begin(projections_all), coe = begin(lu_coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
+											 [proj = begin(projections_all), coe = begin(coeff_), occ = begin(occupations), spinor_size = phi.local_spinor_set_size(), nlm = max_nlm_]
 											 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 												 auto ist_spinor = ist%spinor_size;
-												 return occ[ist_spinor]*energy_term(nlm, ist, ilm, iproj, proj, coe);
+												 double acc = 0.0;
+												 auto pp = conj(proj[iproj][ilm][ist]);
+												 for(int jlm = 0; jlm < nlm; jlm++) acc += real(pp*coe[iproj][ilm][jlm]*proj[iproj][jlm][ist]);
+												 return occ[ist_spinor]*acc;
 											 });
-
+		
 		if(reduce_states and phi.set_comm().size() > 1) {
 			CALI_CXX_MARK_SCOPE("projector_all::energy::reduce_states");
 			phi.set_comm().all_reduce_in_place_n(&en, 1, std::plus<>{});
