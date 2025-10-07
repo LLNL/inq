@@ -21,186 +21,186 @@ namespace basis {
 
 class fourier_space;
 
-  class real_space : public grid {
+class real_space : public grid {
 
-  public:
+public:
 
-		using reciprocal_space = fourier_space;
+	using reciprocal_space = fourier_space;
 
-		real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
-			grid(cell, calculate_dimensions(cell, spacing), comm)
-		{
-    }
+	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
+		grid(cell, calculate_dimensions(cell, spacing), comm)
+	{
+	}
 
-		real_space(const grid & grid_basis):
-			grid(grid_basis){
+	real_space(const grid & grid_basis):
+		grid(grid_basis){
 			
-			cubic_part_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1], grid_basis.comm()), inq::parallel::partition(nr_[2])};
+		cubic_part_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1], grid_basis.comm()), inq::parallel::partition(nr_[2])};
 
-			base::part_ = cubic_part_[1];
-			base::part_ *= nr_[0]*long(nr_[2]);
-			for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();		
-    }
+		base::part_ = cubic_part_[1];
+		base::part_ *= nr_[0]*long(nr_[2]);
+		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
+	}
 		
-		real_space(real_space && old, parallel::communicator & new_comm):
-			real_space(grid(grid(old), new_comm))
+	real_space(real_space && old, parallel::communicator & new_comm):
+		real_space(grid(grid(old), new_comm))
+	{
+	}
+
+	real_space(real_space && old, parallel::communicator && new_comm):
+		real_space(grid(grid(old), new_comm))
+	{
+	}
+
+	class point_operator {
+
+	public:
+
+		point_operator(std::array<int, 3> const & nr, vector3<double, contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
+			nr_(nr),
+			rspacing_(rspacing),
+			cubic_part_(dist),
+			metric_(metric)
 		{
 		}
 
-		real_space(real_space && old, parallel::communicator && new_comm):
-			real_space(grid(grid(old), new_comm))
-		{
+		GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
+			return grid::to_symmetric_range(nr_, ix, iy, iz);
+		}
+			
+		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
+			return grid::from_symmetric_range(nr_, ii);
 		}
 
-		class point_operator {
-
-		public:
-
-			point_operator(std::array<int, 3> const & nr, vector3<double, contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
-				nr_(nr),
-				rspacing_(rspacing),
-				cubic_part_(dist),
-				metric_(metric)
-			{
-			}
-
-			GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
-				return grid::to_symmetric_range(nr_, ix, iy, iz);
-			}
+		GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
+			auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
+			return vector3<int, contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
+		}
 			
-			GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
-				return grid::from_symmetric_range(nr_, ii);
-			}
-
-			GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-				auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
-				return vector3<int, contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
-			}
-			
-			GPU_FUNCTION auto rvector(int ix, int iy, int iz) const {
-				auto ixg = cubic_part_[0].local_to_global(ix);
-				auto iyg = cubic_part_[1].local_to_global(iy);
-				auto izg = cubic_part_[2].local_to_global(iz);
+		GPU_FUNCTION auto rvector(int ix, int iy, int iz) const {
+			auto ixg = cubic_part_[0].local_to_global(ix);
+			auto iyg = cubic_part_[1].local_to_global(iy);
+			auto izg = cubic_part_[2].local_to_global(iz);
 				
-				return rvector(ixg, iyg, izg);
-			}
-
-			GPU_FUNCTION auto rvector_cartesian(int ix, int iy, int iz) const {
-				return metric_.to_cartesian(rvector(ix, iy, iz));
-			}
-
-			GPU_FUNCTION auto rvector_cartesian(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-				return metric_.to_cartesian(rvector(ix, iy, iz));
-			}
-			
-			template <class int_array>
-			GPU_FUNCTION auto rvector(const int_array & indices) const {
-				return rvector(indices[0], indices[1], indices[2]);
-			}
-			
-			template <typename IndexType>
-			GPU_FUNCTION double r2(IndexType ix, IndexType iy, IndexType iz) const {
-				return metric_.norm(rvector(ix, iy, iz));
-			}
-
-			template <typename IndexType>
-			GPU_FUNCTION double rlength(IndexType ix, IndexType iy, IndexType iz) const {
-				return metric_.length(rvector(ix, iy, iz));
-			}
-			
-			GPU_FUNCTION auto & cubic_part(int idim) const {
-				return cubic_part_[idim];
-			}
-			
-			GPU_FUNCTION auto & metric() const {
-				return metric_;
-			}
-			
-			GPU_FUNCTION auto local_contains(vector3<int> const & ii) const {
-				bool contains = true;
-				for(int idir = 0; idir < 3; idir++){
-					contains = contains and cubic_part_[idir].contains(ii[idir]);
-				}
-				return contains;
-			}
-
-		private:
-			
-			std::array<int, 3> nr_;
-			vector3<double, contravariant> rspacing_;
-			std::array<inq::parallel::partition, 3> cubic_part_;
-			systems::cell::cell_metric metric_;
-			
-		};
-			
-		friend auto operator==(const real_space & rs1, const real_space & rs2){
-			bool equal = rs1.nr_[0] == rs2.nr_[0] and rs1.nr_[1] == rs2.nr_[1] and rs1.nr_[2] == rs2.nr_[2];
-			equal = equal and rs1.rspacing()[0] == rs2.rspacing()[0];
-			equal = equal and rs1.rspacing()[1] == rs2.rspacing()[1];
-			equal = equal and rs1.rspacing()[2] == rs2.rspacing()[2];
-			return equal;
+			return rvector(ixg, iyg, izg);
 		}
 
-		auto enlarge(int factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
+		GPU_FUNCTION auto rvector_cartesian(int ix, int iy, int iz) const {
+			return metric_.to_cartesian(rvector(ix, iy, iz));
 		}
 
-		auto enlarge(vector3<int> factor) const {
-			return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
+		GPU_FUNCTION auto rvector_cartesian(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
+			return metric_.to_cartesian(rvector(ix, iy, iz));
 		}
-		
-		auto refine(double factor) const {
-			assert(factor > 0.0);
-			return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
+			
+		template <class int_array>
+		GPU_FUNCTION auto rvector(const int_array & indices) const {
+			return rvector(indices[0], indices[1], indices[2]);
 		}
-		
-		auto volume_element() const {
-			return cell().volume()/size();
-		}
-
-		auto gcutoff() const {
-			auto max_spacing = std::max({rspacing_[0], rspacing_[1],rspacing_[2]});
-
-			return M_PI/max_spacing;
+			
+		template <typename IndexType>
+		GPU_FUNCTION double r2(IndexType ix, IndexType iy, IndexType iz) const {
+			return metric_.norm(rvector(ix, iy, iz));
 		}
 
-		auto point_op() const {
-			return point_operator(nr_, conspacing_, cubic_part_, cell_.metric());
+		template <typename IndexType>
+		GPU_FUNCTION double rlength(IndexType ix, IndexType iy, IndexType iz) const {
+			return metric_.length(rvector(ix, iy, iz));
 		}
-
-		template <typename ReciprocalBasis = reciprocal_space>
-		auto reciprocal() const {
-			return ReciprocalBasis(*this);
+			
+		GPU_FUNCTION auto & cubic_part(int idim) const {
+			return cubic_part_[idim];
 		}
-
-		static auto gcutoff(systems::cell const & cell, double const & spacing){
-			auto nr = calculate_dimensions(cell, spacing);
-
-			auto max_spacing = 0.0;
+			
+		GPU_FUNCTION auto & metric() const {
+			return metric_;
+		}
+			
+		GPU_FUNCTION auto local_contains(vector3<int> const & ii) const {
+			bool contains = true;
 			for(int idir = 0; idir < 3; idir++){
-				auto actual_spacing = length(cell[idir])/nr[idir];
-				max_spacing = std::max(max_spacing, actual_spacing);
+				contains = contains and cubic_part_[idir].contains(ii[idir]);
 			}
-
-			return M_PI/max_spacing;
+			return contains;
 		}
-		
+
 	private:
+			
+		std::array<int, 3> nr_;
+		vector3<double, contravariant> rspacing_;
+		std::array<inq::parallel::partition, 3> cubic_part_;
+		systems::cell::cell_metric metric_;
+			
+	};
+			
+	friend auto operator==(const real_space & rs1, const real_space & rs2){
+		bool equal = rs1.nr_[0] == rs2.nr_[0] and rs1.nr_[1] == rs2.nr_[1] and rs1.nr_[2] == rs2.nr_[2];
+		equal = equal and rs1.rspacing()[0] == rs2.rspacing()[0];
+		equal = equal and rs1.rspacing()[1] == rs2.rspacing()[1];
+		equal = equal and rs1.rspacing()[2] == rs2.rspacing()[2];
+		return equal;
+	}
 
-		static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing){
-			std::array<int, 3> nr;
-			
-			// make the spacing conmensurate with the grid
-			// OPTIMIZATION: we can select a good size here for the FFT
-			for(int idir = 0; idir < 3; idir++){
-				double rlength = length(cell[idir]);
-				nr[idir] = round(rlength/spacing);
-			}
-			
-			return nr;
+	auto enlarge(int factor) const {
+		return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
+	}
+
+	auto enlarge(vector3<int> factor) const {
+		return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
+	}
+		
+	auto refine(double factor) const {
+		assert(factor > 0.0);
+		return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
+	}
+		
+	auto volume_element() const {
+		return cell().volume()/size();
+	}
+
+	auto gcutoff() const {
+		auto max_spacing = std::max({rspacing_[0], rspacing_[1],rspacing_[2]});
+
+		return M_PI/max_spacing;
+	}
+
+	auto point_op() const {
+		return point_operator(nr_, conspacing_, cubic_part_, cell_.metric());
+	}
+
+	template <typename ReciprocalBasis = reciprocal_space>
+	auto reciprocal() const {
+		return ReciprocalBasis(*this);
+	}
+
+	static auto gcutoff(systems::cell const & cell, double const & spacing){
+		auto nr = calculate_dimensions(cell, spacing);
+
+		auto max_spacing = 0.0;
+		for(int idir = 0; idir < 3; idir++){
+			auto actual_spacing = length(cell[idir])/nr[idir];
+			max_spacing = std::max(max_spacing, actual_spacing);
 		}
 
-  };
+		return M_PI/max_spacing;
+	}
+		
+private:
+
+	static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing){
+		std::array<int, 3> nr;
+			
+		// make the spacing conmensurate with the grid
+		// OPTIMIZATION: we can select a good size here for the FFT
+		for(int idir = 0; idir < 3; idir++){
+			double rlength = length(cell[idir]);
+			nr[idir] = round(rlength/spacing);
+		}
+			
+		return nr;
+	}
+
+};
 
 }
 }
