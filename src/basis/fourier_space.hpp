@@ -24,7 +24,6 @@ class real_space;
 class fourier_space : public grid{
 
 	systems::cell cell_;
-	vector3<double, covariant> covspacing_;
 
 public:
 
@@ -34,9 +33,12 @@ public:
 		grid(rs.sizes(), rs.comm(), /*par_dim = */ 0),
 		cell_(rs.cell())
 	{
-		for(int idir = 0; idir < 3; idir++) covspacing_[idir] = 2.0*M_PI;
 	}
 
+	constexpr static auto covspacing(int) {
+		return 2.0*M_PI;
+	}
+	
 	auto & cell() const {
 		return cell_;
 	}
@@ -46,25 +48,19 @@ public:
 	}
 		
 	friend auto operator==(const fourier_space & fs1, const fourier_space & fs2){
-		bool equal = fs1.nr_[0] == fs2.nr_[0] and fs1.nr_[1] == fs2.nr_[1] and fs1.nr_[2] == fs2.nr_[2];
-		equal = equal and fs1.covspacing_[0] == fs2.covspacing_[0];
-		equal = equal and fs1.covspacing_[1] == fs2.covspacing_[1];
-		equal = equal and fs1.covspacing_[2] == fs2.covspacing_[2];
-		return equal;
+		return fs1.cell_ == fs2.cell_ and fs1.nr_[0] == fs2.nr_[0] and fs1.nr_[1] == fs2.nr_[1] and fs1.nr_[2] == fs2.nr_[2];
 	}
 		
 	class point_operator {
 			
 		std::array<int, 3> nr_;
-		vector3<double, covariant> gspacing_;
 		std::array<inq::parallel::partition, 3> cubic_part_;
 		systems::cell::cell_metric metric_;
 
 	public:
 		
-		point_operator(std::array<int, 3> const & nr, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
+		point_operator(std::array<int, 3> const & nr, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
 			nr_(nr),
-			gspacing_(gspacing),
 			cubic_part_(dist),
 			metric_(metric)
 		{
@@ -76,7 +72,7 @@ public:
 			//grid from -pi/h to pi/h
 				
 			auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
-			return vector3<double, covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
+			return vector3<double, covariant>{ii[0]*covspacing(0), ii[1]*covspacing(1), ii[2]*covspacing(2)};
 		}
 
 		GPU_FUNCTION auto gvector(int ix, int iy, int iz) const {
@@ -99,10 +95,6 @@ public:
 			return xx*xx + yy*yy + zz*zz > 0.25;
 		}
 			
-		GPU_FUNCTION const auto & gspacing() const{
-			return gspacing_;
-		}
-
 		GPU_FUNCTION bool g_is_zero(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
 			return (ix.value() == 0 and iy.value() == 0 and iz.value() == 0);
 		}
@@ -150,7 +142,7 @@ public:
 	};
 
 	auto point_op() const {
-		return point_operator{nr_, covspacing_, cubic_part_, cell_.metric()};
+		return point_operator{nr_, cubic_part_, cell_.metric()};
 	}
 
 	template <typename ReciprocalBasis = reciprocal_space>
