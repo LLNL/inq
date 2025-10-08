@@ -23,6 +23,10 @@ class fourier_space;
 
 class real_space : public grid {
 
+	vector3<double> rspacing_;
+	vector3<double, contravariant> conspacing_;
+	vector3<double> rlength_;
+
 public:
 
 	using reciprocal_space = fourier_space;
@@ -30,6 +34,11 @@ public:
 	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
 		grid(cell, calculate_dimensions(cell, spacing), comm)
 	{
+		for(int idir = 0; idir < 3; idir++){
+			rlength_[idir] = length(cell_[idir]);
+			rspacing_[idir] = rlength_[idir]/nr_[idir];
+			conspacing_[idir] = 1.0/nr_[idir];
+		}
 	}
 
 	real_space(const grid & grid_basis):
@@ -39,7 +48,12 @@ public:
 
 		base::part_ = cubic_part_[1];
 		base::part_ *= nr_[0]*long(nr_[2]);
-		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
+		for(int idir = 0; idir < 3; idir++) {
+			nr_local_[idir] = cubic_part_[idir].local_size();
+			rlength_[idir] = length(cell_[idir]);
+			rspacing_[idir] = rlength_[idir]/nr_[idir];
+			conspacing_[idir] = 1.0/nr_[idir];
+		}
 	}
 		
 	real_space(real_space && old, parallel::communicator & new_comm):

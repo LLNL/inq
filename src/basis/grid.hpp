@@ -27,10 +27,6 @@ protected:
 	std::array<int, 3> nr_;
 	std::array<int, 3> nr_local_;
 	std::array<int, 3> ng_;
-	vector3<double> rspacing_;
-	vector3<double, contravariant> conspacing_;
-	vector3<double, covariant> covspacing_;
-	vector3<double> rlength_;
 	long npoints_;
 
 public:		
@@ -42,19 +38,12 @@ public:
 		nr_(nr){
 
 		for(int idir = 0; idir < 3; idir++){
-			rlength_[idir] = length(cell[idir]);
 			ng_[idir] = nr_[idir];
-			rspacing_[idir] = rlength_[idir]/nr_[idir];
-			conspacing_[idir] = 1.0/nr_[idir];
-			covspacing_[idir] = 2.0*M_PI;				
 		}
 
 		base::part_ *= nr_[0]*long(nr_[2]);
-			
 		npoints_ = nr_[0]*long(nr_[1])*nr_[2];
-
 		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
-			
 	}
 
 	grid(grid && old, parallel::communicator new_comm):

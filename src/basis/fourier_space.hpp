@@ -23,6 +23,8 @@ class real_space;
 
 class fourier_space : public grid{
 
+	vector3<double, covariant> covspacing_;
+
 public:
 
 	using reciprocal_space = real_space;
@@ -35,7 +37,10 @@ public:
 		base::part_ = cubic_part_[0];
 		base::part_ *= nr_[1]*long(nr_[2]);
 			
-		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
+		for(int idir = 0; idir < 3; idir++){
+			nr_local_[idir] = cubic_part_[idir].local_size();
+			covspacing_[idir] = 2.0*M_PI;
+		}
 	}
 
 	auto volume_element() const {
