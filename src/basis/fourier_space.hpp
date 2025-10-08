@@ -23,14 +23,17 @@ class real_space;
 
 class fourier_space : public grid{
 
+	systems::cell cell_;
 	vector3<double, covariant> covspacing_;
 
 public:
 
 	using reciprocal_space = real_space;
 		
-	fourier_space(const grid & grid_basis):
-		grid(grid_basis){
+	fourier_space(real_space const & rs):
+		grid(rs),
+		cell_(rs.cell())
+	{
 			
 		cubic_part_ = {inq::parallel::partition(nr_[0], comm()), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2])};
 
@@ -41,6 +44,10 @@ public:
 			nr_local_[idir] = cubic_part_[idir].local_size();
 			covspacing_[idir] = 2.0*M_PI;
 		}
+	}
+
+	auto & cell() const {
+		return cell_;
 	}
 
 	auto volume_element() const {
@@ -157,7 +164,7 @@ public:
 
 	template <typename ReciprocalBasis = reciprocal_space>
 	auto reciprocal() const {
-		return ReciprocalBasis(*this);
+		return ReciprocalBasis(cell_, *this);
 	}
 
 };

@@ -23,7 +23,6 @@ class grid : public base {
 protected:
 
 	std::array<inq::parallel::partition, 3> cubic_part_;
-	systems::cell cell_;
 	std::array<int, 3> nr_;
 	std::array<int, 3> nr_local_;
 	std::array<int, 3> ng_;
@@ -31,10 +30,9 @@ protected:
 
 public:		
 	
-	grid(const systems::cell & cell, std::array<int, 3> nr, parallel::communicator & comm) :
+	grid(std::array<int, 3> nr, parallel::communicator & comm) :
 		base(nr[1], comm),
 		cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
-		cell_(cell),
 		nr_(nr){
 
 		for(int idir = 0; idir < 3; idir++){
@@ -47,7 +45,7 @@ public:
 	}
 
 	grid(grid && old, parallel::communicator new_comm):
-		grid(old.cell_, old.nr_, new_comm)
+		grid(old.nr_, new_comm)
 	{
 	}
 		
@@ -120,10 +118,6 @@ public:
 		return contains;
 	}
 
-	auto & cell() const {
-		return cell_;
-	}
-
 	void shift() {
 		base::part_.shift();
 		for(int idir = 0; idir < 3; idir++) {
@@ -149,11 +143,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 	using namespace inq;
 	using namespace Catch::literals;
   
-  systems::cell cell(vector3<double>(10.0, 0.0, 0.0), vector3<double>(0.0, 4.0, 0.0), vector3<double>(0.0, 0.0, 7.0));
-
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr(cell, {45, 120, 77}, comm);
+	basis::grid gr({45, 120, 77}, comm);
 
 	CHECK(gr.sizes()[0] == 45);
 	CHECK(gr.sizes()[1] == 120);
@@ -198,7 +190,6 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 	CHECK(gr.sizes() == new_gr.sizes());
 	CHECK(new_gr.local_sizes() == new_gr.sizes());
-	CHECK(gr.cell().periodicity() == new_gr.cell().periodicity());	
 	
 }
 #endif

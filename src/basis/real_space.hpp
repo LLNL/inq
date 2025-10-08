@@ -23,6 +23,7 @@ class fourier_space;
 
 class real_space : public grid {
 
+	systems::cell cell_;
 	vector3<double> rspacing_;
 	vector3<double, contravariant> conspacing_;
 	vector3<double> rlength_;
@@ -32,7 +33,8 @@ public:
 	using reciprocal_space = fourier_space;
 
 	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
-		grid(cell, calculate_dimensions(cell, spacing), comm)
+		grid(calculate_dimensions(cell, spacing), comm),
+		cell_(cell)
 	{
 		for(int idir = 0; idir < 3; idir++){
 			rlength_[idir] = length(cell_[idir]);
@@ -41,8 +43,10 @@ public:
 		}
 	}
 
-	real_space(const grid & grid_basis):
-		grid(grid_basis){
+	real_space(systems::cell const & cell, const grid & grid_basis):
+		grid(grid_basis),
+		cell_(cell)
+	{
 			
 		cubic_part_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1], grid_basis.comm()), inq::parallel::partition(nr_[2])};
 
@@ -57,15 +61,19 @@ public:
 	}
 		
 	real_space(real_space && old, parallel::communicator & new_comm):
-		real_space(grid(grid(old), new_comm))
+		real_space(old.cell_, grid(grid(old), new_comm))
 	{
 	}
 
 	real_space(real_space && old, parallel::communicator && new_comm):
-		real_space(grid(grid(old), new_comm))
+		real_space(old.cell_, grid(grid(old), new_comm))
 	{
 	}
 
+	auto & cell() const {
+		return cell_;
+	}
+	
 	GPU_FUNCTION const vector3<double> & rspacing() const{
 		return rspacing_;
 	}
@@ -187,16 +195,16 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(grid(cell_.enlarge(factor), {factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
+		return real_space(cell_.enlarge(factor), grid({factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(grid(cell_.enlarge(factor), {factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
+		return real_space(cell_.enlarge(factor), grid({factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
-		return real_space(grid(cell_, {(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
+		return real_space(cell_, grid({(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
 	}
 		
 	auto volume_element() const {
