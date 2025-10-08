@@ -34,15 +34,7 @@ public:
 		grid(rs.sizes(), rs.comm(), /*par_dim = */ 0),
 		cell_(rs.cell())
 	{
-		cubic_part_ = {inq::parallel::partition(nr_[0], comm()), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2])};
-
-		base::part_ = cubic_part_[0];
-		base::part_ *= nr_[1]*long(nr_[2]);
-			
-		for(int idir = 0; idir < 3; idir++){
-			nr_local_[idir] = cubic_part_[idir].local_size();
-			covspacing_[idir] = 2.0*M_PI;
-		}
+		for(int idir = 0; idir < 3; idir++) covspacing_[idir] = 2.0*M_PI;
 	}
 
 	auto & cell() const {
