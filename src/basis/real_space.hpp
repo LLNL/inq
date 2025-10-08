@@ -173,11 +173,7 @@ public:
 	};
 			
 	friend auto operator==(const real_space & rs1, const real_space & rs2){
-		bool equal = rs1.sizes_[0] == rs2.sizes_[0] and rs1.sizes_[1] == rs2.sizes_[1] and rs1.sizes_[2] == rs2.sizes_[2];
-		equal = equal and rs1.rspacing()[0] == rs2.rspacing()[0];
-		equal = equal and rs1.rspacing()[1] == rs2.rspacing()[1];
-		equal = equal and rs1.rspacing()[2] == rs2.rspacing()[2];
-		return equal;
+		return rs1.cell_ == rs2.cell_ and rs1.sizes_[0] == rs2.sizes_[0] and rs1.sizes_[1] == rs2.sizes_[1] and rs1.sizes_[2] == rs2.sizes_[2];
 	}
 
 	auto enlarge(int factor) const {
