@@ -64,15 +64,15 @@ public:
 		
 	class point_operator {
 			
-		std::array<int, 3> ng_;
+		std::array<int, 3> nr_;
 		vector3<double, covariant> gspacing_;
 		std::array<inq::parallel::partition, 3> cubic_part_;
 		systems::cell::cell_metric metric_;
 
 	public:
-
-		point_operator(std::array<int, 3> const & ng, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
-			ng_(ng),
+		
+		point_operator(std::array<int, 3> const & nr, vector3<double, covariant> const & gspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
+			nr_(nr),
 			gspacing_(gspacing),
 			cubic_part_(dist),
 			metric_(metric)
@@ -84,7 +84,7 @@ public:
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
 				
-			auto ii = grid::to_symmetric_range(ng_, ix, iy, iz);
+			auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
 			return vector3<double, covariant>{ii[0]*gspacing_[0], ii[1]*gspacing_[1], ii[2]*gspacing_[2]};
 		}
 
@@ -101,10 +101,10 @@ public:
 		}
 			
 		GPU_FUNCTION auto outside_sphere(int ix, int iy, int iz) const {
-			auto ivec = grid::to_symmetric_range(ng_, cubic_part_[0].local_to_global(ix), cubic_part_[1].local_to_global(iy), cubic_part_[2].local_to_global(iz));
-			double xx = double(ivec[0])/ng_[0];
-			double yy = double(ivec[1])/ng_[1];
-			double zz = double(ivec[2])/ng_[2];
+			auto ivec = grid::to_symmetric_range(nr_, cubic_part_[0].local_to_global(ix), cubic_part_[1].local_to_global(iy), cubic_part_[2].local_to_global(iz));
+			double xx = double(ivec[0])/nr_[0];
+			double yy = double(ivec[1])/nr_[1];
+			double zz = double(ivec[2])/nr_[2];
 			return xx*xx + yy*yy + zz*zz > 0.25;
 		}
 			
@@ -137,11 +137,11 @@ public:
 		}
 
 		GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
-			return grid::to_symmetric_range(ng_, ix, iy, iz);
+			return grid::to_symmetric_range(nr_, ix, iy, iz);
 		}
 			
 		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
-			return grid::from_symmetric_range(ng_, ii);
+			return grid::from_symmetric_range(nr_, ii);
 		}
 						
 		GPU_FUNCTION auto & cubic_part(int idim) const {
@@ -159,7 +159,7 @@ public:
 	};
 
 	auto point_op() const {
-		return point_operator{ng_, covspacing_, cubic_part_, cell_.metric()};
+		return point_operator{nr_, covspacing_, cubic_part_, cell_.metric()};
 	}
 
 	template <typename ReciprocalBasis = reciprocal_space>
