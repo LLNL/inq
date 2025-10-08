@@ -61,27 +61,6 @@ public:
 		grid(old.cell_, old.nr_, new_comm)
 	{
 	}
-	
-	GPU_FUNCTION const vector3<double> & rspacing() const{
-		return rspacing_;
-	}
-
-	GPU_FUNCTION const auto & contravariant_spacing() const{
-		return conspacing_;
-	}
-		
-	double diagonal_length() const {
-		return length(rlength_);
-	}
-		
-	GPU_FUNCTION const vector3<double> & rlength() const{
-		return rlength_;
-	}
-
-	double min_rlength() const{
-		return std::min(rlength_[0], std::min(rlength_[1], rlength_[2]));
-	}
-
 		
 	long size() const {
 		return npoints_;
@@ -105,16 +84,6 @@ public:
 		return nr_local_;
 	}
 		
-	template<class OStream>
-	friend OStream& operator<<(OStream& out, grid const& self){
-		out << "Basis set:" << std::endl;
-		out << "  Spacing                 = " << self.rspacing()[0] << " " << self.rspacing()[1] << " " << self.rspacing()[2] << " bohr" << std::endl;
-		out << "  Grid size               = " << self.sizes()[0] << " x " << self.sizes()[1] << " x " << self.sizes()[2] << std::endl;
-		out << "  Number of grid points   = " << self.sizes()[0]*self.sizes()[1]*self.sizes()[2] << std::endl;
-		out << std::endl;
-		return out;
-	}
-
 	constexpr auto & cubic_part(int dim) const {
 		return cubic_part_[dim];
 	}
