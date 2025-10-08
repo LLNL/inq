@@ -107,6 +107,11 @@ public:
 	
 	class point_operator {
 
+		std::array<int, 3> nr_;
+		vector3<double, contravariant> rspacing_;
+		std::array<inq::parallel::partition, 3> cubic_part_;
+		systems::cell::cell_metric metric_;
+
 	public:
 
 		point_operator(std::array<int, 3> const & nr, vector3<double, contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
@@ -176,13 +181,6 @@ public:
 			}
 			return contains;
 		}
-
-	private:
-			
-		std::array<int, 3> nr_;
-		vector3<double, contravariant> rspacing_;
-		std::array<inq::parallel::partition, 3> cubic_part_;
-		systems::cell::cell_metric metric_;
 			
 	};
 			
