@@ -38,8 +38,8 @@ public:
 	{
 		for(int idir = 0; idir < 3; idir++){
 			rlength_[idir] = length(cell_[idir]);
-			rspacing_[idir] = rlength_[idir]/nr_[idir];
-			conspacing_[idir] = 1.0/nr_[idir];
+			rspacing_[idir] = rlength_[idir]/sizes_[idir];
+			conspacing_[idir] = 1.0/sizes_[idir];
 		}
 	}
 
@@ -48,15 +48,15 @@ public:
 		cell_(cell)
 	{
 			
-		cubic_part_ = {inq::parallel::partition(nr_[0]), inq::parallel::partition(nr_[1], grid_basis.comm()), inq::parallel::partition(nr_[2])};
+		cubic_part_ = {inq::parallel::partition(sizes_[0]), inq::parallel::partition(sizes_[1], grid_basis.comm()), inq::parallel::partition(sizes_[2])};
 
 		base::part_ = cubic_part_[1];
-		base::part_ *= nr_[0]*long(nr_[2]);
+		base::part_ *= sizes_[0]*long(sizes_[2]);
 		for(int idir = 0; idir < 3; idir++) {
-			nr_local_[idir] = cubic_part_[idir].local_size();
+			local_sizes_[idir] = cubic_part_[idir].local_size();
 			rlength_[idir] = length(cell_[idir]);
-			rspacing_[idir] = rlength_[idir]/nr_[idir];
-			conspacing_[idir] = 1.0/nr_[idir];
+			rspacing_[idir] = rlength_[idir]/sizes_[idir];
+			conspacing_[idir] = 1.0/sizes_[idir];
 		}
 	}
 		
@@ -107,7 +107,7 @@ public:
 	
 	class point_operator {
 
-		std::array<int, 3> nr_;
+		std::array<int, 3> sizes_;
 		vector3<double, contravariant> rspacing_;
 		std::array<inq::parallel::partition, 3> cubic_part_;
 		systems::cell::cell_metric metric_;
@@ -115,7 +115,7 @@ public:
 	public:
 
 		point_operator(std::array<int, 3> const & nr, vector3<double, contravariant> const & rspacing, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
-			nr_(nr),
+			sizes_(nr),
 			rspacing_(rspacing),
 			cubic_part_(dist),
 			metric_(metric)
@@ -123,15 +123,15 @@ public:
 		}
 
 		GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
-			return grid::to_symmetric_range(nr_, ix, iy, iz);
+			return grid::to_symmetric_range(sizes_, ix, iy, iz);
 		}
 			
 		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
-			return grid::from_symmetric_range(nr_, ii);
+			return grid::from_symmetric_range(sizes_, ii);
 		}
 
 		GPU_FUNCTION auto rvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-			auto ii = grid::to_symmetric_range(nr_, ix, iy, iz);
+			auto ii = grid::to_symmetric_range(sizes_, ix, iy, iz);
 			return vector3<int, contravariant>{ii[0], ii[1], ii[2]}*rspacing_;
 		}
 			
@@ -185,7 +185,7 @@ public:
 	};
 			
 	friend auto operator==(const real_space & rs1, const real_space & rs2){
-		bool equal = rs1.nr_[0] == rs2.nr_[0] and rs1.nr_[1] == rs2.nr_[1] and rs1.nr_[2] == rs2.nr_[2];
+		bool equal = rs1.sizes_[0] == rs2.sizes_[0] and rs1.sizes_[1] == rs2.sizes_[1] and rs1.sizes_[2] == rs2.sizes_[2];
 		equal = equal and rs1.rspacing()[0] == rs2.rspacing()[0];
 		equal = equal and rs1.rspacing()[1] == rs2.rspacing()[1];
 		equal = equal and rs1.rspacing()[2] == rs2.rspacing()[2];
@@ -193,16 +193,16 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm(), /*par_dim = */ 1));
+		return real_space(cell_.enlarge(factor), grid({factor*sizes_[0], factor*sizes_[1], factor*sizes_[2]}, this->comm(), /*par_dim = */ 1));
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm(), /*par_dim = */ 1));
+		return real_space(cell_.enlarge(factor), grid({factor[0]*sizes_[0], factor[1]*sizes_[1], factor[2]*sizes_[2]},  this->comm(), /*par_dim = */ 1));
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
-		return real_space(cell_, grid({(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm(), /*par_dim = */ 1));
+		return real_space(cell_, grid({(int) round(factor*sizes_[0]), (int) round(factor*sizes_[1]), (int) round(factor*sizes_[2])}, this->comm(), /*par_dim = */ 1));
 	}
 		
 	auto volume_element() const {
@@ -216,7 +216,7 @@ public:
 	}
 
 	auto point_op() const {
-		return point_operator(nr_, conspacing_, cubic_part_, cell_.metric());
+		return point_operator(sizes_, conspacing_, cubic_part_, cell_.metric());
 	}
 
 	template <typename ReciprocalBasis = reciprocal_space>

@@ -23,33 +23,33 @@ class grid : public base {
 protected:
 
 	std::array<inq::parallel::partition, 3> cubic_part_;
-	std::array<int, 3> nr_;
-	std::array<int, 3> nr_local_;
+	std::array<int, 3> sizes_;
+	std::array<int, 3> local_sizes_;
 	long npoints_;
 	int par_dim_;
 
-public:		
+public:
 	
-	grid(std::array<int, 3> nr, parallel::communicator & comm, int par_dim) :
-		base(nr[par_dim], comm),
-		cubic_part_({inq::parallel::partition(nr[0]), inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
-		nr_(nr),
+	grid(std::array<int, 3> sizes, parallel::communicator & comm, int par_dim) :
+		base(sizes[par_dim], comm),
+		cubic_part_({inq::parallel::partition(sizes[0]), inq::parallel::partition(sizes[1]), inq::parallel::partition(sizes[2])}),
+		sizes_(sizes),
 		par_dim_(par_dim)
 	{
 
 		cubic_part_[par_dim] = base::part_;
 		
 		for(int idir = 0; idir < 3; idir++) {
-			if(idir != par_dim) base::part_ *= nr_[idir];
-			nr_local_[idir] = cubic_part_[idir].local_size();
+			if(idir != par_dim) base::part_ *= sizes_[idir];
+			local_sizes_[idir] = cubic_part_[idir].local_size();
 		}
 
-		npoints_ = nr_[0]*long(nr_[1])*nr_[2];
+		npoints_ = sizes_[0]*long(sizes_[1])*sizes_[2];
 
 	}
 
 	grid(grid && old, parallel::communicator new_comm):
-		grid(old.nr_, new_comm, old.par_dim_)
+		grid(old.sizes_, new_comm, old.par_dim_)
 	{
 	}
 		
@@ -59,59 +59,59 @@ public:
 
 	GPU_FUNCTION
 	friend auto sizes(const grid & gr){
-		return gr.nr_;
+		return gr.sizes_;
 	}
 
 	GPU_FUNCTION
 	auto & sizes() const {
-		return nr_;
+		return sizes_;
 	}
 
 	auto & local_sizes() const {
-		return nr_local_;
+		return local_sizes_;
 	}
 		
 	constexpr auto & cubic_part(int dim) const {
 		return cubic_part_[dim];
 	}
 
-	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, const int ix, const int iy, const int iz) {
+	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & sizes, const int ix, const int iy, const int iz) {
 		vector3<int> ii{ix, iy, iz};
 		for(int idir = 0; idir < 3; idir++) {
-			if(ii[idir] >= (nr[idir] + 1)/2) ii[idir] -= nr[idir];
+			if(ii[idir] >= (sizes[idir] + 1)/2) ii[idir] -= sizes[idir];
 		}
 		return ii;
 	}
 
-	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & nr, parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) {
-		return to_symmetric_range(nr, ix.value(), iy.value(), iz.value());
+	GPU_FUNCTION static auto to_symmetric_range(std::array<int, 3> const & sizes, parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) {
+		return to_symmetric_range(sizes, ix.value(), iy.value(), iz.value());
 	}
 
-	GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & nr, vector3<int> ii) {
+	GPU_FUNCTION static auto from_symmetric_range(std::array<int, 3> const & sizes, vector3<int> ii) {
 		for(int idir = 0; idir < 3; idir++) {
-			if(ii[idir] < 0) ii[idir] += nr[idir];
+			if(ii[idir] < 0) ii[idir] += sizes[idir];
 		}
 		return ii;
 	}
 
 	GPU_FUNCTION auto to_symmetric_range(const int ix, const int iy, const int iz) const {
-		return to_symmetric_range(nr_, ix, iy, iz);
+		return to_symmetric_range(sizes_, ix, iy, iz);
 	}
 
 	GPU_FUNCTION auto to_symmetric_range(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-		return to_symmetric_range(nr_, ix.value(), iy.value(), iz.value());
+		return to_symmetric_range(sizes_, ix.value(), iy.value(), iz.value());
 	}
 			
 	GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
-		return from_symmetric_range(nr_, ii);
+		return from_symmetric_range(sizes_, ii);
 	}
 
 	auto symmetric_range_begin(int idir) const {
-		return -nr_[idir]/2;
+		return -sizes_[idir]/2;
 	}
 
 	auto symmetric_range_end(int idir) const {
-		return nr_[idir]/2 + nr_[idir]%2;
+		return sizes_[idir]/2 + sizes_[idir]%2;
 	}
 
 	auto local_contains(vector3<int> const & ii) const {
@@ -126,7 +126,7 @@ public:
 		base::part_.shift();
 		for(int idir = 0; idir < 3; idir++) {
 			cubic_part_[idir].shift();
-			nr_local_[idir] = cubic_part_[idir].local_size();
+			local_sizes_[idir] = cubic_part_[idir].local_size();
 		}
 		
 	}
