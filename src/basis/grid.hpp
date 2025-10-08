@@ -66,10 +66,6 @@ public:
 		return npoints_;
 	}
 
-	long num_points() const {
-		return npoints_;
-	}
-
 	GPU_FUNCTION
 	friend auto sizes(const grid & gr){
 		return gr.nr_;
