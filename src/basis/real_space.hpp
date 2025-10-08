@@ -31,9 +31,9 @@ class real_space : public grid {
 public:
 
 	using reciprocal_space = fourier_space;
-
-	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
-		grid(calculate_dimensions(cell, spacing), comm, /*par_dim = */ 1),
+	
+	real_space(systems::cell const & cell, std::array<int, 3> sizes, parallel::communicator comm):
+		grid(sizes, comm, /*par_dim = */ 1),
 		cell_(cell)
 	{
 		for(int idir = 0; idir < 3; idir++){
@@ -43,30 +43,18 @@ public:
 		}
 	}
 
-	real_space(systems::cell const & cell, const grid & grid_basis):
-		grid(grid_basis),
-		cell_(cell)
+	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
+		real_space(cell, calculate_dimensions(cell, spacing), comm)
 	{
-			
-		cubic_part_ = {inq::parallel::partition(sizes_[0]), inq::parallel::partition(sizes_[1], grid_basis.comm()), inq::parallel::partition(sizes_[2])};
-
-		base::part_ = cubic_part_[1];
-		base::part_ *= sizes_[0]*long(sizes_[2]);
-		for(int idir = 0; idir < 3; idir++) {
-			local_sizes_[idir] = cubic_part_[idir].local_size();
-			rlength_[idir] = length(cell_[idir]);
-			rspacing_[idir] = rlength_[idir]/sizes_[idir];
-			conspacing_[idir] = 1.0/sizes_[idir];
-		}
 	}
 		
 	real_space(real_space && old, parallel::communicator & new_comm):
-		real_space(old.cell_, grid(grid(old), new_comm))
+		real_space(old.cell_, old.sizes_, new_comm)
 	{
 	}
 
 	real_space(real_space && old, parallel::communicator && new_comm):
-		real_space(old.cell_, grid(grid(old), new_comm))
+		real_space(old.cell_, old.sizes_, new_comm)
 	{
 	}
 
@@ -193,16 +181,16 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor*sizes_[0], factor*sizes_[1], factor*sizes_[2]}, this->comm(), /*par_dim = */ 1));
+		return real_space(cell_.enlarge(factor), {factor*sizes_[0], factor*sizes_[1], factor*sizes_[2]}, this->comm());
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor[0]*sizes_[0], factor[1]*sizes_[1], factor[2]*sizes_[2]},  this->comm(), /*par_dim = */ 1));
+		return real_space(cell_.enlarge(factor), {factor[0]*sizes_[0], factor[1]*sizes_[1], factor[2]*sizes_[2]},  this->comm());
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
-		return real_space(cell_, grid({(int) round(factor*sizes_[0]), (int) round(factor*sizes_[1]), (int) round(factor*sizes_[2])}, this->comm(), /*par_dim = */ 1));
+		return real_space(cell_, {(int) round(factor*sizes_[0]), (int) round(factor*sizes_[1]), (int) round(factor*sizes_[2])}, this->comm());
 	}
 		
 	auto volume_element() const {

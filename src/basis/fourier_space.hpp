@@ -147,7 +147,7 @@ public:
 
 	template <typename ReciprocalBasis = reciprocal_space>
 	auto reciprocal() const {
-		return ReciprocalBasis(cell_, *this);
+		return ReciprocalBasis(cell_, sizes_, comm_);
 	}
 
 };
