@@ -31,10 +31,9 @@ public:
 	using reciprocal_space = real_space;
 		
 	fourier_space(real_space const & rs):
-		grid(rs),
+		grid(rs.sizes(), rs.comm(), /*par_dim = */ 0),
 		cell_(rs.cell())
 	{
-			
 		cubic_part_ = {inq::parallel::partition(nr_[0], comm()), inq::parallel::partition(nr_[1]), inq::parallel::partition(nr_[2])};
 
 		base::part_ = cubic_part_[0];

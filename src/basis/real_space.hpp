@@ -33,7 +33,7 @@ public:
 	using reciprocal_space = fourier_space;
 
 	real_space(systems::cell const & cell, double const & spacing, parallel::communicator comm):
-		grid(calculate_dimensions(cell, spacing), comm),
+		grid(calculate_dimensions(cell, spacing), comm, /*par_dim = */ 1),
 		cell_(cell)
 	{
 		for(int idir = 0; idir < 3; idir++){
@@ -195,16 +195,16 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm()));
+		return real_space(cell_.enlarge(factor), grid({factor*nr_[0], factor*nr_[1], factor*nr_[2]}, this->comm(), /*par_dim = */ 1));
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(cell_.enlarge(factor), grid({factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm()));
+		return real_space(cell_.enlarge(factor), grid({factor[0]*nr_[0], factor[1]*nr_[1], factor[2]*nr_[2]},  this->comm(), /*par_dim = */ 1));
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
-		return real_space(cell_, grid({(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm()));
+		return real_space(cell_, grid({(int) round(factor*nr_[0]), (int) round(factor*nr_[1]), (int) round(factor*nr_[2])}, this->comm(), /*par_dim = */ 1));
 	}
 		
 	auto volume_element() const {

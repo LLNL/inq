@@ -26,21 +26,30 @@ protected:
 	std::array<int, 3> nr_;
 	std::array<int, 3> nr_local_;
 	long npoints_;
+	int par_dim_;
 
 public:		
 	
-	grid(std::array<int, 3> nr, parallel::communicator & comm) :
-		base(nr[1], comm),
-		cubic_part_({inq::parallel::partition(nr[0]), base::part_, inq::parallel::partition(nr[2])}),
-		nr_(nr){
+	grid(std::array<int, 3> nr, parallel::communicator & comm, int par_dim) :
+		base(nr[par_dim], comm),
+		cubic_part_({inq::parallel::partition(nr[0]), inq::parallel::partition(nr[1]), inq::parallel::partition(nr[2])}),
+		nr_(nr),
+		par_dim_(par_dim)
+	{
 
-		base::part_ *= nr_[0]*long(nr_[2]);
+		cubic_part_[par_dim] = base::part_;
+		
+		for(int idir = 0; idir < 3; idir++) {
+			if(idir != par_dim) base::part_ *= nr_[idir];
+			nr_local_[idir] = cubic_part_[idir].local_size();
+		}
+
 		npoints_ = nr_[0]*long(nr_[1])*nr_[2];
-		for(int idir = 0; idir < 3; idir++) nr_local_[idir] = cubic_part_[idir].local_size();
+
 	}
 
 	grid(grid && old, parallel::communicator new_comm):
-		grid(old.nr_, new_comm)
+		grid(old.nr_, new_comm, old.par_dim_)
 	{
 	}
 		
@@ -140,7 +149,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
   
 	parallel::communicator comm{boost::mpi3::environment::get_world_instance()};
 
-	basis::grid gr({45, 120, 77}, comm);
+	basis::grid gr({45, 120, 77}, comm,  /*par_dim = */ 1);
 
 	CHECK(gr.sizes()[0] == 45);
 	CHECK(gr.sizes()[1] == 120);
