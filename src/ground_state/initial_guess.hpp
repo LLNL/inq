@@ -34,34 +34,7 @@ void initial_guess(const systems::ions & ions, systems::electrons & electrons, s
 		if(electrons.atomic_pot().has_overlap()){
 			hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions, 0.0, /* use_ace = */ true);
 			auto overlap_operator = std::bind(&hamiltonian::ks_hamiltonian<double>::overlap, &ham, std::placeholders::_1);
-
-			auto olap = operations::overlap(phi,overlap_operator(phi));
-			auto olap_array = matrix::all_gather(olap);
-			if(electrons.root()){
-				std::cout << "<i|S|j> array pre orthogonalization:" << std::endl;
-				for (int i = 0; i < olap_array.size(); ++i) { 
-					for (int j = 0; j < olap_array[i].size(); ++j) { 
-						std::cout << real(olap_array[i][j]) << " ";
-					}
-					std::cout << std::endl;
-				}
-			}
-			std::cout << std::endl; // Move to the next row
-
 			operations::orthogonalize(phi,overlap_operator);
-
-			auto olap_2 = operations::overlap(phi,overlap_operator(phi));
-			auto olap_array_2 = matrix::all_gather(olap_2);
-			if(electrons.root()){
-				std::cout << "<i|S|j> array post orthogonalization:" << std::endl;
-				for (int i = 0; i < olap_array_2.size(); ++i) { 
-					for (int j = 0; j < olap_array_2[i].size(); ++j) { 
-						std::cout << real(olap_array_2[i][j]) << " ";
-					}
-					std::cout << std::endl;
-				}
-			}
-			std::cout << std::endl; // Move to the next row
 		} else {
 			operations::orthogonalize(phi);
 		}

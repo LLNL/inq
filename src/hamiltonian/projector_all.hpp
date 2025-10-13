@@ -79,7 +79,6 @@ public: // for CUDA
 			coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->kb_coeff_;
 			overlap_coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->overlap_mat_;
 
-
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
 			locally_empty_[iproj] = it->locally_empty();
