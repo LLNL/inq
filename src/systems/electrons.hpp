@@ -3,7 +3,7 @@
 #ifndef SYSTEMS__ELECTRONS
 #define SYSTEMS__ELECTRONS
 
-// Copyright (C) 2019-2023 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
+// Copyright (C) 2019-2025 Lawrence Livermore National Security, LLC., Xavier Andrade, Alfredo A. Correa
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -316,7 +316,7 @@ public:
 	}
 
 	template <typename ArrayType>
-	void update_occupations(ArrayType const eigenval) {
+	void update_occupations(ArrayType const& eigenval) {
 		states_.update_occupations(kpin_states_comm_, eigenval, kpin_weights_, occupations_);
 	}
 
