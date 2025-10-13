@@ -32,7 +32,7 @@ void orthogonalize(field_set_type & phi, bool nocheck = false){
 }
 
 template <class field_set_type, typename Operator>
-void orthogonalize(field_set_type & phi, field_set_type const & phi2, Operator op){
+void orthogonalize(field_set_type & phi, Operator op){
 	CALI_CXX_MARK_FUNCTION;
 
 	auto olap = overlap(phi,op(phi));
