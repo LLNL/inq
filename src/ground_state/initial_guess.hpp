@@ -17,12 +17,6 @@
 #include <observables/density.hpp>
 #include <systems/electrons.hpp>
 
-//Debugging remove below line later
-#include <operations/overlap.hpp>
-#include <matrix/diagonalize.hpp>
-#include <operations/rotate.hpp>
-#include <matrix/cholesky.hpp>
-
 namespace inq {
 namespace ground_state {
 	
