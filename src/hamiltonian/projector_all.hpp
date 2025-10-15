@@ -190,8 +190,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename Type>
-	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all, bool apply_overlap = false) const {
+	template <typename Type, typename Coeff>
+	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all, Coeff const & coeff) const {
 		
 		CALI_CXX_MARK_FUNCTION;
 
@@ -199,12 +199,6 @@ public:
 
 		gpu::array<Type, 3> dest(extensions(projections_all));
 		
-		gpu::array<double, 3> coeff;
-		if (apply_overlap) {
-			coeff = overlap_coeff_;
-		} else {
-			coeff = coeff_;
-		}
 		gpu::run(nst, max_nlm_, nprojs_,
 						 [proj = begin(projections_all), coe = begin(coeff), des = begin(dest), nlm = max_nlm_]
 						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
@@ -223,7 +217,11 @@ public:
 		
 		auto projections_all = calculate_projections(phi, kpoint);
 
-		multiply_by_coefficients(projections_all, apply_overlap);
+		if (apply_overlap) {
+			multiply_by_coefficients(projections_all, overlap_coeff_);
+		} else {
+			multiply_by_coefficients(projections_all, coeff_);
+		}
 		
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		
@@ -414,7 +412,7 @@ public:
 			blas::real_doubled(rpa) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sra));
 		}
 
-		multiply_by_coefficients(rprojections_all);
+		multiply_by_coefficients(rprojections_all, coeff_);
 
 		if(phi.basis().comm().size() > 1) {
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(rprojections_all.data_elements()), rprojections_all.num_elements(), std::plus<>{});
