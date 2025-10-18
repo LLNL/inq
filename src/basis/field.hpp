@@ -45,7 +45,7 @@ public:
 		using template_type = field<BType, EType>;
 		
 		field(const basis_type & basis):
-			linear_(basis.part().local_size()),
+			linear_(basis.part().max_local_size()),
 			basis_(basis){
 			prefetch();
 		}
@@ -81,7 +81,7 @@ public:
 			
 			gpu::array<int, 1> rem_points(basis().local_size());
 			for(long ip = 0; ip < basis().local_size(); ip++) rem_points[ip] = basis().part().local_to_global(ip).value();
-			linear_ = parallel::get_remote_points(old, rem_points);
+			linear() = parallel::get_remote_points(old, rem_points);
 		}
 		
 		explicit field(const field & coeff) = default;      //avoid unadverted copies
@@ -118,12 +118,9 @@ public:
 		assert(tag >= 0 and tag < basis_.comm().size());
 		
 		auto mpi_type = boost::mpi3::detail::basic_datatype<Type>();
-		auto buffer = internal_array_type(basis_.part().max_local_size());
-		buffer({0, basis_.part().local_size()}) = linear_({0, basis_.part().local_size()});
-		MPI_Sendrecv_replace(raw_pointer_cast(buffer.data_elements()), buffer.num_elements(), mpi_type, prev_proc, tag, next_proc, tag, basis_.comm().get(), MPI_STATUS_IGNORE);
+		assert(linear_.num_elements() == basis_.part().max_local_size());
+		MPI_Sendrecv_replace(data(), basis_.part().max_local_size(), mpi_type, prev_proc, tag, next_proc, tag, basis_.comm().get(), MPI_STATUS_IGNORE);
 		basis_.shift();
-		linear_.reextent(basis_.part().local_size());
-		linear_ = buffer({0, basis_.part().local_size()});
 	}
 	
 		auto size() const {
@@ -134,16 +131,16 @@ public:
 			return basis_;
 		}
 
-		auto cubic() const {
-			assert(basis_.local_size() > 0);
-			return linear_.partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
-		}
-
-		auto cubic() {
-			assert(basis_.local_size() > 0);
-			return linear_.partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
-		}
-		
+	auto cubic() const {
+		assert(basis_.local_size() > 0);
+		return linear().partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
+	}
+	
+	auto cubic() {
+		assert(basis().local_size() > 0);
+		return linear().partitioned(basis_.cubic_part(1).local_size()*basis_.cubic_part(0).local_size()).partitioned(basis_.cubic_part(0).local_size());
+	}
+	
 		auto data() {
 			return raw_pointer_cast(linear_.data_elements());
 		}
@@ -295,6 +292,8 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	if(comm.size() == 1) CHECK(ff.linear().size() == 6160);
 	if(comm.size() == 2) CHECK(ff.linear().size() == 3080);
+	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2200);
+	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1760);
 	if(comm.size() == 4) CHECK(ff.linear().size() == 1540);
 
 	if(comm.size() == 1) CHECK(get<1>(sizes(ff.cubic())) == 28);
