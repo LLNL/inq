@@ -30,7 +30,7 @@ public:
 	using reciprocal_space = real_space;
 		
 	fourier_space(real_space const & rs):
-		grid(rs.sizes(), rs.comm(), /*par_dim = */ 0),
+		grid({rs.sizes()[2], rs.sizes()[1], rs.sizes()[0]}, rs.comm(), /*par_dim = */ 2),
 		cell_(rs.cell())
 	{
 	}
@@ -72,7 +72,7 @@ public:
 			//grid from -pi/h to pi/h
 				
 			auto ii = grid::to_symmetric_range(sizes_, i0, i1, i2);
-			return vector3<double, covariant>{ii[0]*covspacing(0), ii[1]*covspacing(1), ii[2]*covspacing(2)};
+			return vector3<double, covariant>{ii[2]*covspacing(1), ii[1]*covspacing(1), ii[0]*covspacing(0)};
 		}
 
 		GPU_FUNCTION auto gvector(int i0, int i1, int i2) const {
@@ -147,7 +147,7 @@ public:
 
 	template <typename ReciprocalBasis = reciprocal_space>
 	auto reciprocal() const {
-		return ReciprocalBasis(cell_, sizes_, comm_);
+		return ReciprocalBasis(cell_, {sizes_[2], sizes_[1], sizes_[0]}, comm_);
 	}
 
 };
