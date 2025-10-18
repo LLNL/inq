@@ -66,61 +66,61 @@ public:
 		{
 		}
 
-		GPU_FUNCTION auto gvector(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
+		GPU_FUNCTION auto gvector(parallel::global_index i0, parallel::global_index i1, parallel::global_index i2) const {
 				
 			//FFTW generates a grid from 0 to 2pi/h, so we convert it to a
 			//grid from -pi/h to pi/h
 				
-			auto ii = grid::to_symmetric_range(sizes_, ix, iy, iz);
+			auto ii = grid::to_symmetric_range(sizes_, i0, i1, i2);
 			return vector3<double, covariant>{ii[0]*covspacing(0), ii[1]*covspacing(1), ii[2]*covspacing(2)};
 		}
 
-		GPU_FUNCTION auto gvector(int ix, int iy, int iz) const {
-			auto ixg = cubic_part_[0].local_to_global(ix);
-			auto iyg = cubic_part_[1].local_to_global(iy);
-			auto izg = cubic_part_[2].local_to_global(iz);
+		GPU_FUNCTION auto gvector(int i0, int i1, int i2) const {
+			auto i0g = cubic_part_[0].local_to_global(i0);
+			auto i1g = cubic_part_[1].local_to_global(i1);
+			auto i2g = cubic_part_[2].local_to_global(i2);
 				
-			return gvector(ixg, iyg, izg);
+			return gvector(i0g, i1g, i2g);
 		}
 
-		GPU_FUNCTION auto gvector_cartesian(int ix, int iy, int iz) const {
-			return metric_.to_cartesian(gvector(ix, iy, iz));
+		GPU_FUNCTION auto gvector_cartesian(int i0, int i1, int i2) const {
+			return metric_.to_cartesian(gvector(i0, i1, i2));
 		}
 			
-		GPU_FUNCTION auto outside_sphere(int ix, int iy, int iz) const {
-			auto ivec = grid::to_symmetric_range(sizes_, cubic_part_[0].local_to_global(ix), cubic_part_[1].local_to_global(iy), cubic_part_[2].local_to_global(iz));
+		GPU_FUNCTION auto outside_sphere(int i0, int i1, int i2) const {
+			auto ivec = grid::to_symmetric_range(sizes_, cubic_part_[0].local_to_global(i0), cubic_part_[1].local_to_global(i1), cubic_part_[2].local_to_global(i2));
 			double xx = double(ivec[0])/sizes_[0];
 			double yy = double(ivec[1])/sizes_[1];
 			double zz = double(ivec[2])/sizes_[2];
 			return xx*xx + yy*yy + zz*zz > 0.25;
 		}
 			
-		GPU_FUNCTION bool g_is_zero(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-			return (ix.value() == 0 and iy.value() == 0 and iz.value() == 0);
+		GPU_FUNCTION bool g_is_zero(parallel::global_index i0, parallel::global_index i1, parallel::global_index i2) const {
+			return (i0.value() == 0 and i1.value() == 0 and i2.value() == 0);
 		}
 
-		GPU_FUNCTION bool g_is_zero(int ix, int iy, int iz) const {
-			auto ixg = cubic_part_[0].local_to_global(ix);
-			auto iyg = cubic_part_[1].local_to_global(iy);
-			auto izg = cubic_part_[2].local_to_global(iz);
+		GPU_FUNCTION bool g_is_zero(int i0, int i1, int i2) const {
+			auto i0g = cubic_part_[0].local_to_global(i0);
+			auto i1g = cubic_part_[1].local_to_global(i1);
+			auto i2g = cubic_part_[2].local_to_global(i2);
 				
-			return g_is_zero(ixg, iyg, izg);
+			return g_is_zero(i0g, i1g, i2g);
 		}
 			
-		GPU_FUNCTION double g2(parallel::global_index ix, parallel::global_index iy, parallel::global_index iz) const {
-			return metric_.norm(gvector(ix, iy, iz));
+		GPU_FUNCTION double g2(parallel::global_index i0, parallel::global_index i1, parallel::global_index i2) const {
+			return metric_.norm(gvector(i0, i1, i2));
 		}
 			
-		GPU_FUNCTION double g2(int ix, int iy, int iz) const {
-			return metric_.norm(gvector(ix, iy, iz));
+		GPU_FUNCTION double g2(int i0, int i1, int i2) const {
+			return metric_.norm(gvector(i0, i1, i2));
 		}
 
 		GPU_FUNCTION auto & metric() const {
 			return metric_;
 		}
 
-		GPU_FUNCTION auto to_symmetric_range(int ix, int iy, int iz) const {
-			return grid::to_symmetric_range(sizes_, ix, iy, iz);
+		GPU_FUNCTION auto to_symmetric_range(int i0, int i1, int i2) const {
+			return grid::to_symmetric_range(sizes_, i0, i1, i2);
 		}
 			
 		GPU_FUNCTION auto from_symmetric_range(vector3<int> ii) const {
