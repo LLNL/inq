@@ -322,13 +322,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(fs_vol == 0.0293659268_a);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
+		for(int i0 = 0; i0 < fphi.basis().local_sizes()[0]; i0++){
+			for(int i1 = 0; i1 < fphi.basis().local_sizes()[1]; i1++){
+				for(int i2 = 0; i2 < fphi.basis().local_sizes()[2]; i2++){
+					double g2 = fphi.basis().point_op().g2(i0, i1, i2);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.hypercubic()[i0][i1][i2][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
 					}
 				}
 			}
@@ -387,13 +387,13 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		CHECK(fs_vol == 0.0293659268_a);
 		
 		double diff = 0.0;
-		for(int ix = 0; ix < fphi.basis().local_sizes()[0]; ix++){
-			for(int iy = 0; iy < fphi.basis().local_sizes()[1]; iy++){
-				for(int iz = 0; iz < fphi.basis().local_sizes()[2]; iz++){
-					double g2 = fphi.basis().point_op().g2(ix, iy, iz);
+		for(int i0 = 0; i0 < fphi.basis().local_sizes()[0]; i0++){
+			for(int i1 = 0; i1 < fphi.basis().local_sizes()[1]; i1++){
+				for(int i2 = 0; i2 < fphi.basis().local_sizes()[2]; i2++){
+					double g2 = fphi.basis().point_op().g2(i0, i1, i2);
 					for(int ist = 0; ist < phi.set_part().local_size(); ist++){
 						double sigma = 0.5*(ist + 1);
-						diff += fabs(fphi.hypercubic()[ix][iy][iz][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
+						diff += fabs(fphi.hypercubic()[i0][i1][i2][ist] - pow(M_PI/sigma, 3.0/2.0)/fs_vol*exp(-0.25*g2/sigma));
 					}
 				}
 			}

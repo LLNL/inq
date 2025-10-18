@@ -78,10 +78,10 @@ public:
 		const double scal = (-4.0*M_PI)/density.basis().size();
 		
 		gpu::run(density.basis().local_sizes()[2], density.basis().local_sizes()[1], density.basis().local_sizes()[0],
-						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel, gshift, zeroterm] GPU_LAMBDA (auto iz, auto iy, auto ix){
+						 [point_op = density.basis().point_op(), dens = begin(density.hypercubic()), scal, nst = density.local_set_size(), kernel, gshift, zeroterm] GPU_LAMBDA (auto i2, auto i1, auto i0){
 							 
-							 auto kerg = kernel(point_op.gvector_cartesian(ix, iy, iz) + gshift, zeroterm/(-4*M_PI));
-							 for(int ist = 0; ist < nst; ist++) dens[ix][iy][iz][ist] *= scal*kerg;
+							 auto kerg = kernel(point_op.gvector_cartesian(i0, i1, i2) + gshift, zeroterm/(-4*M_PI));
+							 for(int ist = 0; ist < nst; ist++) dens[i0][i1][i2][ist] *= scal*kerg;
 						 });
 	}
 
