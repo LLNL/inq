@@ -73,9 +73,17 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_forward_3d");
 
-		assert(extensions(array_rs) == extensions(array_fs));
+		//from xyzs to zyxs
+		//tra  yxzs
+		//rot  xzsy
+		//tra  zxsy
+		//unr  yzxs
+		//tra  zyxs
+		auto tmp = array_rs.transposed().rotated().transposed().unrotated().transposed();
+
+		assert(extensions(tmp) == extensions(array_fs));
 		
-		fft::dft_forward({true, true, true, false}, array_rs, array_fs);
+		fft::dft_forward({true, true, true, false}, tmp, array_fs);
 		gpu::sync();
 
 	} else {
@@ -88,25 +96,20 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 			gpu::sync();
 		}
 
-		parallel::transpose_forward(real_basis.comm(), fourier_basis.cubic_part(0), real_basis.cubic_part(1), tmp);
+		parallel::transpose_forward(real_basis.comm(), fourier_basis.cubic_part(2), real_basis.cubic_part(1), tmp);
 
-		gpu::array<complex, 4> tmp2(extensions(tmp));
-
+		assert(get<0>(sizes(tmp)) == fourier_basis.local_sizes()[0]);
+		assert(get<1>(sizes(tmp)) == fourier_basis.local_sizes()[1]);
+		assert(get<2>(sizes(tmp)) == fourier_basis.local_sizes()[2]);
+		assert(get<3>(sizes(array_rs)) == get<3>(sizes(tmp)));
+	
 		{
 			CALI_CXX_MARK_SCOPE("fft_forward_1d");
 			
-			fft::dft_forward({true, true, false, false}, tmp, tmp2);
+			fft::dft_forward({true, true, false, false}, tmp, array_fs);
 			gpu::sync();
 		}
-
-		//from zyxs to xyzs
-		//tra  yzxy
-		//rot  zxsy
-		//tra  xzsy
-		//unr  yxzs
-		//tra  xyzs
-		array_fs = tmp2.transposed().rotated().transposed().unrotated().transposed();
-
+		
 	}
 }
 
@@ -137,37 +140,33 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
 
-		fft::dft_backward({true, true, true, false}, array_fs, array_rs);
-		gpu::sync();
-
-	} else {
-
-		auto & partx = fourier_basis.cubic_part(0);
-		auto & party = real_basis.cubic_part(1);
-		
 		//from xyzs to zyxs
 		//tra  yxzs
 		//rot  xzsy
 		//tra  zxsy
 		//unr  yzxs
 		//tra  zyxs
-
-		gpu::array<complex, 4> tmp = array_fs.transposed().rotated().transposed().unrotated().transposed();
 		
-		assert(get<0>(sizes(tmp)) == fourier_basis.cubic_part(2).local_size());
-		assert(get<1>(sizes(tmp)) == fourier_basis.cubic_part(1).local_size());
-		assert(get<2>(sizes(tmp)) == fourier_basis.cubic_part(0).local_size());		
+		auto tmp = array_rs.transposed().rotated().transposed().unrotated().transposed();
+		
+		assert(extensions(tmp) == extensions(array_fs));
+		
+		fft::dft_backward({true, true, true, false}, array_fs, tmp);
+		gpu::sync();
 
-		gpu::array<complex, 4> tmp2(extensions(tmp));
+	} else {
+
+		auto & partx = fourier_basis.cubic_part(2);
+		auto & party = real_basis.cubic_part(1);
+
+		gpu::array<complex, 4> tmp2(extensions(array_fs));
 		
 		{
 			CALI_CXX_MARK_SCOPE("fft_backward_2d");
 			
-			fft::dft_backward({true, true, false, false}, tmp, tmp2);
+			fft::dft_backward({true, true, false, false}, array_fs, tmp2);
 			gpu::sync();
 		}
-
-		tmp.clear();
 
 		parallel::transpose_backward(fourier_basis.comm(), partx, party, tmp2);
 
