@@ -29,6 +29,11 @@ class real_space : public grid {
 	vector3<double, contravariant> conspacing_;
 	vector3<double> rlength_;
 
+	template <typename Int>
+	static auto good_size(Int size) {
+		return math::nextprod({2, 3, 5, 7}, size);
+	}
+	
 public:
 
 	using reciprocal_space = fourier_space;
@@ -178,18 +183,32 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(cell_.enlarge(factor), {factor*sizes_[0], factor*sizes_[1], factor*sizes_[2]}, this->comm());
+
+		auto new_sizes = sizes_;
+		for(auto & size : new_sizes) {
+			size = good_size(round(factor*size));
+		}
+
+		return real_space(cell_.enlarge(factor), new_sizes, this->comm());
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(cell_.enlarge(factor), {factor[0]*sizes_[0], factor[1]*sizes_[1], factor[2]*sizes_[2]},  this->comm());
+
+		auto new_sizes = sizes_;
+		auto idir = 0;
+		for(auto & size : new_sizes) {
+			size = good_size(round(factor[idir]*size));
+			idir++;
+		}
+
+		return real_space(cell_.enlarge(factor), new_sizes,  this->comm());
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
 		auto new_sizes = sizes_;
 		for(auto & size : new_sizes) {
-			size = math::nextprod({2, 3, 5, 7}, (long) round(factor*size));
+			size = good_size(round(factor*size));
 		}
 		return real_space(cell_, new_sizes, this->comm());
 	}
@@ -235,7 +254,7 @@ private:
 		for(int idir = 0; idir < 3; idir++){
 			double rlength = length(cell[idir]);
 			nr[idir] = round(rlength/spacing);
-			if(optimize) nr[idir] = math::nextprod({2, 3, 5, 7}, nr[idir]);
+			if(optimize) nr[idir] = good_size(nr[idir]);
 		}
 			
 		return nr;
