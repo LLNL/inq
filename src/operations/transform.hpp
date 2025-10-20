@@ -73,12 +73,16 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_forward_3d");
 
+		assert(not fourier_basis.reverse_order());
 		assert(extensions(array_rs) == extensions(array_fs));
+		
 		fft::dft_forward({true, true, true, false}, array_rs, array_fs);
 		gpu::sync();
 
 	} else {
 
+		assert(fourier_basis.reverse_order());
+		
 		gpu::array<complex, 4> tmp(extensions(array_rs));
 
 		{
@@ -130,6 +134,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
+
+		assert(not fourier_basis.reverse_order());
 		
 		assert(extensions(array_rs) == extensions(array_fs));
 		fft::dft_backward({true, true, true, false}, array_fs, array_rs);
@@ -137,6 +143,8 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 
 	} else {
 
+		assert(fourier_basis.reverse_order());
+		
 		auto & partx = fourier_basis.cubic_part(2);
 		auto & party = real_basis.cubic_part(1);
 

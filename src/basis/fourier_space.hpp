@@ -52,7 +52,11 @@ public:
 	friend auto operator==(const fourier_space & fs1, const fourier_space & fs2){
 		return fs1.cell_ == fs2.cell_ and fs1.sizes_[0] == fs2.sizes_[0] and fs1.sizes_[1] == fs2.sizes_[1] and fs1.sizes_[2] == fs2.sizes_[2];
 	}
-		
+
+	auto & reverse_order() const {
+		return reverse_;
+	}
+	
 	class point_operator {
 
 		bool reverse_;
