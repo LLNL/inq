@@ -15,6 +15,7 @@
 #include <basis/grid.hpp>
 #include <gpu/run.hpp>
 #include <math/vector3.hpp>
+#include <math/nextprod.hpp>
 
 namespace inq {
 namespace basis {
@@ -222,7 +223,7 @@ public:
 		
 private:
 
-	static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing){
+	static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing, bool optimize = true){
 		std::array<int, 3> nr;
 			
 		// make the spacing conmensurate with the grid
@@ -230,6 +231,7 @@ private:
 		for(int idir = 0; idir < 3; idir++){
 			double rlength = length(cell[idir]);
 			nr[idir] = round(rlength/spacing);
+			if(optimize) nr[idir] = math::nextprod({2, 3, 5, 7}, nr[idir]);
 		}
 			
 		return nr;
