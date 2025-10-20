@@ -73,17 +73,8 @@ void to_fourier_array(basis::real_space const & real_basis, basis::fourier_space
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_forward_3d");
 
-		//from xyzs to zyxs
-		//tra  yxzs
-		//rot  xzsy
-		//tra  zxsy
-		//unr  yzxs
-		//tra  zyxs
-		auto tmp = array_rs.transposed().rotated().transposed().unrotated().transposed();
-
-		assert(extensions(tmp) == extensions(array_fs));
-		
-		fft::dft_forward({true, true, true, false}, tmp, array_fs);
+		assert(extensions(array_rs) == extensions(array_fs));
+		fft::dft_forward({true, true, true, false}, array_rs, array_fs);
 		gpu::sync();
 
 	} else {
@@ -139,19 +130,9 @@ void to_real_array(basis::fourier_space const & fourier_basis, basis::real_space
 	
 	if(not real_basis.part().parallel()) {
 		CALI_CXX_MARK_SCOPE("fft_backward_3d");
-
-		//from xyzs to zyxs
-		//tra  yxzs
-		//rot  xzsy
-		//tra  zxsy
-		//unr  yzxs
-		//tra  zyxs
 		
-		auto tmp = array_rs.transposed().rotated().transposed().unrotated().transposed();
-		
-		assert(extensions(tmp) == extensions(array_fs));
-		
-		fft::dft_backward({true, true, true, false}, array_fs, tmp);
+		assert(extensions(array_rs) == extensions(array_fs));
+		fft::dft_backward({true, true, true, false}, array_fs, array_rs);
 		gpu::sync();
 
 	} else {

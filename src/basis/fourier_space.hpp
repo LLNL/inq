@@ -23,14 +23,16 @@ class real_space;
 
 class fourier_space : public grid{
 
+	bool reverse_;
 	systems::cell cell_;
-
+	
 public:
 
 	using reciprocal_space = real_space;
 		
 	fourier_space(real_space const & rs):
-		grid({rs.sizes()[2], rs.sizes()[1], rs.sizes()[0]}, rs.comm(), /*par_dim = */ 2),
+		grid({rs.sizes()[(rs.comm().size() > 1)?2:0], rs.sizes()[1], rs.sizes()[(rs.comm().size() > 1)?0:2]}, rs.comm(), /*par_dim = */ 2),
+		reverse_(rs.comm().size() > 1),
 		cell_(rs.cell())
 	{
 	}
@@ -52,14 +54,16 @@ public:
 	}
 		
 	class point_operator {
-			
+
+		bool reverse_;
 		std::array<int, 3> sizes_;
 		std::array<inq::parallel::partition, 3> cubic_part_;
 		systems::cell::cell_metric metric_;
-
+		
 	public:
 		
-		point_operator(std::array<int, 3> const & nr, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
+		point_operator(bool reverse, std::array<int, 3> const & nr, std::array<inq::parallel::partition, 3> const & dist, systems::cell::cell_metric metric):
+			reverse_(reverse),
 			sizes_(nr),
 			cubic_part_(dist),
 			metric_(metric)
@@ -72,7 +76,8 @@ public:
 			//grid from -pi/h to pi/h
 				
 			auto ii = grid::to_symmetric_range(sizes_, i0, i1, i2);
-			return vector3<double, covariant>{ii[2]*covspacing(1), ii[1]*covspacing(1), ii[0]*covspacing(0)};
+			if(reverse_) return vector3<double, covariant>{ii[2]*covspacing(2), ii[1]*covspacing(1), ii[0]*covspacing(0)};
+			return vector3<double, covariant>{ii[0]*covspacing(0), ii[1]*covspacing(1), ii[2]*covspacing(2)};
 		}
 
 		GPU_FUNCTION auto gvector(int i0, int i1, int i2) const {
@@ -142,12 +147,13 @@ public:
 	};
 
 	auto point_op() const {
-		return point_operator{sizes_, cubic_part_, cell_.metric()};
+		return point_operator{reverse_, sizes_, cubic_part_, cell_.metric()};
 	}
 
 	template <typename ReciprocalBasis = reciprocal_space>
 	auto reciprocal() const {
-		return ReciprocalBasis(cell_, {sizes_[2], sizes_[1], sizes_[0]}, comm_);
+		if(reverse_) return ReciprocalBasis(cell_, {sizes_[2], sizes_[1], sizes_[0]}, comm_);
+		return ReciprocalBasis(cell_, {sizes_[0], sizes_[1], sizes_[2]}, comm_);
 	}
 
 };
