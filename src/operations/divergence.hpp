@@ -40,9 +40,9 @@ ResultType divergence(FieldSetType const & ff, double factor = 1.0, vector3<doub
 
 		gpu::run(divff.set_part().local_size(), divff.basis().local_sizes()[2], divff.basis().local_sizes()[1], divff.basis().local_sizes()[0],
 						 [point_op = ff.basis().point_op(), divffcub = begin(divff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, shift]
-						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-							 auto gvec = point_op.gvector(ix, iy, iz) + shift; 
-							 divffcub[ix][iy][iz][ist] = factor*complex(0.0, 1.0)*point_op.metric().dot(gvec, ffcub[ix][iy][iz][ist]);
+						 GPU_LAMBDA (auto ist, auto i2, auto i1, auto i0){
+							 auto gvec = point_op.gvector(i0, i1, i2) + shift;
+							 divffcub[i0][i1][i2][ist] = factor*complex(0.0, 1.0)*point_op.metric().dot(gvec, ffcub[i0][i1][i2][ist]);
 						 });
 		
 		return divff;

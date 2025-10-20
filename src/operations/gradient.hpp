@@ -42,9 +42,9 @@ ResultType gradient(FieldSetType const & ff, double factor = 1.0, vector3<double
 		
 		gpu::run(gradff.local_set_size(), gradff.basis().local_sizes()[2], gradff.basis().local_sizes()[1], gradff.basis().local_sizes()[0],
 						 [point_op = ff.basis().point_op(), gradffcub = begin(gradff.hypercubic()), ffcub = begin(ff.hypercubic()), factor, shift]
-						 GPU_LAMBDA (auto ist, auto iz, auto iy, auto ix){
-							 auto grad = factor*complex(0.0, 1.0)*(point_op.gvector(ix, iy, iz) + shift);
-							 gradffcub[ix][iy][iz][ist] = grad*ffcub[ix][iy][iz][ist];
+						 GPU_LAMBDA (auto ist, auto i2, auto i1, auto i0){
+							 auto grad = factor*complex(0.0, 1.0)*(point_op.gvector(i0, i1, i2) + shift);
+							 gradffcub[i0][i1][i2][ist] = grad*ffcub[i0][i1][i2][ist];
 						 });
 		return gradff;
 	}
