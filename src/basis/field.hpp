@@ -292,9 +292,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	if(comm.size() == 1) CHECK(ff.linear().size() == 6720);
 	if(comm.size() == 2) CHECK(ff.linear().size() == 6720/2);
-	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2200);
-	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1760);
-	if(comm.size() == 4) CHECK(ff.linear().size() == 1540);
+	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2400);
+	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1920);
+	if(comm.size() == 4) CHECK(ff.linear().size() == 1680);
 
 	if(comm.size() == 1) CHECK(get<1>(sizes(ff.cubic())) == 28);
 	if(comm.size() == 2) CHECK(get<1>(sizes(ff.cubic())) == 14);
