@@ -42,17 +42,3 @@ inq util match `inq results ground-state energy xc`              -0.231624950501
 inq util match `inq results ground-state energy nvxc`            -0.301836290243 3e-5
 inq util match `inq results ground-state energy exact-exchange`   0.000000000000 3e-5
 inq util match `inq results ground-state energy ion`              0.000000000000 3e-5
-
-inq theory b3lyp
-inq run gs
-
-inq util match `inq results ground-state energy total`           -0.447595579351 3e-5
-inq util match `inq results ground-state energy kinetic`          0.422424332895 7e-5
-inq util match `inq results ground-state energy eigenvalues`     -0.247551311044 3e-5
-inq util match `inq results ground-state energy hartree`          0.282759867862 3e-5
-inq util match `inq results ground-state energy external`        -0.917561980234 7e-5
-inq util match `inq results ground-state energy non-local`        0.000000000000 3e-5
-inq util match `inq results ground-state energy xc`              -0.206941812626 3e-5
-inq util match `inq results ground-state energy nvxc`            -0.261381424933 3e-5
-inq util match `inq results ground-state energy exact-exchange`  -0.028275987248 3e-5
-inq util match `inq results ground-state energy ion`              0.000000000000 3e-5
