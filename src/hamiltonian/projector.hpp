@@ -30,6 +30,7 @@ class projector {
 	int nproj_;
 	gpu::array<double, 2> matrix_;
 	gpu::array<double, 2> kb_coeff_;
+	gpu::array<double, 2> overlap_mat_;
 	int iatom_;
 
 public: // for CUDA
@@ -91,6 +92,12 @@ public: // for CUDA
 			}
 		}
 
+		for(int iproj_lm = 0; iproj_lm < ps.num_projectors_lm(); iproj_lm++){
+			for(int jproj_lm = 0; jproj_lm < ps.num_projectors_lm(); jproj_lm++){
+				overlap_mat_[iproj_lm][jproj_lm] = ps.overlap(iproj_lm,jproj_lm);
+			}
+		}
+
 	}
 	
 public:
@@ -99,6 +106,7 @@ public:
 		nproj_(ps.num_projectors_lm()),
 		matrix_({nproj_, sphere_.size()}),
 		kb_coeff_({nproj_, nproj_}),
+		overlap_mat_({nproj_, nproj_}),
 		iatom_(iatom){
 
 		build(basis, double_grid, ps);

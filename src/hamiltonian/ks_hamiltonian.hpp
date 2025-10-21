@@ -179,6 +179,18 @@ public:
 		return hphi;
 	}
 
+	auto overlap(const states::orbital_set<basis::real_space, complex> & phi) const {
+			
+		CALI_CXX_MARK_SCOPE("overlap_real");
+
+		auto proj = projectors_all_.project(phi, phi.kpoint() + uniform_vector_potential_, true);
+			
+		auto sphi = phi;
+		projectors_all_.apply(proj, sphi, phi.kpoint() + uniform_vector_potential_);
+
+		return sphi;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	auto momentum(const states::orbital_set<basis::real_space, complex> & phi) const{

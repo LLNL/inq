@@ -29,6 +29,7 @@ class projector_all {
 	gpu::array<vector3<int>, 2> points_;
 	gpu::array<vector3<float, contravariant>, 2> positions_;
 	gpu::array<double, 3> coeff_;
+	gpu::array<double, 3> overlap_coeff_;
 	gpu::array<double, 3> matrices_;
 	gpu::array<int, 1> nlm_;
 	gpu::array<int, 1> iatom_;
@@ -51,6 +52,7 @@ public: // for CUDA
 		points_ = decltype(points_)({nprojs_, max_sphere_size_});
 		positions_ = decltype(positions_)({nprojs_, max_sphere_size_});		
     coeff_ = decltype(coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
+    overlap_coeff_ = decltype(overlap_coeff_)({nprojs_, max_nlm_, max_nlm_}, 0.0);
     matrices_ = decltype(matrices_)({nprojs_, max_nlm_, max_sphere_size_});
 		
     auto iproj = 0;
@@ -75,6 +77,7 @@ public: // for CUDA
 							 });
 
 			coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->kb_coeff_;
+			overlap_coeff_[iproj]({0, it->nproj_}, {0, it->nproj_}) = it->overlap_mat_;
 
 			nlm_[iproj] = it->nproj_;
 			iatom_[iproj] = it->iatom_;
@@ -187,8 +190,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename Type>
-	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all) const {
+	template <typename Type, typename Coeff>
+	void multiply_by_coefficients(gpu::array<Type, 3> & projections_all, Coeff const & coeff) const {
 		
 		CALI_CXX_MARK_FUNCTION;
 
@@ -197,7 +200,7 @@ public:
 		gpu::array<Type, 3> dest(extensions(projections_all));
 		
 		gpu::run(nst, max_nlm_, nprojs_,
-						 [proj = begin(projections_all), coe = begin(coeff_), des = begin(dest), nlm = max_nlm_]
+						 [proj = begin(projections_all), coe = begin(coeff), des = begin(dest), nlm = max_nlm_]
 						 GPU_LAMBDA (auto ist, auto ilm, auto iproj){
 							 auto acc = zero<Type>();
 							 for(int jlm = 0; jlm < nlm; jlm++) acc += coe[iproj][ilm][jlm]*proj[iproj][jlm][ist];
@@ -205,17 +208,20 @@ public:
 						 });
 		
 		projections_all = std::move(dest);
-		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	template <typename KpointType>
-	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint) const {
+	gpu::array<complex, 3> project(states::orbital_set<basis::real_space, complex> const & phi, KpointType const & kpoint, bool apply_overlap = false) const {
 		
 		auto projections_all = calculate_projections(phi, kpoint);
 
-		multiply_by_coefficients(projections_all);
+		if (apply_overlap) {
+			multiply_by_coefficients(projections_all, overlap_coeff_);
+		} else {
+			multiply_by_coefficients(projections_all, coeff_);
+		}
 		
 		gpu::array<complex, 3> sphere_phi_all({nprojs_, max_sphere_size_, phi.local_set_size()});
 		
@@ -406,7 +412,7 @@ public:
 			blas::real_doubled(rpa) = blas::gemm(phi.basis().volume_element(), matrices_[iproj], blas::real_doubled(sra));
 		}
 
-		multiply_by_coefficients(rprojections_all);
+		multiply_by_coefficients(rprojections_all, coeff_);
 
 		if(phi.basis().comm().size() > 1) {
 			phi.basis().comm().all_reduce_in_place_n(raw_pointer_cast(rprojections_all.data_elements()), rprojections_all.num_elements(), std::plus<>{});
