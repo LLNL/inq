@@ -286,15 +286,15 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	ff2.fill(0.0);
 
-	CHECK(( sizes(rs) == decltype(sizes(rs)){11, 28, 20} ));
+	CHECK(( sizes(rs) == decltype(sizes(rs)){12, 28, 20} ));
 
-	CHECK(get<0>(sizes(ff.cubic())) == 11);
+	CHECK(get<0>(sizes(ff.cubic())) == 12);
 	
-	if(comm.size() == 1) CHECK(ff.linear().size() == 6160);
-	if(comm.size() == 2) CHECK(ff.linear().size() == 3080);
-	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2200);
-	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1760);
-	if(comm.size() == 4) CHECK(ff.linear().size() == 1540);
+	if(comm.size() == 1) CHECK(ff.linear().size() == 6720);
+	if(comm.size() == 2) CHECK(ff.linear().size() == 6720/2);
+	if(comm.size() == 3 and comm.rank() != 2) CHECK(ff.linear().size() == 2400);
+	if(comm.size() == 3 and comm.rank() == 2) CHECK(ff.linear().size() == 1920);
+	if(comm.size() == 4) CHECK(ff.linear().size() == 1680);
 
 	if(comm.size() == 1) CHECK(get<1>(sizes(ff.cubic())) == 28);
 	if(comm.size() == 2) CHECK(get<1>(sizes(ff.cubic())) == 14);
@@ -308,24 +308,24 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	basis::field<basis::real_space, double> ff_copy(ff.skeleton());
 
-	CHECK(get<0>(sizes(ff_copy.cubic())) == 11);
+	CHECK(get<0>(sizes(ff_copy.cubic())) == 12);
 	CHECK(get<2>(sizes(ff_copy.cubic())) == 20);
 
 	auto zff = complex_field(ff);
 	
 	static_assert(std::is_same<decltype(zff), basis::field<basis::real_space, complex>>::value, "complex() should return a complex field");
 	
-	CHECK(get<0>(sizes(zff.cubic())) == 11);
+	CHECK(get<0>(sizes(zff.cubic())) == 12);
 	CHECK(get<2>(sizes(zff.cubic())) == 20);
 
 	auto dff = real_field(zff);
 
 	static_assert(std::is_same<decltype(dff), basis::field<basis::real_space, double>>::value, "real() should return a double field");
 
-	CHECK(get<0>(sizes(dff.cubic())) == 11);
+	CHECK(get<0>(sizes(dff.cubic())) == 12);
 	CHECK(get<2>(sizes(dff.cubic())) == 20);
 
-	CHECK(get<0>(sizes(ff.hypercubic())) == 11);
+	CHECK(get<0>(sizes(ff.hypercubic())) == 12);
 	CHECK(get<2>(sizes(ff.hypercubic())) == 20);
 	CHECK(get<3>(sizes(ff.hypercubic())) == 1);    
 

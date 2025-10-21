@@ -15,6 +15,7 @@
 #include <basis/grid.hpp>
 #include <gpu/run.hpp>
 #include <math/vector3.hpp>
+#include <math/nextprod.hpp>
 
 namespace inq {
 namespace basis {
@@ -28,6 +29,11 @@ class real_space : public grid {
 	vector3<double, contravariant> conspacing_;
 	vector3<double> rlength_;
 
+	template <typename Int>
+	static auto good_size(Int size) {
+		return math::nextprod({2, 3, 5, 7}, size);
+	}
+	
 public:
 
 	using reciprocal_space = fourier_space;
@@ -177,16 +183,34 @@ public:
 	}
 
 	auto enlarge(int factor) const {
-		return real_space(cell_.enlarge(factor), {factor*sizes_[0], factor*sizes_[1], factor*sizes_[2]}, this->comm());
+
+		auto new_sizes = sizes_;
+		for(auto & size : new_sizes) {
+			size = good_size(round(factor*size));
+		}
+
+		return real_space(cell_.enlarge(factor), new_sizes, this->comm());
 	}
 
 	auto enlarge(vector3<int> factor) const {
-		return real_space(cell_.enlarge(factor), {factor[0]*sizes_[0], factor[1]*sizes_[1], factor[2]*sizes_[2]},  this->comm());
+
+		auto new_sizes = sizes_;
+		auto idir = 0;
+		for(auto & size : new_sizes) {
+			size = good_size(round(factor[idir]*size));
+			idir++;
+		}
+
+		return real_space(cell_.enlarge(factor), new_sizes,  this->comm());
 	}
 		
 	auto refine(double factor) const {
 		assert(factor > 0.0);
-		return real_space(cell_, {(int) round(factor*sizes_[0]), (int) round(factor*sizes_[1]), (int) round(factor*sizes_[2])}, this->comm());
+		auto new_sizes = sizes_;
+		for(auto & size : new_sizes) {
+			size = good_size(round(factor*size));
+		}
+		return real_space(cell_, new_sizes, this->comm());
 	}
 		
 	auto volume_element() const {
@@ -222,7 +246,7 @@ public:
 		
 private:
 
-	static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing){
+	static std::array<int, 3> calculate_dimensions(systems::cell const & cell, double const & spacing, bool optimize = true){
 		std::array<int, 3> nr;
 			
 		// make the spacing conmensurate with the grid
@@ -230,6 +254,7 @@ private:
 		for(int idir = 0; idir < 3; idir++){
 			double rlength = length(cell[idir]);
 			nr[idir] = round(rlength/spacing);
+			if(optimize) nr[idir] = good_size(nr[idir]);
 		}
 			
 		return nr;
@@ -300,16 +325,16 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
       basis::real_space rs(systems::cell::orthorhombic(77.7_b, 14.14_b, 23.25_b), /*spacing =*/ 0.36063925, comm);
 
-      CHECK(rs.size() == 536640);
+      CHECK(rs.size() == 552960);
 
 			CHECK(rs.cell().volume() == rs.volume_element()*rs.size());
 			
-      CHECK(rs.rspacing()[0] == 0.3613953488_a);
-      CHECK(rs.rspacing()[1] == 0.3625641026_a);
+      CHECK(rs.rspacing()[0] == 0.3597222222_a);
+      CHECK(rs.rspacing()[1] == 0.3535_a);
       CHECK(rs.rspacing()[2] == 0.36328125_a);
       
-      CHECK(rs.sizes()[0] == 215);
-      CHECK(rs.sizes()[1] == 39);
+      CHECK(rs.sizes()[0] == 216);
+      CHECK(rs.sizes()[1] == 40);
 			CHECK(rs.sizes()[2] == 64);
 
 			CHECK(rs.gcutoff() == 8.6478249389_a);
@@ -317,12 +342,12 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			auto rs3x = rs.enlarge(3);
 			
-      CHECK(rs3x.rspacing()[0] == 0.3613953488_a);
-      CHECK(rs3x.rspacing()[1] == 0.3625641026_a);
+      CHECK(rs3x.rspacing()[0] == 0.3597222222_a);
+      CHECK(rs3x.rspacing()[1] == 0.3535_a);
       CHECK(rs3x.rspacing()[2] == 0.36328125_a);
       
-      CHECK(rs3x.sizes()[0] == 3*215);
-      CHECK(rs3x.sizes()[1] == 3*39);
+      CHECK(rs3x.sizes()[0] == 3*216);
+      CHECK(rs3x.sizes()[1] == 3*40);
 			CHECK(rs3x.sizes()[2] == 3*64);
 
 			CHECK(rs3x.cubic_part(0).comm_size() == 1);
@@ -334,25 +359,25 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			auto rs_fine = rs.refine(2);
 			
-      CHECK(rs_fine.rspacing()[0] == Approx(0.5*0.3613953488));
-      CHECK(rs_fine.rspacing()[1] == Approx(0.5*0.3625641026));
+      CHECK(rs_fine.rspacing()[0] == Approx(0.5*0.3597222222));
+      CHECK(rs_fine.rspacing()[1] == Approx(0.5*0.3535));
       CHECK(rs_fine.rspacing()[2] == Approx(0.5*0.36328125));
       
-      CHECK(rs_fine.sizes()[0] == 2*215);
-      CHECK(rs_fine.sizes()[1] == 2*39);
+      CHECK(rs_fine.sizes()[0] == 2*216);
+      CHECK(rs_fine.sizes()[1] == 2*40);
 			CHECK(rs_fine.sizes()[2] == 2*64);
 
 			CHECK(rs == rs.refine(1));
 			
 			auto rs_155 = rs.refine(1.55);
 			
-      CHECK(rs_155.rspacing()[0] == Approx(0.2333333333));
-      CHECK(rs_155.rspacing()[1] == Approx(0.2356666667));
-      CHECK(rs_155.rspacing()[2] == Approx(0.2348484848));
+      CHECK(rs_155.rspacing()[0] == Approx(0.23125));
+      CHECK(rs_155.rspacing()[1] == Approx(0.2244444444));
+      CHECK(rs_155.rspacing()[2] == Approx(0.2325));
       
-      CHECK(rs_155.sizes()[0] == 333);
-      CHECK(rs_155.sizes()[1] == 60);
-			CHECK(rs_155.sizes()[2] == 99);
+      CHECK(rs_155.sizes()[0] == 336);
+      CHECK(rs_155.sizes()[1] == 63);
+			CHECK(rs_155.sizes()[2] == 100);
 
     }
 

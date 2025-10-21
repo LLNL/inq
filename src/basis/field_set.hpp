@@ -330,22 +330,22 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	basis::field_set<basis::real_space, double> ff(rs, 12, cart_comm);
 
-	CHECK(sizes(rs)[0] == 11);
+	CHECK(sizes(rs)[0] == 12);
 	CHECK(sizes(rs)[1] == 28);
 	CHECK(sizes(rs)[2] == 20);
 
 	//std::cout << ff.basis().comm().size() << " x " << ff.set_comm().size() << std::endl;
 	//  std::cout << rs.part().comm_size() << std::endl;
 
-	if(ff.basis().comm().size() == 1) CHECK(get<0>(sizes(ff.matrix())) == 6160);
-	if(ff.basis().comm().size() == 2) CHECK(get<0>(sizes(ff.matrix())) == 6160/2);
+	if(ff.basis().comm().size() == 1) CHECK(get<0>(sizes(ff.matrix())) == 6720);
+	if(ff.basis().comm().size() == 2) CHECK(get<0>(sizes(ff.matrix())) == 6720/2);
 	if(ff.set_comm().size() == 1) CHECK(get<1>(sizes(ff.matrix())) == 12);
 	if(ff.set_comm().size() == 2) CHECK(get<1>(sizes(ff.matrix())) == 6);
 	if(ff.set_comm().size() == 3) CHECK(get<1>(sizes(ff.matrix())) == 4);
 	if(ff.set_comm().size() == 4) CHECK(get<1>(sizes(ff.matrix())) == 3);
 	if(ff.set_comm().size() == 6) CHECK(get<1>(sizes(ff.matrix())) == 2);
 
-	CHECK(get<0>(sizes(ff.hypercubic())) == 11);
+	CHECK(get<0>(sizes(ff.hypercubic())) == 12);
 	if(ff.basis().comm().size() == 1) CHECK(get<1>(sizes(ff.hypercubic())) == 28);
 	if(ff.basis().comm().size() == 2) CHECK(get<1>(sizes(ff.hypercubic())) == 14);
 	if(ff.basis().comm().size() == 4) CHECK(get<1>(sizes(ff.hypercubic())) == 7);
@@ -366,7 +366,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	
 	static_assert(std::is_same<decltype(zff), basis::field_set<basis::real_space, complex>>::value, "complex() should return a complex field");
 
-	CHECK(get<0>(sizes(zff.hypercubic())) == 11);
+	CHECK(get<0>(sizes(zff.hypercubic())) == 12);
 	CHECK(get<2>(sizes(zff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){
@@ -380,7 +380,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	static_assert(std::is_same<decltype(dff), basis::field_set<basis::real_space, double>>::value, "real() should return a double field");
 
-	CHECK(get<0>(sizes(dff.hypercubic())) == 11);
+	CHECK(get<0>(sizes(dff.hypercubic())) == 12);
 	CHECK(get<2>(sizes(dff.hypercubic())) == 20);
 
 	for(int ii = 0; ii < ff.basis().part().local_size(); ii++){

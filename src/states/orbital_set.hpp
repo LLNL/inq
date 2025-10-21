@@ -217,7 +217,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 	CHECK(not orb.spinors());
 	
 	CHECK(sizes(orb.basis())[0] == 28);
-	CHECK(sizes(orb.basis())[1] == 11);
+	CHECK(sizes(orb.basis())[1] == 12);
 	CHECK(sizes(orb.basis())[2] == 20);
 
 	CHECK(orb.local_set_size() == orb.local_set_size());
@@ -235,7 +235,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(not orbk.spinors());
 	CHECK(sizes(orbk.basis())[0] == 28);
-	CHECK(sizes(orbk.basis())[1] == 11);
+	CHECK(sizes(orbk.basis())[1] == 12);
 	CHECK(sizes(orbk.basis())[2] == 20);
 
 	CHECK(orbk.kpoint()[0] == 0.4_a);
@@ -263,7 +263,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	CHECK(sporb.spinors());
 	CHECK(sizes(sporb.basis())[0] == 28);
-	CHECK(sizes(sporb.basis())[1] == 11);
+	CHECK(sizes(sporb.basis())[1] == 12);
 	CHECK(sizes(sporb.basis())[2] == 20);
 
 	CHECK(sporb.kpoint()[0] == 0.4_a);
@@ -307,7 +307,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		}
 
 		CHECK(get<0>(sizes(sporb.spinor_hypercubic())) == 28);
-		CHECK(get<1>(sizes(sporb.spinor_hypercubic())) == 11);
+		CHECK(get<1>(sizes(sporb.spinor_hypercubic())) == 12);
 		CHECK(get<2>(sizes(sporb.spinor_hypercubic())) == 20);
 		CHECK(get<3>(sizes(sporb.spinor_hypercubic())) == 2);
 		CHECK(get<4>(sizes(sporb.spinor_hypercubic())) == 12);

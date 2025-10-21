@@ -19,14 +19,14 @@ pinq.ground_state.tolerance(1e-8)
 
 pinq.run.ground_state()
 
-assert pinq.util.match(pinq.results.ground_state.energy.total(),            -0.643875190035, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.kinetic(),           0.018878577118, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.eigenvalues(),      -0.089771561959, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.hartree(),           0.000453780325, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.external(),          0.076259198549, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.non_local(),         0.002713603553, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.xc(),               -0.376876179126, 3e-5)
-assert pinq.util.match(pinq.results.ground_state.energy.nvxc(),             -0.188530501831, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.total(),            -0.643814287043, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.kinetic(),           0.018925591948, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.eigenvalues(),      -0.089705264331, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.hartree(),           0.000453291561, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.external(),          0.076260504480, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.non_local(),         0.002721827596, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.xc(),               -0.376871332174, 3e-5)
+assert pinq.util.match(pinq.results.ground_state.energy.nvxc(),             -0.188519771478, 3e-5)
 assert pinq.util.match(pinq.results.ground_state.energy.exact_exchange(),    0.000000000000, 3e-5)
 assert pinq.util.match(pinq.results.ground_state.energy.ion(),              -0.365304170454, 3e-5)
   
@@ -34,7 +34,7 @@ assert pinq.util.match(pinq.results.ground_state.forces()[0],  [3.74786824263793
 assert pinq.util.match(pinq.results.ground_state.forces()[1],  [6.54160820496192356550e-11, -6.38554194489870691095e-11, -1.31008351907754708524e-03], 3e-5)
 
 pinq.real_time.num_steps(3000)
-pinq.real_time.time_step(0.075, "atu")
+pinq.real_time.time_step(0.0666, "atu")
 pinq.real_time.observables.dipole()
 pinq.perturbations.kick([0, 0, 0.01])
 
@@ -42,28 +42,63 @@ pinq.run.real_time()
 
 energy = pinq.results.real_time.total_energy()
 
-assert pinq.util.match(energy[   0], -0.6438225831700184, 3e-5)
-assert pinq.util.match(energy[  10], -0.6438225831586412, 3e-5)
-assert pinq.util.match(energy[ 300], -0.6438225835346540, 3e-5)
-assert pinq.util.match(energy[ 444], -0.6438225837767503, 3e-5)
-assert pinq.util.match(energy[1000], -0.6438225844307714, 3e-5)
-assert pinq.util.match(energy[1663], -0.6438225852107715, 3e-5)
-assert pinq.util.match(energy[2000], -0.6438225854501384, 3e-5)
-assert pinq.util.match(energy[2101], -0.6438225856304741, 3e-5)
-assert pinq.util.match(energy[2748], -0.6438225861809898, 3e-5)
-assert pinq.util.match(energy[2937], -0.6438225863718710, 3e-5)
-assert pinq.util.match(energy[3000], -0.6438225864372554, 3e-5)
+print(energy[   0])
+print(energy[  10])
+print(energy[ 300])
+print(energy[ 444])
+print(energy[1000])
+print(energy[1663])
+print(energy[2000])
+print(energy[2101])
+print(energy[2748])    
+print(energy[2937])
+print(energy[3000])
+
+assert pinq.util.match(energy[   0], -0.643761678270877 , 3e-5)
+assert pinq.util.match(energy[  10], -0.643761678261219 , 3e-5)
+assert pinq.util.match(energy[ 300], -0.6437616784360484, 3e-5)
+assert pinq.util.match(energy[ 444], -0.6437616785328906, 3e-5)
+assert pinq.util.match(energy[1000], -0.6437616789277596, 3e-5)
+assert pinq.util.match(energy[1663], -0.643761679451264 , 3e-5)
+assert pinq.util.match(energy[2000], -0.6437616795980003, 3e-5)
+assert pinq.util.match(energy[2101], -0.6437616796968362, 3e-5)
+assert pinq.util.match(energy[2748], -0.6437616800638288, 3e-5)
+assert pinq.util.match(energy[2937], -0.6437616801719617, 3e-5)
+assert pinq.util.match(energy[3000], -0.643761680176714 , 3e-5)
 
 dipole = pinq.results.real_time.dipole()
 
-assert pinq.util.match(dipole[   0], [-3.97681048e-09, -7.09794354e-09, -1.32841626e-08], 3e-5)
-assert pinq.util.match(dipole[  10], [-4.97442347e-09, -7.24474784e-09, -6.82902345e-04], 3e-5)
-assert pinq.util.match(dipole[ 300], [-4.12649853e-09, -4.94520268e-09,  9.28946989e-04], 3e-5)
-assert pinq.util.match(dipole[ 444], [ 6.56710319e-09,  4.10472422e-09,  2.49459196e-05], 3e-5)
-assert pinq.util.match(dipole[1000], [-1.68405742e-09, -1.74218890e-09,  6.43184391e-04], 3e-5)
-assert pinq.util.match(dipole[1663], [ 3.70110317e-09,  2.40236705e-09,  1.14428514e-04], 3e-5)
-assert pinq.util.match(dipole[2000], [ 3.89065598e-09,  6.58938917e-09, -3.79885931e-05], 3e-5)
-assert pinq.util.match(dipole[2101], [-2.46808191e-09, -6.44963568e-09,  2.51021618e-04], 3e-5)
-assert pinq.util.match(dipole[2748], [ 7.49161622e-09,  6.63569241e-09,  7.68891245e-04], 3e-5)
-assert pinq.util.match(dipole[2937], [-2.46748677e-09, -5.12091893e-09,  9.61352605e-04], 3e-5)
-assert pinq.util.match(dipole[3000], [ 6.42990291e-09,  5.12773025e-09,  8.26916447e-04], 3e-5)
+print(dipole[   0])
+print(dipole[  10])
+print(dipole[ 300])
+print(dipole[ 444])
+print(dipole[1000])
+print(dipole[1663])
+print(dipole[2000])
+print(dipole[2101])
+print(dipole[2748])
+print(dipole[2937])
+print(dipole[3000])
+
+assert pinq.util.match(dipole[   0], [-0.17853907, -0.17853954, -0.22782616], 3e-5)
+assert pinq.util.match(dipole[  10], [-0.178539  , -0.17853941, -0.22839654], 3e-5)
+assert pinq.util.match(dipole[ 300], [-0.1784962 , -0.17849663, -0.22849769], 3e-5)
+assert pinq.util.match(dipole[ 444], [-0.17851319, -0.17851274, -0.22856397], 3e-5)
+assert pinq.util.match(dipole[1000], [-0.1785875 , -0.17858712, -0.22776555], 3e-5)
+assert pinq.util.match(dipole[1663], [-0.17841327, -0.17841309, -0.22773484], 3e-5)
+assert pinq.util.match(dipole[2000], [-0.1786417 , -0.1786419 , -0.2278392 ], 3e-5)
+assert pinq.util.match(dipole[2101], [-0.17843316, -0.1784334 , -0.22758917], 3e-5)
+assert pinq.util.match(dipole[2748], [-0.17855025, -0.17855   , -0.2274164 ], 3e-5)
+assert pinq.util.match(dipole[2937], [-0.17853585, -0.17853627, -0.22748399], 3e-5)
+assert pinq.util.match(dipole[3000], [-0.17857928, -0.17857941, -0.22809489], 3e-5)
+
+
+
+
+
+
+
+
+
+
+
