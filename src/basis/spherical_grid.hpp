@@ -388,10 +388,10 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 		auto size = sphere.size();
 		comm.all_reduce_in_place_n(&size, 1, std::plus<>{});
 
-		CHECK(size == 13758);
+		CHECK(size == 15963);
 		
 		auto theo_vol = 4.0/3.0*M_PI*pow(radius, 3);
-		CHECK(size*rs.volume_element()/theo_vol == 0.9978228533_a);
+		CHECK(size*rs.volume_element()/theo_vol == 1.0013282291_a);
 
 	}
 }

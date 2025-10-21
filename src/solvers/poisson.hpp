@@ -254,7 +254,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			
 			CHECK(rs.sizes()[0] == 100);
 			CHECK(rs.sizes()[1] == 100);
-			CHECK(rs.sizes()[2] == 137);
+			CHECK(rs.sizes()[2] == 140);
 
 		}
 		
@@ -309,7 +309,7 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 			CHECK(sum[0]/(nst + 1.0) == 82.9383793318_a);
 			CHECK(fabs(sum[1])/(nst + 1.0) <= 5e-12);
 		
-			if(rs.cubic_part(0).start() == 0 and rs.cubic_part(1).start() == 0 and rs.cubic_part(2).start() == 0) CHECK(real(potential.cubic()[0][0][0]) == -0.0241804443_a);
+			if(rs.cubic_part(0).start() == 0 and rs.cubic_part(1).start() == 0 and rs.cubic_part(2).start() == 0) CHECK(real(potential.cubic()[0][0][0]) == -0.0238339212_a);
 		}
 
 		SECTION("Plane wave"){
@@ -399,9 +399,9 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG) {
 
 			CHECK(rs.cell().periodicity() == 0);
 			
-			CHECK(rs.sizes()[0] == 89);
-			CHECK(rs.sizes()[1] == 89);
-			CHECK(rs.sizes()[2] == 89);
+			CHECK(rs.sizes()[0] == 90);
+			CHECK(rs.sizes()[1] == 90);
+			CHECK(rs.sizes()[2] == 90);
 
 		}
 

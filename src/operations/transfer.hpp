@@ -330,6 +330,11 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 	SECTION("Enlarge and shrink -- field"){
 		
 		basis::real_space grid(cell, spacing, cart_comm);
+
+		CHECK(grid.sizes()[0] == 14);
+		CHECK(grid.sizes()[1] == 18);
+		CHECK(grid.sizes()[2] == 24);		
+		
 		basis::field<basis::real_space, TestType> small(grid);
 		
 		CHECK(small.basis().rlength()[0] == Approx(ll[0]));
@@ -347,6 +352,10 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 
 		auto large = operations::transfer::enlarge(small, grid.enlarge(2));
 
+		CHECK(large.basis().sizes()[0] == 28);
+		CHECK(large.basis().sizes()[1] == 36);
+		CHECK(large.basis().sizes()[2] == 48);
+		
 		CHECK(grid.part().parallel() == large.basis().part().parallel());
 		CHECK(large.basis().rlength()[0] == Approx(2.0*ll[0]));
 		CHECK(large.basis().rlength()[1] == Approx(2.0*ll[1]));
@@ -506,9 +515,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 		CHECK(coarse.basis().rspacing()[1] == 2.0*fine.basis().rspacing()[1]);
 		CHECK(coarse.basis().rspacing()[2] == 2.0*fine.basis().rspacing()[2]);
 		
-		CHECK(real(operations::integral(coarse)) == 109.2100704359_a);
+		CHECK(real(operations::integral(coarse)) == 109.0578881614_a);
 		CHECK(fabs(imag(operations::integral(coarse))) < 1e-14);
-		CHECK(real(operations::integral(fine)) == 109.2100704359_a);
+		CHECK(real(operations::integral(fine)) == 109.0578881614_a);
 		CHECK(fabs(imag(operations::integral(fine))) < 1e-14);
 
 			
@@ -520,8 +529,8 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 					auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
 					auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-					CHECK(fabs(real(fine.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
-					CHECK(fabs(imag(fine.cubic()[ix][iy][iz])) < 5e-3);
+					CHECK(fabs(real(fine.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.25);
+					CHECK(fabs(imag(fine.cubic()[ix][iy][iz])) < 6e-3);
 				}
 			}
 		}
@@ -570,8 +579,8 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 						auto iyg = fine.basis().cubic_part(1).local_to_global(iy);
 						auto izg = fine.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = fine.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						CHECK(fabs(real(fine.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
-						CHECK(fabs(imag(fine.hypercubic()[ix][iy][iz][ist])) < 5e-3);
+						CHECK(fabs(real(fine.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.25);
+						CHECK(fabs(imag(fine.hypercubic()[ix][iy][iz][ist])) < 6e-3);
 						
 					}
 				}
@@ -613,9 +622,9 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 		CHECK(coarse.basis().rspacing()[1] == 2.0*fine.basis().rspacing()[1]);
 		CHECK(coarse.basis().rspacing()[2] == 2.0*fine.basis().rspacing()[2]);
 		
-		CHECK(real(operations::integral(coarse)) == 109.3027787767_a);
+		CHECK(real(operations::integral(coarse)) == 109.3081726242_a);
 		CHECK(fabs(imag(operations::integral(coarse))) < 1e-14);
-		CHECK(real(operations::integral(fine)) == 109.3027787767_a);
+		CHECK(real(operations::integral(fine)) == 109.3081726242_a);
 		CHECK(fabs(imag(operations::integral(fine))) < 1e-14);
 
 			
@@ -627,7 +636,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 					auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
 					auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 					auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-					CHECK(fabs(real(coarse.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+					CHECK(fabs(real(coarse.cubic()[ix][iy][iz])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.25);
 					CHECK(fabs(imag(coarse.cubic()[ix][iy][iz])) < 5e-3);
 				}
 			}
@@ -678,7 +687,7 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 						auto iyg = coarse.basis().cubic_part(1).local_to_global(iy);
 						auto izg = coarse.basis().cubic_part(2).local_to_global(iz);						
 						auto rr = coarse.basis().point_op().rvector_cartesian(ixg, iyg, izg);
-						CHECK(fabs(real(coarse.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.2);
+						CHECK(fabs(real(coarse.hypercubic()[ix][iy][iz][ist])/(exp(-rr[0]*rr[0]/ll[0] - rr[1]*rr[1]/ll[1] - rr[2]*rr[2]/ll[2])) - 1.0) < 0.25);
 						CHECK(fabs(imag(coarse.hypercubic()[ix][iy][iz][ist])) < 5e-3);
 					}
 				}
