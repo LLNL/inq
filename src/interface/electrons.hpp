@@ -133,6 +133,17 @@ the user.
   Pyhton example: `pinq.electrons.temperature(273.15, "Kelvin")`
 
 
+- Shell:  `electrons density-cutoff <factor>`
+  Python: `electrons.density_cutoff(factor)`
+
+  Sets the energy cutoff for the grid to represent the density. It
+  must be given as a factor over the main cutoff. Currently the only
+  accepted values are 1 and 4. The default is 1.
+
+  Shell example:  `inq electrons density-cutoff 4`
+  Python example: `pinq.electrons.density_cutoff(4)`
+
+
 )"""";
 	}
 
@@ -182,6 +193,11 @@ the user.
 
 	static void temperature(quantity<magnitude::energy> temp) {
 		auto el_opts = options::electrons::load(".inq/default_electrons_options").temperature(temp);
+		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
+	}
+	
+	static void density_cutoff(double factor) {
+		auto el_opts = options::electrons::load(".inq/default_electrons_options").density_factor(sqrt(factor));
 		el_opts.save(input::environment::global().comm(), ".inq/default_electrons_options");
 	}
 	
@@ -266,6 +282,16 @@ the user.
 			actions::normal_exit();
 		}
 
+		if(args[0] == "density-cutoff"){
+
+			if(args.size() == 1) actions::error(input::environment::global().comm(), "Missing density-cutoff argument");
+			if(args.size() >= 3) actions::error(input::environment::global().comm(), "Too many arguments to density-cutoff argument");
+
+			density_cutoff(str_to<double>(args[1]));
+			if(not run_opts.quiet) operator()();
+			actions::normal_exit();
+		}
+		
 		actions::error(input::environment::global().comm(), "Invalid syntax in the 'electrons' command");
 	}
 	
@@ -283,6 +309,7 @@ the user.
 		sub.def("spin_unpolarized", &spin_unpolarized);
 		sub.def("spin_polarized", &spin_polarized);
 		sub.def("spin_non_collinear", &spin_non_collinear);
+		sub.def("density_cutoff", &density_cutoff);
 		
 		sub.def("cutoff", [](double ecut, std::string const & units) {
 			cutoff(magnitude::energy::parse(ecut, units));
