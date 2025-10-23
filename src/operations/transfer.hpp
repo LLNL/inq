@@ -100,6 +100,17 @@ auto enlarge(basis::field_set<BasisType, Type> source, BasisType const & new_bas
 }
 
 //////////////////////////////////////////////////////////
+
+template <class Type, class BasisType>
+auto enlarge(states::orbital_set<BasisType, Type> source, BasisType const & new_basis, double const factor = 1.0) {
+	CALI_CXX_MARK_FUNCTION;
+	
+	states::orbital_set<BasisType, Type> destination(new_basis, source.spinor_set_size(), source.spinor_dim(), source.kpoint(), source.spin_index(), source.full_comm());
+	enlarge(source, destination, new_basis, factor);
+	return destination;
+}
+
+//////////////////////////////////////////////////////////
 		
 template <class FieldType>
 FieldType shrink(FieldType source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
