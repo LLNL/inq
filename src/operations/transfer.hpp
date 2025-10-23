@@ -38,7 +38,7 @@ FieldSet enlarge(FieldSet & source, FieldSet & destination, typename FieldSet::b
 	if(not source.basis().part().parallel()){
 		
 		gpu::run(source.basis().sizes()[2], source.basis().sizes()[1], source.basis().sizes()[0],
-						 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+						 [nst = source.local_set_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
 						 GPU_LAMBDA (auto iz, auto iy, auto ix){
 							 
 							 auto ii = sbas.to_symmetric_range(ix, iy, iz);
@@ -52,7 +52,7 @@ FieldSet enlarge(FieldSet & source, FieldSet & destination, typename FieldSet::b
 		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
 
 			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
-							 [nst = source.set_part().local_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
+							 [nst = source.local_set_size(), sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.hypercubic()), sou = begin(source.hypercubic()), factor]
 							 GPU_LAMBDA (auto iz, auto iy, auto ix){
 								 
 								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
@@ -77,49 +77,13 @@ FieldSet enlarge(FieldSet & source, FieldSet & destination, typename FieldSet::b
 
 //////////////////////////////////////////////////////////
 
-template <class FieldType>
-FieldType enlarge(FieldType source, typename FieldType::basis_type const & new_basis, double const factor = 1.0) {
+template <class Type, class BasisType>
+auto enlarge(basis::field<BasisType, Type> source, BasisType const & new_basis, double const factor = 1.0) {
 
 	CALI_CXX_MARK_FUNCTION;
 	
-	FieldType destination(new_basis);
-	destination.fill(0.0);
-	
-	if(not source.basis().part().parallel()){
-
-		gpu::run(source.basis().sizes()[2], source.basis().sizes()[1], source.basis().sizes()[0],
-						 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
-							 
-							 auto ii = sbas.to_symmetric_range(ix, iy, iz);
-							 auto idest = dbas.from_symmetric_range(ii);
-							 
-							 des[idest[0]][idest[1]][idest[2]] = factor*sou[ix][iy][iz];
-						 });
-		
-	} else {
-
-		for(int ipart = 0; ipart < source.basis().comm().size(); ipart++) {
-
-			gpu::run(source.basis().local_sizes()[2], source.basis().local_sizes()[1], source.basis().local_sizes()[0],
-							 [sbas = source.basis().point_op(), dbas = destination.basis().point_op(), des = begin(destination.cubic()), sou = begin(source.cubic()), factor] GPU_LAMBDA (auto iz, auto iy, auto ix){
-								 
-								 auto ii = sbas.to_symmetric_range(sbas.cubic_part(0).start() + ix, sbas.cubic_part(1).start() + iy, sbas.cubic_part(2).start() + iz);
-								 auto idest = dbas.from_symmetric_range(ii);
-								 
-								 if(not dbas.local_contains(idest)) return;
-								 
-								 auto idx = idest[0] - dbas.cubic_part(0).start();
-								 auto idy = idest[1] - dbas.cubic_part(1).start();
-								 auto idz = idest[2] - dbas.cubic_part(2).start();
-								 
-								 des[idx][idy][idz] = factor*sou[ix][iy][iz];
-							 });
-
-			source.shift_domains();
-		}
-
-	}
-
+	basis::field<BasisType, Type> destination(new_basis);
+	enlarge(source, destination, new_basis, factor);
 	return destination;
 
 }
