@@ -80,6 +80,29 @@ FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename FieldSetType, typename FactorType = double>
+auto laplacian_expectation_value(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+
+	CALI_CXX_MARK_FUNCTION;
+
+	static_assert(std::is_same_v<typename FieldSetType::basis_type, basis::fourier_space>, "Only implemented for fourier_space");
+
+	
+	auto k2 = -0.25*ff.basis().cell().metric().dot(gradcoeff, gradcoeff);
+	
+	return gpu::run(ff.set_part().local_size(), gpu::reduce(ff.basis().local_sizes()[2]), gpu::reduce(ff.basis().local_sizes()[1]), gpu::reduce(ff.basis().local_sizes()[0]), 0.0,
+									[point_op = ff.basis().point_op(), ffcub = begin(ff.hypercubic()), fac = factor*ff.basis().volume_element(), gradcoeff, k2]
+									GPU_LAMBDA (auto ist, auto i2, auto i1, auto i0){
+										auto lapl = fac*(-point_op.g2(i0, i1, i2) + dot(gradcoeff, point_op.gvector(i0, i1, i2)) + k2);
+										return real(conj(ffcub[i0][i1][i2][ist])*lapl*ffcub[i0][i1][i2][ist]);
+									});
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 }
 }
 #endif
