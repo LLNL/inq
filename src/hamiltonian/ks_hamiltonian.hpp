@@ -179,6 +179,8 @@ public:
 		return hphi;
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	auto overlap(const states::orbital_set<basis::real_space, complex> & phi) const {
 			
 		CALI_CXX_MARK_SCOPE("overlap_real");
