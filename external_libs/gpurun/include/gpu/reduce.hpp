@@ -338,9 +338,21 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 		auto && reduce_buffer = result.transposed();
     return run(sizex, reduce(nblockyz), init, array_access<decltype(begin(reduce_buffer))>{begin(reduce_buffer)});
   }
-  
+	
 #endif
+}
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename Type, typename KernelType>
+gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, reduce const & redw, Type const init, KernelType kernel) {
+
+	//this is a crude implementation for now
+	gpu::array<Type, 1> result(sizex);
+	for(auto ix = 0l; ix < sizex; ix++) {
+		result[ix] = run(redy, redz, redw, init, [ix, kernel] GPU_LAMBDA (auto iy, auto iz, auto iw) { return kernel(ix, iy, iz, iw); });
+	}
+	return result;
 }
 
 }
