@@ -101,11 +101,12 @@ public:
 			if(el.kpin_states_comm().size() > 1){	
 				CALI_CXX_MARK_SCOPE("energy::calculate::reduce");
 
-				double red[3] = {eigenvalues_, non_local_, exact_exchange_};
-				el.kpin_states_comm().all_reduce_n(red, 3);
-				eigenvalues_ = red[0];
-				non_local_    = red[1];
-				exact_exchange_ = red[2];
+				double red[4] = {kinetic_, eigenvalues_, non_local_, exact_exchange_};
+				el.kpin_states_comm().all_reduce_n(red, 4);
+				kinetic_         = red[0];
+				eigenvalues_     = red[1];
+				non_local_       = red[2];
+				exact_exchange_  = red[3];
 			}
 
 			return normres;
