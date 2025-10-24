@@ -76,6 +76,10 @@ public:
 		fields_.fill(scalar);     
 	}
 
+	auto shift_domains() {
+		fields_.shift_domains();
+	}
+	
 	auto & spinor_dim() const {
 		return spinor_dim_;
 	}
@@ -177,7 +181,7 @@ public:
 	auto & spinor_set_part() const {
 		return spinor_set_part_;
 	}
-	
+
 	auto key() const {
 		return states::key{kpoint(), spin_index()};
 	}

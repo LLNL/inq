@@ -93,7 +93,8 @@ public:
 		assert(core_density_.basis() == spin_density.basis());
 
 		auto total_density = observables::density::total(spin_density);
-			
+
+		assert(total_density.basis() == vion_.basis());
 		energy.external(operations::integral_product(total_density, vion_));
 
 		//IONIC POTENTIAL

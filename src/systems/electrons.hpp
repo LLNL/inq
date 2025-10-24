@@ -143,7 +143,7 @@ public:
 		states_comm_(states_subcomm(full_comm_)),
 		states_basis_comm_(states_basis_subcomm(full_comm_)),
 		states_basis_(ions.cell(), conf.spacing_value(), basis_subcomm(full_comm_)),
-		density_basis_(states_basis_), /* disable the fine density mesh for now density_basis_(states_basis_.refine(conf.density_factor(), basis_comm_)), */
+		density_basis_(states_basis_.refine(conf.density_factor_value())),
 		spin_density_(density_basis_, states_.num_density_components()),
 		kpin_part_(kpts.size()*states_.num_spin_indices(), kpin_comm_)
 	{
