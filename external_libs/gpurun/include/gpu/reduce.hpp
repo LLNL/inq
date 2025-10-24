@@ -346,6 +346,28 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 
 template <typename Type, typename KernelType>
 gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, reduce const & redw, Type const init, KernelType kernel) {
+	
+	auto const sizey = redy.size;
+	auto const sizez = redz.size;
+	auto const sizew = redw.size;
+	
+#ifndef ENABLE_GPU
+
+  gpu::array<Type, 1> accumulator(sizex, init);
+
+	for(long iw = 0; iw < sizew; iw++){
+		for(long iz = 0; iz < sizez; iz++){
+			for(long iy = 0; iy < sizey; iy++){
+				for(long ix = 0; ix < sizex; ix++){
+					accumulator[ix] += kernel(ix, iy, iz, iw);
+				}
+			}
+		}
+	}
+  
+  return accumulator;
+  
+#else
 
 	//this is a crude implementation for now
 	gpu::array<Type, 1> result(sizex);
@@ -353,6 +375,8 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, r
 		result[ix] = run(redy, redz, redw, init, [ix, kernel] GPU_LAMBDA (auto iy, auto iz, auto iw) { return kernel(ix, iy, iz, iw); });
 	}
 	return result;
+
+#endif
 }
 
 }
