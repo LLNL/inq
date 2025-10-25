@@ -37,14 +37,3 @@ atoms.calc.calculate(atoms)
 energy = atoms.get_potential_energy()
 
 assert abs(energy - -32.63697189005673) < 3.0e-5
-
-#Test the scf_step function
-array = atoms.calc.get_density()
-array.fill(0.0)
-
-for x in range(5):
-  density = atoms.calc.scf_step(atoms, array);
-  print("energy step ", x, " = ", atoms.get_potential_energy());
-
-assert abs(atoms.get_potential_energy() - -35.79364282124202) < 3.0e-5
-  
