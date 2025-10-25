@@ -83,7 +83,7 @@ FieldSetType laplacian(FieldSetType const & ff, FactorType factor = 1.0, vector3
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename FieldSetType, typename FactorType = double>
-auto laplacian_expectation_value(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
+gpu::array<double, 1> laplacian_expectation_value(FieldSetType & ff, FactorType factor = 1.0, vector3<double, contravariant> const & gradcoeff = {0.0, 0.0, 0.0}){
 
 	CALI_CXX_MARK_FUNCTION;
 

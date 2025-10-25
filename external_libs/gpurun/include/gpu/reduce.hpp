@@ -347,12 +347,12 @@ gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, T
 template <typename Type, typename KernelType>
 gpu::array<Type, 1>  run(long sizex, reduce const & redy, reduce const & redz, reduce const & redw, Type const init, KernelType kernel) {
 	
+#ifndef ENABLE_GPU
+
 	auto const sizey = redy.size;
 	auto const sizez = redz.size;
 	auto const sizew = redw.size;
 	
-#ifndef ENABLE_GPU
-
   gpu::array<Type, 1> accumulator(sizex, init);
 
 	for(long iw = 0; iw < sizew; iw++){
