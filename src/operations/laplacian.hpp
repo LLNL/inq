@@ -108,6 +108,10 @@ auto laplacian_expectation_value(FieldSetType & ff, FactorType factor = 1.0, vec
 		evs = std::move(spinor_evs);
 	}
 
+	if(ff.basis().comm().size() > 1) {
+		ff.basis().comm().all_reduce_in_place_n(raw_pointer_cast(evs.data_elements()), evs.num_elements(), std::plus<>{});
+	}
+	
 	return evs;
 	
 }
