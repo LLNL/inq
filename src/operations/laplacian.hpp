@@ -92,12 +92,24 @@ auto laplacian_expectation_value(FieldSetType & ff, FactorType factor = 1.0, vec
 	
 	auto k2 = -0.25*ff.basis().cell().metric().dot(gradcoeff, gradcoeff);
 	
-	return gpu::run(ff.set_part().local_size(), gpu::reduce(ff.basis().local_sizes()[2]), gpu::reduce(ff.basis().local_sizes()[1]), gpu::reduce(ff.basis().local_sizes()[0]), 0.0,
-									[point_op = ff.basis().point_op(), ffcub = begin(ff.hypercubic()), fac = factor*ff.basis().volume_element(), gradcoeff, k2]
-									GPU_LAMBDA (auto ist, auto i2, auto i1, auto i0){
-										auto lapl = fac*(-point_op.g2(i0, i1, i2) + dot(gradcoeff, point_op.gvector(i0, i1, i2)) + k2);
-										return real(conj(ffcub[i0][i1][i2][ist])*lapl*ffcub[i0][i1][i2][ist]);
-									});
+	auto evs = gpu::run(ff.local_set_size(), gpu::reduce(ff.basis().local_sizes()[2]), gpu::reduce(ff.basis().local_sizes()[1]), gpu::reduce(ff.basis().local_sizes()[0]), 0.0,
+											[point_op = ff.basis().point_op(), ffcub = begin(ff.hypercubic()), fac = factor*ff.basis().volume_element(), gradcoeff, k2]
+											GPU_LAMBDA (auto ist, auto i2, auto i1, auto i0){
+												auto lapl = fac*(-point_op.g2(i0, i1, i2) + dot(gradcoeff, point_op.gvector(i0, i1, i2)) + k2);
+												return real(conj(ffcub[i0][i1][i2][ist])*lapl*ffcub[i0][i1][i2][ist]);
+											});
+	
+	if(ff.spinor_dim() == 2) {
+		auto spinor_evs = decltype(evs)(ff.local_spinor_set_size());
+		gpu::run(ff.local_spinor_set_size(), [sev = begin(spinor_evs), ev = begin(evs), nst = ff.local_spinor_set_size()] GPU_LAMBDA (auto ist) {
+			sev[ist] = ev[ist] + ev[ist + nst];
+		});
+		
+		evs = std::move(spinor_evs);
+	}
+
+	return evs;
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
