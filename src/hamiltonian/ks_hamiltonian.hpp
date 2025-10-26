@@ -157,7 +157,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const{
+	auto operator()(const states::orbital_set<basis::fourier_space, complex> & phi) const {
 			
 		CALI_CXX_MARK_SCOPE("hamiltonian_fourier");
 
@@ -179,6 +179,25 @@ public:
 		return hphi;
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto kinetic_expectation_value(states::orbital_set<basis::fourier_space, complex> const & phi) const {
+		CALI_CXX_MARK_FUNCTION;
+
+		return operations::laplacian_expectation_value(phi, -0.5, -2.0*phi.basis().cell().metric().to_contravariant(phi.kpoint() + uniform_vector_potential_));
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	auto kinetic_expectation_value(states::orbital_set<basis::real_space, complex> const & phi) const {
+		CALI_CXX_MARK_FUNCTION;
+
+		auto phi_fs = operations::transform::to_fourier(phi);
+		return kinetic_expectation_value(phi_fs);
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
 	auto overlap(const states::orbital_set<basis::real_space, complex> & phi) const {
 			
 		CALI_CXX_MARK_SCOPE("overlap_real");
