@@ -89,7 +89,7 @@ private:
 															 return occ[ist]*real(conj(grad_cart[alpha])*grad_cart[beta]);
 														 });
 		
-		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);
+		if(gphi.full_comm().size() > 1) gphi.full_comm().all_reduce_in_place_n(raw_pointer_cast(stress1d.data_elements()), 6);
 
 		return -gphi.basis().volume_element()*tensor(stress1d);
 	}
@@ -110,7 +110,7 @@ private:
 															 return ef_cart[alpha]*ef_cart[beta];
 														 });
 
-		if(efield.basis().comm().size() > 1) efield.basis().comm().all_reduce_n(raw_pointer_cast(stress1d.data_elements()), 6);
+		if(efield.basis().comm().size() > 1) efield.basis().comm().all_reduce_in_place_n(raw_pointer_cast(stress1d.data_elements()), 6);
 
 		return density.basis().volume_element()/(4.0*M_PI)*tensor(stress1d);
 	}
@@ -157,7 +157,7 @@ private:
 			forces_non_local[ions.size() + 1] = stress_non_local[1];
 			forces_non_local[ions.size() + 2] = stress_non_local[2];
 
-			electrons.full_comm().all_reduce_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
+			electrons.full_comm().all_reduce_in_place_n(raw_pointer_cast(forces_non_local.data_elements()), forces_non_local.size(), std::plus<>{});
 
 			stress_non_local[0] = forces_non_local[ions.size() + 0];
 			stress_non_local[1] = forces_non_local[ions.size() + 1];
@@ -189,7 +189,7 @@ private:
 			
 			if(electrons.density_basis().comm().size() > 1){
 				CALI_CXX_MARK_SCOPE("forces_local::reduce");
-				electrons.density_basis().comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
+				electrons.density_basis().comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces_local.data_elements())), 3*forces_local.size());
 			}
 		}
 
