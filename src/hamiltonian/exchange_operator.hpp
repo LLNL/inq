@@ -114,7 +114,7 @@ namespace hamiltonian {
 				}
 			}
 
-			el.kpin_states_comm().all_reduce_n(&energy, 1);
+			el.kpin_states_comm().all_reduce_in_place_n(&energy, 1);
 
 			return energy;
 		}
