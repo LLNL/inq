@@ -364,7 +364,7 @@ public:
 
 		success = success and operations::io::load(dirname + "/spin_density",	spin_density_);
 
-		full_comm_.all_reduce_n(&success, 1, std::logical_and<>{});
+		full_comm_.all_reduce_in_place_n(&success, 1, std::logical_and<>{});
 		
 		if(success) {
 			if(logger()) logger()->info("  loading successful");

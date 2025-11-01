@@ -125,7 +125,7 @@ public:
 		}
 
 		if(electrons_.kpin_states_comm().size() > 1){
-			electrons_.kpin_states_comm().all_reduce_n(raw_pointer_cast(occ.data_elements()), occ.num_elements(), std::plus<>{});
+			electrons_.kpin_states_comm().all_reduce_in_place_n(raw_pointer_cast(occ.data_elements()), occ.num_elements(), std::plus<>{});
 		}
 
 		return occ;

@@ -374,8 +374,8 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			}
 		}
 
-		cart_comm.all_reduce_n(&count_small, 1);
-		cart_comm.all_reduce_n(&count_large, 1);
+		cart_comm.all_reduce_in_place_n(&count_small, 1);
+		cart_comm.all_reduce_in_place_n(&count_large, 1);
 
 		CHECK(count_small == small.basis().size());
 		CHECK(count_large > count_small);
@@ -451,8 +451,8 @@ TEMPLATE_TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG, double, inq::complex) {
 			}
 		}
 		
-		cart_comm.all_reduce_n(&count_small, 1);
-		cart_comm.all_reduce_n(&count_large, 1);
+		cart_comm.all_reduce_in_place_n(&count_small, 1);
+		cart_comm.all_reduce_in_place_n(&count_large, 1);
 
 		CHECK(count_small == small.basis().size()*small.set_size());
 		CHECK(count_large > count_small);

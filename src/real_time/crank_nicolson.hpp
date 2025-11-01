@@ -91,7 +91,7 @@ void crank_nicolson(double const time, double const dt, systems::ions & ions, sy
 			iphi++;
 		}
 
-		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_n(&res, 1, std::plus<>{});
+		if(electrons.kpin_states_comm().size() > 1) electrons.kpin_states_comm().all_reduce_in_place_n(&res, 1, std::plus<>{});
 		
 		auto new_density = observables::density::calculate(electrons);
 		auto density_diff = operations::integral_sum_absdiff(electrons.spin_density(), new_density)/electrons.states().num_electrons();

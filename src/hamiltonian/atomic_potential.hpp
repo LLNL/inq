@@ -351,12 +351,12 @@ namespace hamiltonian {
 			}
 
 			if(basis.comm().size() > 1) {
-				basis.comm().all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces.data_elements())), 3*forces.size());
+				basis.comm().all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces.data_elements())), 3*forces.size());
 			}
 
 			//we should use allgather here
 			if(comm.size() > 1) {
-				comm.all_reduce_n(reinterpret_cast<double *>(raw_pointer_cast(forces.data_elements())), 3*forces.size());
+				comm.all_reduce_in_place_n(reinterpret_cast<double *>(raw_pointer_cast(forces.data_elements())), 3*forces.size());
 			}
 			
 			return forces;

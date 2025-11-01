@@ -244,7 +244,7 @@ public:
 	template <typename CommunicatorType, typename OpType = std::plus<>>
 	void all_reduce(CommunicatorType & comm, OpType op = OpType{}){
 		if(comm.size() < 2) return;
-		comm.all_reduce_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
+		comm.all_reduce_in_place_n(raw_pointer_cast(matrix().data_elements()), matrix().num_elements(), op);
 	}
 		
 };

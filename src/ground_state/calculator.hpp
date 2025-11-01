@@ -82,7 +82,7 @@ public:
 			});
 		}
 		
-		el.kpin_states_comm().all_reduce_n(&state_conv, 1);
+		el.kpin_states_comm().all_reduce_in_place_n(&state_conv, 1);
 		state_conv /= el.states().num_electrons();
 		
 		return state_conv;
