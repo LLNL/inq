@@ -80,6 +80,10 @@ public:
 		fields_.shift_domains();
 	}
 	
+	auto shift_states() {
+		fields_.shift_states();
+	}
+	
 	auto & spinor_dim() const {
 		return spinor_dim_;
 	}
