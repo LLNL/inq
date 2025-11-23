@@ -20,7 +20,7 @@ jobs:
 
     - name: Configure system
       run: |
-          brew install cmake gcc gfortran open-mpi pkg-config fftw boost numpy
+          brew install cmake@3.24 gcc gfortran open-mpi pkg-config fftw boost numpy
           gfortran-14 --version
 
     - name: Configure CMake
