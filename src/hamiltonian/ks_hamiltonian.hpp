@@ -285,12 +285,13 @@ public:
 
 #include <catch2/catch_all.hpp>
 #include <basis/real_space.hpp>
-
+#include <config/path.hpp>
 TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 
 	using namespace inq;
 	using namespace inq::magnitude;	
 	using namespace Catch::literals;
+	using Catch::Approx;
   
 	parallel::cartesian_communicator<2> cart_comm(boost::mpi3::environment::get_world_instance(), {});
 
@@ -533,6 +534,43 @@ TEST_CASE(INQ_TEST_FILE, INQ_TEST_TAG){
 		CHECK(diff == 0.0051420503_a);
 		
 	}
-	
-}
+
+	SECTION("PAW Overlap operator"){
+
+		auto cell = systems::cell::cubic(30.0_b).finite();
+		systems::ions ions(cell);
+		ions.insert(ionic::species("C").pseudo_file(config::path::unit_tests_data() + "C_PAW.xml"), {0.0_b, 0.0_b, 0.0_b});
+		ions.insert(ionic::species("H").pseudo_file(config::path::unit_tests_data() + "H_PAW.xml"), {2.0_b, 0.0_b, 0.0_b});
+		ions.insert(ionic::species("H").pseudo_file(config::path::unit_tests_data() + "H_PAW.xml"), {0.0_b, 2.0_b, 0.0_b});
+		ions.insert(ionic::species("H").pseudo_file(config::path::unit_tests_data() + "H_PAW.xml"), {0.0_b, 0.0_b, 2.0_b});
+		ions.insert(ionic::species("C").pseudo_file(config::path::unit_tests_data() + "C_PAW.xml"), {0.0_b, 0.0_b, -10.0_b});
+		systems::electrons electrons(ions, input::kpoints::gamma(), options::electrons{}.cutoff(300.0_Ha).extra_states(0));
+
+		hamiltonian::ks_hamiltonian<double> ham(electrons.states_basis(), electrons.brillouin_zone(), electrons.states(), electrons.atomic_pot(), ions, 0.0);
+
+		auto overlap_operator = [&ham](auto const & phi ){
+			return ham.overlap(phi);
+		};
+
+		for(auto & phi : electrons.kpin()) {
+			for(int ix = 0; ix < phi.basis().cubic_part(0).local_size(); ix++){
+				for(int iy = 0; iy < phi.basis().cubic_part(1).local_size(); iy++){
+					for(int iz = 0; iz < phi.basis().cubic_part(2).local_size(); iz++){
+						for(int ist = 0; ist < phi.set_part().local_size(); ist++){
+							phi.hypercubic()[ix][iy][iz][ist] = 1.0;
+						}
+					}
+				}
+			}
+
+			auto sphi = overlap_operator(phi);
+			operations::shift(-1.0,sphi,phi);
+			auto olap = operations::overlap(phi);
+			auto olap_array = matrix::all_gather(olap);
+
+			CHECK(real(olap_array[0][0]) == Approx(0.97031883));
+			CHECK(imag(olap_array[0][0]) == 0.0);
+		}
+	}
+	}
 #endif
