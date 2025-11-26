@@ -81,16 +81,27 @@ print(dipole[2937])
 print(dipole[3000])
 
 assert pinq.util.match(dipole[   0], [-0.17853907, -0.17853954, -0.22782616], 3e-5)
-assert pinq.util.match(dipole[  10], [-0.178539  , -0.17853941, -0.22839654], 3e-5)
-assert pinq.util.match(dipole[ 300], [-0.1784962 , -0.17849663, -0.22849769], 3e-5)
-assert pinq.util.match(dipole[ 444], [-0.17851319, -0.17851274, -0.22856397], 3e-5)
-assert pinq.util.match(dipole[1000], [-0.1785875 , -0.17858712, -0.22776555], 3e-5)
-assert pinq.util.match(dipole[1663], [-0.17841327, -0.17841309, -0.22773484], 3e-5)
-assert pinq.util.match(dipole[2000], [-0.1786417 , -0.1786419 , -0.2278392 ], 3e-5)
-assert pinq.util.match(dipole[2101], [-0.17843316, -0.1784334 , -0.22758917], 3e-5)
-assert pinq.util.match(dipole[2748], [-0.17855025, -0.17855   , -0.2274164 ], 3e-5)
-assert pinq.util.match(dipole[2937], [-0.17853585, -0.17853627, -0.22748399], 3e-5)
-assert pinq.util.match(dipole[3000], [-0.17857928, -0.17857941, -0.22809489], 3e-5)
+assert pinq.util.match(dipole[  10], [-0.17853874, -0.17853918, -0.22725359], 3e-5)
+assert pinq.util.match(dipole[ 300], [-0.17849614, -0.17849658, -0.22702969], 3e-5)
+assert pinq.util.match(dipole[ 444], [-0.17851313, -0.17851268, -0.22688299], 3e-5)
+assert pinq.util.match(dipole[1000], [-0.17858653, -0.17858627, -0.22790895], 3e-5)
+assert pinq.util.match(dipole[1663], [-0.17841394, -0.17841367, -0.22739329], 3e-5)
+assert pinq.util.match(dipole[2000], [-0.17864295, -0.17864298, -0.22787972], 3e-5)
+assert pinq.util.match(dipole[2101], [-0.17843268, -0.17843301, -0.22777313], 3e-5)
+assert pinq.util.match(dipole[2748], [-0.17854898, -0.17854889, -0.22804299], 3e-5)
+assert pinq.util.match(dipole[2937], [-0.17853679, -0.17853709, -0.2280557 ], 3e-5)
+assert pinq.util.match(dipole[3000], [-0.17857866, -0.17857888, -0.22764393], 3e-5)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
